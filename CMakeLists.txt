@@ -1,10 +1,13 @@
 cmake_minimum_required(VERSION 3.27)
 project(CraftMine)
 
+message(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
+
 set(CMAKE_CXX_STANDARD 14)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+
 
 add_subdirectory(include/glfw-3.3.9)
 
@@ -475,3 +478,4 @@ add_executable(CraftMine
         src/Main.cpp)
 
 target_link_libraries(CraftMine PRIVATE glfw)
+target_compile_definitions(CraftMine PRIVATE SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")

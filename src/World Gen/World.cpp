@@ -4,8 +4,8 @@
 
 World::World(Camera& _camera) : camera(_camera)
 {
-	shader = new Shader("${CMAKE_CURRENT_SOURCE_DIR}/../../resources/shader/shader.vs", "${CMAKE_CURRENT_SOURCE_DIR}/../../resources/shader/shader.fs");
-	texture = new Texture("${CMAKE_CURRENT_SOURCE_DIR}/../../resources/texture/atlas.png");
+    shader = new Shader("../resources/shader/shader.vs", "../resources/shader/shader.fs");
+    texture = new Texture("../resources/texture/atlas.png");
 	model = glm::mat4(1.0f);
 	view = glm::mat4(1.0f);
 	proj = glm::perspective(glm::radians(65.0f), 16.0f / 9.0f, 0.1f, 10000.0f);
@@ -74,7 +74,6 @@ void World::UpdateViewDistance(glm::ivec2 cameraChunkPos)
 	int max_x;
 	int max_z;
 
-	//CompareChunks.cameraPos = cameraChunkPos;
     std::vector<Chunk*> generateChunks;
 	std::vector<Chunk*> addedChunks;
 	std::vector<Chunk*> newActiveChunks;
@@ -125,7 +124,7 @@ void World::UpdateViewDistance(glm::ivec2 cameraChunkPos)
 			}
 			else if(!chunks[x + SIZE * z]->inThread)
 			{
-				//check if chunk is already in active list, if it isn't add to the addedChunks list for updating meshes
+				//check if chunk is not in active list. add to the addedChunks list for updating meshes else newActiveChunks
 				if (std::find(activeChunks.begin(), activeChunks.end(), chunks[x + SIZE * z]) == activeChunks.end())	//not in list
 				{
                     addedChunks.push_back(std::ref(chunks[x + SIZE * z]));
@@ -140,46 +139,19 @@ void World::UpdateViewDistance(glm::ivec2 cameraChunkPos)
 	}
     std::sort(generateChunks.begin(), generateChunks.end(), compareChunks);
     std::sort(addedChunks.begin(), addedChunks.end(), compareChunks);
+    //TODO - change thread queues to vectors to replace unloaded chunks instead of this loop
     for(Chunk* chunk : generateChunks) {
         mutexChunksToGenerate.lock();
         chunksToGenerate.push(chunk);
         mutexChunksToGenerate.unlock();
     }
-    for(Chunk* chunk : addedChunks)
-    {
-        mutexChunksToLoadData.lock();
-        chunksToLoadData.push(chunk);
-        mutexChunksToLoadData.unlock();
-    }
-	/*for (Chunk* chunk : activeChunks)
-	{
-		if (std::find(addedChunks.begin(), addedChunks.end(), chunk) == addedChunks.end())
-		{
-			mutexChunksToDelete.lock();
-			chunksToDelete.push_back(chunk);
-			mutexChunksToDelete.unlock();
-		}
-	}*/
-	//need to delete buffers of unused chunks
-	//mutexChunksToLoadData.lock();
-	//for (Chunk* c : activeChunks)
-	//{
-	//	if (std::find(newActiveChunks.begin(), newActiveChunks.end(), c) == newActiveChunks.end())
-	//	{
-	//		if(c->generated && !c->inThread)
-	//		c->Delete();
-	//	}
 
-	//}
-	//mutexChunksToLoadData.unlock();
 	mutexChunksToLoadData.lock();
 	activeChunks.clear();
 	activeChunks = newActiveChunks;
 	mutexChunksToLoadData.unlock();
-
-	//need to update already existing chunks too neighbouring them
 	
-	//GenerateChunkBuffers(addedChunks); -> recalculate faces instead -> too much ram to store vertex data
+	GenerateChunkBuffers(addedChunks);
 	
 }
 
