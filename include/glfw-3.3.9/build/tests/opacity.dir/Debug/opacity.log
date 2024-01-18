@@ -1,0 +1,5 @@
+﻿  Building Custom Rule C:/Users/denis/Downloads/glfw-3.3.9/tests/CMakeLists.txt
+  opacity.c
+  glad_gl.c
+  Generating Code...
+  opacity.vcxproj -> C:\Users\denis\Downloads\glfw-3.3.9\build\tests\Debug\opacity.exe

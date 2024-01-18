@@ -25,18 +25,19 @@ World::World(Camera& _camera) : camera(_camera)
 		if (!chunksToLoadData.empty())
 		{
 			mutexChunksToLoadData.lock();
-			Chunk* chunk = chunksToLoadData.front();
+			Chunk* chunk = chunksToLoadData.back();
 
 			chunk->inThread = true;
-			chunksToLoadData.pop();
+			chunksToLoadData.pop_back();
 			mutexChunksToLoadData.unlock();
 
                 chunk->LoadChunkData();
 
-            chunk->inThread = false;
+
 
 			mutexChunksToLoadData.lock();
 			loadedChunks.push(std::ref(chunk));
+            chunk->inThread = false;
 			mutexChunksToLoadData.unlock();
 		}
 	}
@@ -49,15 +50,16 @@ World::World(Camera& _camera) : camera(_camera)
 		if (!chunksToGenerate.empty())
 		{
 			mutexChunksToGenerate.lock();
-			Chunk* chunk = chunksToGenerate.front();
+			Chunk* chunk = chunksToGenerate.back();
             chunk->inThread = true;
-			chunksToGenerate.pop();
+			chunksToGenerate.pop_back();
 			mutexChunksToGenerate.unlock();
 
 			chunk->GenBlocks();
 
             mutexChunksToLoadData.lock();
-			chunksToLoadData.push(chunk);
+			chunksToLoadData.insert(chunksToLoadData.begin(), chunk);
+            //chunk->inThread = false;
 			mutexChunksToLoadData.unlock();
 		}
 	}
@@ -74,9 +76,10 @@ void World::UpdateViewDistance(glm::ivec2 cameraChunkPos)
 	int max_x;
 	int max_z;
 
-    std::vector<Chunk*> generateChunks;
-	std::vector<Chunk*> addedChunks;
-	std::vector<Chunk*> newActiveChunks;
+    std::vector<Chunk*> generateChunks; //chunks sent to the generation thread, gets sent to other thread to load buffer data
+	std::vector<Chunk*> addedChunks; //chunks that already have buffer data, no need to send to generate or load
+	std::vector<Chunk*> newActiveChunks; //chunks that are still in view, no need to process/remove
+    std::vector<Chunk*> chunksLoading; //chunks that are in cameras view but didn't load yet, let them load, don't remove
 	if (cameraChunkPos.x > viewDistance)
 	{
 		min_x = cameraChunkPos.x - viewDistance;
@@ -115,44 +118,56 @@ void World::UpdateViewDistance(glm::ivec2 cameraChunkPos)
 	{
 		for (int z = min_z; z < max_z; z++)
 		{
-			
+
 			//if chunk doesn't exist, add it to thread queue for data generation
-			if (chunks[x + SIZE * z] == nullptr)
+			if (chunks[x + SIZE * z] == nullptr || (!chunks[x + SIZE * z]->generatedBlockData && !chunks[x + SIZE * z]->inThread))
 			{
 				chunks[x + SIZE * z] = new Chunk(glm::vec2(x, z), *this);
                 generateChunks.push_back(std::ref(chunks[x + SIZE * z]));
 			}
-			else if(!chunks[x + SIZE * z]->inThread)
-			{
-				//check if chunk is not in active list. add to the addedChunks list for updating meshes else newActiveChunks
-				if (std::find(activeChunks.begin(), activeChunks.end(), chunks[x + SIZE * z]) == activeChunks.end())	//not in list
-				{
-                    addedChunks.push_back(std::ref(chunks[x + SIZE * z]));
-				}
-				else
-				{
-					newActiveChunks.push_back(std::ref(chunks[x + SIZE * z]));
-				}
-
-			}
+            else if(!chunks[x + SIZE * z]->inThread && chunks[x + SIZE * z]->generatedBuffData)
+            {
+                newActiveChunks.push_back(std::ref(chunks[x + SIZE * z]));
+            }
+            else if(!chunks[x + SIZE * z]->generatedBuffData)
+            {
+                chunksLoading.push_back(std::ref(chunks[x + SIZE * z]));
+            }
 		}
 	}
-    std::sort(generateChunks.begin(), generateChunks.end(), compareChunks);
-    std::sort(addedChunks.begin(), addedChunks.end(), compareChunks);
-    //TODO - change thread queues to vectors to replace unloaded chunks instead of this loop
-    for(Chunk* chunk : generateChunks) {
-        mutexChunksToGenerate.lock();
-        chunksToGenerate.push(chunk);
-        mutexChunksToGenerate.unlock();
+    //All chunks which are not in chunksLoading but in chunksToLoadData to be deleted
+    //All chunks which are in activeChunk list but not in new active chunk
+    for(Chunk* chunk : chunksToLoadData)
+    {
+        if(std::find(chunksLoading.begin(), chunksLoading.end(), chunk) == chunksLoading.end())
+        {
+            chunk->Delete();
+            chunk->ClearVertexData();
+        }
     }
+    for(Chunk* chunk : activeChunks)
+    {
+        if(std::find(newActiveChunks.begin(), newActiveChunks.end(), chunk) == newActiveChunks.end())
+        {
+            chunk->Delete();
+            chunk->ClearVertexData();
+        }
+    }
+    std::sort(generateChunks.begin(), generateChunks.end(), compareChunks);
+    std::sort(chunksLoading.begin(), chunksLoading.end(), compareChunks);
+
+    mutexChunksToGenerate.lock();
+    chunksToGenerate.clear();
+    chunksToGenerate = generateChunks;
+    mutexChunksToGenerate.unlock();
 
 	mutexChunksToLoadData.lock();
+    chunksToLoadData.clear();
+    chunksToLoadData = chunksLoading;
+    mutexChunksToLoadData.unlock();
 	activeChunks.clear();
 	activeChunks = newActiveChunks;
-	mutexChunksToLoadData.unlock();
-	
-	GenerateChunkBuffers(addedChunks);
-	
+
 }
 
 
@@ -163,7 +178,7 @@ void World::GenerateChunkBuffers(std::vector<Chunk*>& addedChunks)
 		if (!chunk->inThread)
 		{
 			chunk->ReloadBufferData();
-			chunk->generated = true;
+			chunk->generatedBuffData = true;
 			activeChunks.push_back(std::ref(chunk));
 		}
 	}
@@ -195,7 +210,7 @@ void World::RenderWorld(Camera _camera)
 		}
 		mutexChunksToLoadData.unlock();
 		if (!addedChunks.empty())
-			GenerateChunkBuffers(addedChunks);
+			GenerateChunkBuffers(addedChunks); //adds to active chunks
 	}
 
 	view = _camera.GetViewMatrix();
@@ -203,7 +218,7 @@ void World::RenderWorld(Camera _camera)
 
 	for (Chunk* chunk : activeChunks)
 	{
-		if(chunk->generated)
+		if(chunk->generatedBuffData)
 		chunk->RenderChunk();
 	}
 }

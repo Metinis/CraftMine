@@ -473,12 +473,12 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>This function returns the compile-time generated <a class="el" href="intro_guide.html#intro_version_string">version string</a> of the GLFW library binary. It describes the version, platform, compiler and any platform-specific compile-time options. It should not be confused with the OpenGL or OpenGL ES version string, queried with <code>glGetString</code>.</p>
+<p>This function returns the compile-time generatedBuffData <a class="el" href="intro_guide.html#intro_version_string">version string</a> of the GLFW library binary. It describes the version, platform, compiler and any platform-specific compile-time options. It should not be confused with the OpenGL or OpenGL ES version string, queried with <code>glGetString</code>.</p>
 <p><b>Do not use the version string</b> to parse the GLFW library version. The <a class="el" href="group__init.html#ga9f8ffaacf3c269cc48eafbf8b9b71197">glfwGetVersion</a> function provides the version of the running library binary in numerical format.</p>
 <dl class="section return"><dt>Returns</dt><dd>The ASCII encoded GLFW version string.</dd></dl>
 <dl class="section user"><dt>Errors</dt><dd>None.</dd></dl>
 <dl class="section remark"><dt>Remarks</dt><dd>This function may be called before <a class="el" href="group__init.html#ga317aac130a235ab08c6db0834907d85e">glfwInit</a>.</dd></dl>
-<dl class="section user"><dt>Pointer lifetime</dt><dd>The returned string is static and compile-time generated.</dd></dl>
+<dl class="section user"><dt>Pointer lifetime</dt><dd>The returned string is static and compile-time generatedBuffData.</dd></dl>
 <dl class="section user"><dt>Thread safety</dt><dd>This function may be called from any thread.</dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="intro_guide.html#intro_version">Version management</a> </dd>
 <dd>
@@ -539,7 +539,7 @@ Functions</h2></td></tr>
 <p>This function sets the error callback, which is called with an error code and a human-readable description each time a GLFW error occurs.</p>
 <p>The error code is set before the callback is called. Calling <a class="el" href="group__init.html#ga944986b4ec0b928d488141f92982aa18">glfwGetError</a> from the error callback will return the same value as the error code argument.</p>
 <p>The error callback is called on the thread where the error occurred. If you are using GLFW from multiple threads, your error callback needs to be written accordingly.</p>
-<p>Because the description string may have been generated specifically for that error, it is not guaranteed to be valid after the callback has returned. If you wish to use it after the callback returns, you need to make a copy.</p>
+<p>Because the description string may have been generatedBuffData specifically for that error, it is not guaranteed to be valid after the callback has returned. If you wish to use it after the callback returns, you need to make a copy.</p>
 <p>Once set, the error callback remains set even after the library has been terminated.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">

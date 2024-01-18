@@ -239,7 +239,7 @@ installed.  If you want to build it along with your application instead, see
 @ref build_link_cmake_source.
 
 With a few changes to your `CMakeLists.txt` you can locate the package and
-target files generated when GLFW is installed.
+target files generatedBuffData when GLFW is installed.
 
 @code{.cmake}
 find_package(glfw3 3.3 REQUIRED)
@@ -274,7 +274,7 @@ target_link_libraries(myapp OpenGL::GL)
 @subsection build_link_pkgconfig With makefiles and pkg-config on Unix
 
 GLFW supports [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/),
-and the `glfw3.pc` pkg-config file is generated when the GLFW library is built
+and the `glfw3.pc` pkg-config file is generatedBuffData when the GLFW library is built
 and is installed along with it.  A pkg-config file describes all necessary
 compile-time and link-time flags and dependencies needed to use a library.  When
 they are updated or if they differ between systems, you will get the correct

@@ -1,0 +1,10 @@
+^C:\USERS\DENIS\DOWNLOADS\GLFW-3.3.9\TESTS\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/denis/Downloads/glfw-3.3.9 -BC:/Users/denis/Downloads/glfw-3.3.9/build --check-stamp-file C:/Users/denis/Downloads/glfw-3.3.9/build/tests/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

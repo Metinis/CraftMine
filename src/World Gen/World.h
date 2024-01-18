@@ -40,7 +40,7 @@ private:
 			int y2 = _playerChunkPos.y - chunk2->chunkPosition.y;
 			double distance1 = sqrt(x1 * x1 + y1 * y1);
 			double distance2 = sqrt(x2 * x2 + y2 * y2);
-			return distance1 < distance2;
+			return distance1 > distance2;
 		}
 	};
 	void GenerateChunkData(Chunk* chunk);
@@ -53,8 +53,8 @@ public:
 	std::thread chunkThread;
 	std::thread worldGenThread;
 
-	std::queue<Chunk*> chunksToGenerate;  //used for world gen for chunks that havent been generated yet -> generates blocks
-	std::queue<Chunk*> chunksToLoadData; //used to load faces
+	std::vector<Chunk*> chunksToGenerate;  //used for world gen for chunks that havent been generated yet -> generates blocks
+	std::vector<Chunk*> chunksToLoadData; //used to load faces
 	std::queue<Chunk*> loadedChunks;	 //sent to main thread to be assigned buffers
 	std::vector<Chunk*> chunksToDelete;
 	std::vector<Chunk*> activeChunks;	 //chunks that are currently being rendered, any loaded chunks need to be sent from thread to here

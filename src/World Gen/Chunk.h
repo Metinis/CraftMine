@@ -33,7 +33,6 @@ private:
 
 	bool CheckFace(int x, int y, int z);
 	void GenChunk(float* heightMap);
-	void IntegrateFace(Block block, Faces face);
 	void IntegrateFace(FaceData faceData);
 	void AddIndices(int amtFaces);
 	void UpdateNeighbours();
@@ -44,7 +43,8 @@ public:
 	static const int SIZE = 16;
 	static const int HEIGHT = 128;
 
-	bool generated = false;
+    bool generatedBlockData = false;
+	bool generatedBuffData = false;
 	bool inThread = false;
 
 	unsigned char blockIDs[SIZE * HEIGHT * SIZE];
@@ -57,7 +57,6 @@ public:
 	void SetBlock(int x, int y, int z, unsigned char id);
 	void GenBlocks();
 	void UpdateSide(CraftMine::Faces face);
-	void UpdateAllSides();
 	void ClearVertexData();
 	//OpenGL stuff
 	void LoadChunkData();

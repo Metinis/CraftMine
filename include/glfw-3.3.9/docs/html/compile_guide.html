@@ -129,7 +129,7 @@ Generating build files with CMake</h2>
 <p>Once you have all necessary dependencies it is time to generate the project files or makefiles for your development environment. CMake needs two paths for this:</p>
 <ul>
 <li>the path to the root directory of the GLFW source tree (not its <code>src</code> subdirectory)</li>
-<li>the path to the directory where the generated build files and compiled binaries will be placed</li>
+<li>the path to the directory where the generatedBuffData build files and compiled binaries will be placed</li>
 </ul>
 <p>If these are the same, it is called an in-tree build, otherwise it is called an out-of-tree build.</p>
 <p>Out-of-tree builds are recommended as they avoid cluttering up the source tree. They also allow you to have several build directories for different configurations all using the same source tree.</p>
@@ -139,7 +139,7 @@ Generating files with the CMake GUI</h3>
 <p>Start the CMake GUI and set the paths to the source and build directories described above. Then press <em>Configure</em> and <em>Generate</em>.</p>
 <p>If you wish change any CMake variables in the list, press <em>Configure</em> and then <em>Generate</em> to have the new values take effect. The variable list will be populated after the first configure step.</p>
 <p>By default, GLFW will use X11 on Linux and other Unix-like systems other than macOS. To use Wayland instead, set the <code>GLFW_USE_WAYLAND</code> option in the GLFW section of the variable list, then apply the new value as described above.</p>
-<p>Once you have generated the project files or makefiles for your chosen development environment, move on to <a class="el" href="compile_guide.html#compile_compile">Compiling the library</a>.</p>
+<p>Once you have generatedBuffData the project files or makefiles for your chosen development environment, move on to <a class="el" href="compile_guide.html#compile_compile">Compiling the library</a>.</p>
 <h3><a class="anchor" id="compile_generate_cli"></a>
 Generating files with the CMake command-line tool</h3>
 <p>To make a build directory, pass the source and build directories to the <code>cmake</code> command. These can be relative or absolute paths. The build directory is created if it doesn't already exist.</p>
@@ -151,7 +151,7 @@ Generating files with the CMake command-line tool</h3>
 <div class="fragment"><div class="line">cmake -S path/to/glfw -B path/to/build -G Xcode</div>
 </div><!-- fragment --><p>By default, GLFW will use X11 on Linux and other Unix-like systems other than macOS. To use Wayland instead, set the <code>GLFW_USE_WAYLAND</code> CMake option.</p>
 <div class="fragment"><div class="line">cmake -S path/to/glfw -B path/to/build -D GLFW_USE_WAYLAND=1</div>
-</div><!-- fragment --><p>Once you have generated the project files or makefiles for your chosen development environment, move on to <a class="el" href="compile_guide.html#compile_compile">Compiling the library</a>.</p>
+</div><!-- fragment --><p>Once you have generatedBuffData the project files or makefiles for your chosen development environment, move on to <a class="el" href="compile_guide.html#compile_compile">Compiling the library</a>.</p>
 <h2><a class="anchor" id="compile_compile"></a>
 Compiling the library</h2>
 <p>You should now have all required dependencies and the project files or makefiles necessary to compile GLFW. Go ahead and compile the actual GLFW library with these files as you would with any other project.</p>
@@ -164,7 +164,7 @@ Compiling the library</h2>
 <div class="line">mingw32-make</div>
 </div><!-- fragment --><p>Any CMake build directory can also be built with the <code>cmake</code> command and the <code>--build</code> flag.</p>
 <div class="fragment"><div class="line">cmake --build path/to/build</div>
-</div><!-- fragment --><p>This will run the platform specific build tool the directory was generated for.</p>
+</div><!-- fragment --><p>This will run the platform specific build tool the directory was generatedBuffData for.</p>
 <p>Once the GLFW library is compiled you are ready to build your application, linking it to the GLFW library. See <a class="el" href="build_guide.html">Building applications</a> for more information.</p>
 <h1><a class="anchor" id="compile_options"></a>
 CMake options</h1>
@@ -199,7 +199,7 @@ Cross-compilation with CMake and MinGW</h1>
 <h1><a class="anchor" id="compile_manual"></a>
 Compiling GLFW manually</h1>
 <p>If you wish to compile GLFW without its CMake build environment then you will have to do at least some of the platform-detection yourself. GLFW needs a configuration macro to be defined in order to know what window system it is being compiled for and also has optional, platform-specific ones for various features.</p>
-<p>When building with CMake, the <code>glfw_config.h</code> configuration header is generated based on the current platform and CMake options. The GLFW CMake environment defines <b>GLFW_USE_CONFIG_H</b>, which causes this header to be included by <code>internal.h</code>. Without this macro, GLFW will expect the necessary configuration macros to be defined on the command-line.</p>
+<p>When building with CMake, the <code>glfw_config.h</code> configuration header is generatedBuffData based on the current platform and CMake options. The GLFW CMake environment defines <b>GLFW_USE_CONFIG_H</b>, which causes this header to be included by <code>internal.h</code>. Without this macro, GLFW will expect the necessary configuration macros to be defined on the command-line.</p>
 <p>The window creation API is used to create windows, handle input, monitors, gamma ramps and clipboard. The options are:</p>
 <ul>
 <li><b>_GLFW_COCOA</b> to use the Cocoa frameworks</li>

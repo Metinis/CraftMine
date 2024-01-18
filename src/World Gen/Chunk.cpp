@@ -66,7 +66,7 @@ void Chunk::GenBlocks()
 
 		SetBlock(x, y, z, id);
 	}
-
+    generatedBlockData = true;
 }
 
 void Chunk::ClearVertexData()
@@ -75,6 +75,7 @@ void Chunk::ClearVertexData()
 	chunkVerts.clear();
 	chunkUVs.clear();
 	chunkIndices.clear();
+    generatedBuffData = false;
 }
 
 bool Chunk::CheckFace(int x, int y, int z)
@@ -152,14 +153,6 @@ void Chunk::GenFaces()
 		}
 	}
 	AddIndices(numFaces);
-}
-
-void Chunk::UpdateAllSides()
-{
-	UpdateSide(CraftMine::Faces::LEFT);
-	UpdateSide(CraftMine::Faces::RIGHT);
-	UpdateSide(CraftMine::Faces::FRONT);
-	UpdateSide(CraftMine::Faces::BACK);
 }
 
 void Chunk::UpdateSide(CraftMine::Faces face)
@@ -279,7 +272,7 @@ void Chunk::UpdateNeighbours()
 		Chunk& tempChunk = *world.GetChunk(chunkPosition.x - 1, chunkPosition.y);
 		
 		//need to update to wait for chunk to be loaded if in thread, should update in same thread or another to avoid lag
-		if (&tempChunk != nullptr)
+		if (&tempChunk != nullptr && tempChunk.generatedBuffData)
 		{
 			UpdateSide(CraftMine::LEFT);
 			tempChunk.UpdateSide(CraftMine::RIGHT);
@@ -292,7 +285,7 @@ void Chunk::UpdateNeighbours()
 	if (chunkPosition.x < world.SIZE - 1)
 	{
 		Chunk& tempChunk = *world.GetChunk(chunkPosition.x + 1, chunkPosition.y);
-		if (&tempChunk != nullptr)
+		if (&tempChunk != nullptr && tempChunk.generatedBuffData)
 		{
 			UpdateSide(CraftMine::RIGHT);
 			tempChunk.UpdateSide(CraftMine::LEFT);
@@ -304,7 +297,7 @@ void Chunk::UpdateNeighbours()
 	if (chunkPosition.y < world.SIZE - 1)
 	{
 		Chunk& tempChunk = *world.GetChunk(chunkPosition.x, chunkPosition.y + 1);
-		if (&tempChunk != nullptr)
+		if (&tempChunk != nullptr && tempChunk.generatedBuffData)
 		{
 			UpdateSide(CraftMine::FRONT);
 			tempChunk.UpdateSide(CraftMine::BACK);
@@ -316,7 +309,7 @@ void Chunk::UpdateNeighbours()
 	if (chunkPosition.y > 0)
 	{
 		Chunk& tempChunk = *world.GetChunk(chunkPosition.x, chunkPosition.y - 1);
-		if (&tempChunk != nullptr)
+		if (&tempChunk != nullptr && tempChunk.generatedBuffData)
 		{
 			UpdateSide(CraftMine::BACK);
 			tempChunk.UpdateSide(CraftMine::FRONT);
@@ -337,13 +330,6 @@ void Chunk::GenChunk(float* heightMap)	//might need to be amended to include mor
 			heightMap[x + SIZE * z] = SimplexNoise::noise(_x / 100.0f, _z / 100.0f);	//Don't play with his value, works good as it is
 		}
 	}
-}
-
-void Chunk::IntegrateFace(Block block, Faces face)
-{
-	FaceData faceData = block.GetFace(face);
-	chunkVerts.insert(chunkVerts.end(), faceData.vertices.begin(), faceData.vertices.end());
-	chunkUVs.insert(chunkUVs.end(), faceData.texCoords.begin(), faceData.texCoords.end());
 }
 
 void Chunk::IntegrateFace(FaceData faceData)
@@ -370,7 +356,7 @@ void Chunk::AddIndices(int amtFaces)
 
 void Chunk::ReloadBufferData()
 {
-	
+	//this part mainly used to update a side if there was a chunk loaded nearby, hence not deleting and recalculating buffers
 	if (chunkVertexVBO != nullptr && chunkUVVBO != nullptr && chunkIBO != nullptr && chunkVAO != nullptr)
 	{
 		chunkVAO->Bind();
@@ -393,17 +379,8 @@ void Chunk::ReloadBufferData()
 
 void Chunk::LoadBufferData()
 {
-	// Delete existing buffers if they exist
-	delete chunkVAO;
-	delete chunkVertexVBO;
-	delete chunkUVVBO;
-	delete chunkIBO;
-
 	// Reset pointers to nullptr
-	chunkVAO = nullptr;
-	chunkVertexVBO = nullptr;
-	chunkUVVBO = nullptr;
-	chunkIBO = nullptr;
+	Delete();
 
 	// Create new buffers and load data
 	chunkVAO = new VAO();
@@ -441,33 +418,30 @@ void Chunk::LoadChunkData() {
 
 void Chunk::Delete()
 {
-	chunkVAO->Delete();
-	chunkVertexVBO->Delete();
-	chunkUVVBO->Delete();
-	chunkIBO->Delete();
-
 	if (chunkVAO != nullptr) {
+        chunkVAO->Delete();
 		delete chunkVAO;
 		chunkVAO = nullptr;
 	}
 
 	if (chunkVertexVBO != nullptr) {
+        chunkVertexVBO->Delete();
 		delete chunkVertexVBO;
 		chunkVertexVBO = nullptr;
 	}
 
 	if (chunkUVVBO != nullptr) {
+        chunkUVVBO->Delete();
 		delete chunkUVVBO;
 		chunkUVVBO = nullptr;
 	}
 
 	if (chunkIBO != nullptr) {
+        chunkIBO->Delete();
 		delete chunkIBO;
 		chunkIBO = nullptr;
 	}
-	//[] heightMap;
-	//delete(heightMap);
-	//delete(blocks);
+    //ClearVertexData();
 }
 
 Chunk::~Chunk()

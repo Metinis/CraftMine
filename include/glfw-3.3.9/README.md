@@ -109,7 +109,7 @@ located in the `deps/` directory.
  - [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear) for test and example UI
  - [stb\_image\_write](https://github.com/nothings/stb) for writing images to disk
 
-The documentation is generated with [Doxygen](https://doxygen.org/) if CMake can
+The documentation is generatedBuffData with [Doxygen](https://doxygen.org/) if CMake can
 find that tool.
 
 

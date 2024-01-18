@@ -1,0 +1,6 @@
+﻿  Building Custom Rule C:/Users/denis/Downloads/glfw-3.3.9/tests/CMakeLists.txt
+  msaa.c
+  getopt.c
+  glad_gl.c
+  Generating Code...
+  msaa.vcxproj -> C:\Users\denis\Downloads\glfw-3.3.9\build\tests\Debug\msaa.exe

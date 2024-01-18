@@ -1,0 +1,5 @@
+﻿  Building Custom Rule C:/Users/denis/Downloads/glfw-3.3.9/tests/CMakeLists.txt
+  reopen.c
+  glad_gl.c
+  Generating Code...
+  reopen.vcxproj -> C:\Users\denis\Downloads\glfw-3.3.9\build\tests\Debug\reopen.exe
