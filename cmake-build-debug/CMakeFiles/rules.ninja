@@ -62,7 +62,7 @@ rule C_COMPILER__glfw_unscanned_Debug
 # Rule for linking C static library.
 
 rule C_STATIC_LIBRARY_LINKER__glfw_Debug
-  command = $PRE_LINK && /snap/clion/261/bin/cmake/linux/x64/bin/cmake -E rm -f $TARGET_FILE && /usr/bin/ar qc $TARGET_FILE $LINK_FLAGS $in && /usr/bin/ranlib $TARGET_FILE && $POST_BUILD
+  command = $PRE_LINK && /snap/clion/263/bin/cmake/linux/x64/bin/cmake -E rm -f $TARGET_FILE && /usr/bin/ar qc $TARGET_FILE $LINK_FLAGS $in && /usr/bin/ranlib $TARGET_FILE && $POST_BUILD
   description = Linking C static library $TARGET_FILE
   restat = $RESTAT
 
@@ -71,7 +71,7 @@ rule C_STATIC_LIBRARY_LINKER__glfw_Debug
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = /snap/clion/261/bin/cmake/linux/x64/bin/cmake --regenerate-during-build -S/home/vodkasas/CraftMine -B/home/vodkasas/CraftMine/cmake-build-debug
+  command = /snap/clion/263/bin/cmake/linux/x64/bin/cmake --regenerate-during-build -S/home/vodkasas/CraftMine -B/home/vodkasas/CraftMine/cmake-build-debug
   description = Re-running CMake...
   generator = 1
 
@@ -80,7 +80,7 @@ rule RERUN_CMAKE
 # Rule for cleaning all built files.
 
 rule CLEAN
-  command = /snap/clion/261/bin/ninja/linux/x64/ninja $FILE_ARG -t clean $TARGETS
+  command = /snap/clion/263/bin/ninja/linux/x64/ninja $FILE_ARG -t clean $TARGETS
   description = Cleaning all built files...
 
 
@@ -88,6 +88,6 @@ rule CLEAN
 # Rule for printing all primary targets available.
 
 rule HELP
-  command = /snap/clion/261/bin/ninja/linux/x64/ninja -t targets
+  command = /snap/clion/263/bin/ninja/linux/x64/ninja -t targets
   description = All primary targets available:
 

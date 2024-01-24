@@ -7,7 +7,7 @@ const std::map<CraftMine::BlockType, std::map<CraftMine::Faces, int>> TextureDat
 			{CraftMine::Faces::FRONT, 3},
 			{CraftMine::Faces::LEFT, 3},
 			{CraftMine::Faces::RIGHT, 3},
-			{CraftMine::Faces::TOP, 39},
+			{CraftMine::Faces::TOP, 0},
 			{CraftMine::Faces::BOTTOM, 2}},
 		},
 		{CraftMine::BlockType::DIRT,
@@ -46,11 +46,15 @@ const std::map<CraftMine::BlockType, std::map<CraftMine::Faces, int>> TextureDat
 std::vector<glm::vec2> TextureData::GetUVs(int atlasID)
 {
 	int row = (atlasID / 16) + 1;
+    float left = (float)atlasID / 16.0f;
+    float right = ((float)atlasID + 1.0f) / 16.0f;
+    float top = row / 16.0f;
+    float bottom = (row - 1.0f) / 16.0f;
 	std::vector<glm::vec2> uvs = {
-		glm::vec2((float)atlasID / 16.0f, (row - 1.0f) / 16.0f),  //bottom left
-		glm::vec2(((float)atlasID + 1.0f) / 16.0f, (row - 1.0f) / 16.0f),   //bottom right
-		glm::vec2(((float)atlasID + 1.0f) / 16.0f, row / 16.0f),  //top right
-		glm::vec2((float)atlasID / 16.0f, row / 16.0f),			//top left
+		glm::vec2(left, bottom),  //bottom left
+		glm::vec2(right, bottom),   //bottom right
+		glm::vec2(right, top),  //top right
+		glm::vec2(left, top),			//top left
 	};
 	return uvs;
 }

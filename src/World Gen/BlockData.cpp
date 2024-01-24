@@ -40,4 +40,8 @@ namespace CraftMine {
 		{4, BEDROCK},
 		{5, WATER}
 	};
+    std::vector<int> transparentBlocks{
+        0,
+        5
+    };
 }

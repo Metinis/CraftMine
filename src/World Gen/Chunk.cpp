@@ -7,15 +7,14 @@ Chunk::Chunk(glm::ivec2 Position, World& _world) : world(_world)
 	chunkPosition = Position;
 }
 
-Block Chunk::GetBlock(int x, int y, int z)
-{
-	Block tempBlock(glm::vec3(x + chunkPosition.x * SIZE, y, z + chunkPosition.y * SIZE), BlockIDMap[blockIDs[x + SIZE * (y + HEIGHT * z)]]);
-	return tempBlock;
-}
-
 unsigned char Chunk::GetBlockID(int x, int y, int z)
 {
 	return blockIDs[x + SIZE * (y + HEIGHT * z)];
+}
+Block Chunk::GetBlock(glm::vec3 pos, int id)
+{
+    Block tempBlock(pos, id);
+    return tempBlock;
 }
 
 void Chunk::SetBlock(int x, int y, int z, unsigned char id)
@@ -78,14 +77,18 @@ void Chunk::ClearVertexData()
     generatedBuffData = false;
 }
 
-bool Chunk::CheckFace(int x, int y, int z)
+bool Chunk::CheckFace(int x, int y, int z, bool isSolid)
 {
 	if (x >= 0 && x < SIZE && y <= HEIGHT && y >= 0 && z >= 0 && z < SIZE)
 	{
-		if (BlockIDMap[GetBlockID(x, y, z)] == CraftMine::BlockType::EMPTY)
+		if (Block::transparent(GetBlockID(x,y,z)) && isSolid)
 		{
 			return true;
 		}
+        else if(Block::transparent(GetBlockID(x,y,z)) && !isSolid && GetBlockID(x,y,z) == 0) //empty
+        {
+            return true;
+        }
 	}
 	return false;
 }
@@ -94,65 +97,77 @@ void Chunk::GenFaces()
 {
 	ClearVertexData();
 	int numFaces = 0;
+    int numTransparentFaces = 0;
 	for (int x = 0; x < SIZE; x++)
 	{
 		for (int z = 0; z < SIZE; z++)
 		{
 			for (int y = 0; y < HEIGHT; y++)
 			{
-				BlockType type = BlockIDMap[GetBlockID(x, y, z)];
 				glm::vec3 blockWorldPos = glm::vec3(x + chunkPosition.x * SIZE, y, z + chunkPosition.y * SIZE);
-				if (type != CraftMine::BlockType::EMPTY)	//Will need to be amended for transparent blocks
+				if (!Block::transparent(GetBlockID(x,y,z)))
 				{
-					//This section could use a cleanup? 
-
-					int leftXoffset = x - 1;
-
-					int rightXoffset = x + 1;
-
-					int frontZoffset = z + 1;
-
-					int backZoffset = z - 1;
-
-					int topYoffset = y + 1;
-
-					int bottomYoffset = y - 1;
-
-					if (CheckFace(leftXoffset, y, z))
-					{
-						IntegrateFace(Block::GetFace(CraftMine::Faces::LEFT, type, blockWorldPos));
-						numFaces++;
-					}
-					if (CheckFace(rightXoffset, y, z))
-					{
-						IntegrateFace(Block::GetFace(CraftMine::Faces::RIGHT, type, blockWorldPos));
-						numFaces++;
-					}
-					if (CheckFace(x, y, frontZoffset))
-					{
-						IntegrateFace(Block::GetFace(CraftMine::Faces::FRONT, type, blockWorldPos));
-						numFaces++;
-					}
-					if (CheckFace(x, y, backZoffset))
-					{
-						IntegrateFace(Block::GetFace(CraftMine::Faces::BACK, type, blockWorldPos));
-						numFaces++;
-					}
-					if (CheckFace(x, topYoffset, z))
-					{
-						IntegrateFace(Block::GetFace(CraftMine::Faces::TOP, type, blockWorldPos));
-						numFaces++;
-					}
-					if (CheckFace(x, bottomYoffset, z))
-					{
-						IntegrateFace(Block::GetFace(CraftMine::Faces::BOTTOM, type, blockWorldPos));
-						numFaces++;
-					}
+                    AddFaces(x,y,z, numFaces, true);
 				}
+                else if(GetBlockID(x,y,z) != 0) //if not empty
+                {
+                    //add to transparent mesh, integrate face only if bordering empty
+                    AddFaces(x,y,z, numTransparentFaces, false);
+                }
 			}
 		}
 	}
-	AddIndices(numFaces);
+	AddIndices(numFaces, chunkIndices, indexCount);
+    AddIndices(numTransparentFaces, transparentIndices, transparentIndexCount);
+}
+void Chunk::AddFaces(int x, int y, int z, int &numFaces, bool isSolid) //checks the isSolid faces and adds them
+{
+    BlockType type = BlockIDMap[GetBlockID(x, y, z)];
+
+    glm::vec3 blockWorldPos = glm::vec3(x + chunkPosition.x * SIZE, y, z + chunkPosition.y * SIZE);
+
+    int leftXoffset = x - 1;
+
+    int rightXoffset = x + 1;
+
+    int frontZoffset = z + 1;
+
+    int backZoffset = z - 1;
+
+    int topYoffset = y + 1;
+
+    int bottomYoffset = y - 1;
+
+    if (CheckFace(leftXoffset, y, z, isSolid))
+    {
+        IntegrateFace(Block::GetFace(CraftMine::Faces::LEFT, type, blockWorldPos), isSolid);
+        numFaces++;
+    }
+    if (CheckFace(rightXoffset, y, z, isSolid))
+    {
+        IntegrateFace(Block::GetFace(CraftMine::Faces::RIGHT, type, blockWorldPos), isSolid);
+        numFaces++;
+    }
+    if (CheckFace(x, y, frontZoffset, isSolid))
+    {
+        IntegrateFace(Block::GetFace(CraftMine::Faces::FRONT, type, blockWorldPos), isSolid);
+        numFaces++;
+    }
+    if (CheckFace(x, y, backZoffset, isSolid))
+    {
+        IntegrateFace(Block::GetFace(CraftMine::Faces::BACK, type, blockWorldPos), isSolid);
+        numFaces++;
+    }
+    if (CheckFace(x, topYoffset, z, isSolid))
+    {
+        IntegrateFace(Block::GetFace(CraftMine::Faces::TOP, type, blockWorldPos), isSolid);
+        numFaces++;
+    }
+    if (CheckFace(x, bottomYoffset, z, isSolid))
+    {
+        IntegrateFace(Block::GetFace(CraftMine::Faces::BOTTOM, type, blockWorldPos), isSolid);
+        numFaces++;
+    }
 }
 
 void Chunk::UpdateSide(CraftMine::Faces face)
@@ -170,17 +185,16 @@ void Chunk::UpdateSide(CraftMine::Faces face)
 				{
 					for (int z = 0; z < SIZE; z++)
 					{
-						
-						BlockType type = BlockIDMap[GetBlockID(0, y, z)];
-						if (type != CraftMine::EMPTY && BlockIDMap[tempChunk.GetBlockID(SIZE - 1, y, z)] == CraftMine::EMPTY)
+						//BlockType type = BlockIDMap[GetBlockID(0, y, z)];
+						if (!Block::transparent(GetBlockID(0, y, z)) && Block::transparent(tempChunk.GetBlockID(SIZE - 1, y, z)))
 						{
 							glm::vec3 blockWorldPos = glm::vec3(0 + chunkPosition.x * SIZE, y, z + chunkPosition.y * SIZE);
-							IntegrateFace(Block::GetFace(CraftMine::Faces::LEFT, type, blockWorldPos));
+							IntegrateFace(Block::GetFace(CraftMine::Faces::LEFT, BlockIDMap[GetBlockID(0, y, z)], blockWorldPos), true);
 							numFaces++;
 						}
 					}
 				}
-				AddIndices(numFaces);
+				AddIndices(numFaces, chunkIndices, indexCount);
 			}
 		}
 		break;
@@ -196,16 +210,16 @@ void Chunk::UpdateSide(CraftMine::Faces face)
 				{
 					for (int z = 0; z < SIZE; z++)
 					{
-						BlockType type = BlockIDMap[GetBlockID(SIZE - 1, y, z)];
-						if (type != CraftMine::EMPTY && BlockIDMap[tempChunk.GetBlockID(0, y, z)] == CraftMine::EMPTY)
+						//BlockType type = BlockIDMap[GetBlockID(SIZE - 1, y, z)];
+                        if (!Block::transparent(GetBlockID(SIZE-1, y, z)) && Block::transparent(tempChunk.GetBlockID(0, y, z)))
 						{
 							glm::vec3 blockWorldPos = glm::vec3((SIZE - 1) + chunkPosition.x * SIZE, y, z + chunkPosition.y * SIZE);
-							IntegrateFace(Block::GetFace(CraftMine::Faces::RIGHT, type, blockWorldPos));
+							IntegrateFace(Block::GetFace(CraftMine::Faces::RIGHT, BlockIDMap[GetBlockID(SIZE - 1, y, z)], blockWorldPos), true);
 							numFaces++;
 						}
 					}
 				}
-				AddIndices(numFaces);
+				AddIndices(numFaces, chunkIndices, indexCount);
 			}
 		}
 		break;
@@ -221,16 +235,16 @@ void Chunk::UpdateSide(CraftMine::Faces face)
 				{
 					for (int y = 0; y < HEIGHT; y++)
 					{
-						BlockType type = BlockIDMap[GetBlockID(x, y, SIZE - 1)];
-						if (type != CraftMine::EMPTY && BlockIDMap[tempChunk.GetBlockID(x, y, 0)] == CraftMine::EMPTY)
+						//BlockType type = BlockIDMap[GetBlockID(x, y, SIZE - 1)];
+                        if (!Block::transparent(GetBlockID(x, y, SIZE - 1)) && Block::transparent(tempChunk.GetBlockID(x, y, 0)))
 						{
 							glm::vec3 blockWorldPos = glm::vec3(x + chunkPosition.x * SIZE, y, (SIZE-1) + chunkPosition.y * SIZE);
-							IntegrateFace(Block::GetFace(CraftMine::Faces::FRONT, type, blockWorldPos));
+							IntegrateFace(Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[GetBlockID(x, y, SIZE - 1)], blockWorldPos), true);
 							numFaces++;
 						}
 					}
 				}
-				AddIndices(numFaces);
+				AddIndices(numFaces, chunkIndices, indexCount);
 			}
 		}
 		break;
@@ -245,18 +259,17 @@ void Chunk::UpdateSide(CraftMine::Faces face)
 				{
 					for (int y = 0; y < HEIGHT; y++)
 					{
-						int numFaces = 0;
-						BlockType type = BlockIDMap[GetBlockID(x, y, 0)];
-						if (type != CraftMine::EMPTY && BlockIDMap[tempChunk.GetBlockID(x, y, SIZE-1)] == CraftMine::EMPTY)
+						//BlockType type = BlockIDMap[GetBlockID(x, y, 0)];
+                        if (!Block::transparent(GetBlockID(x, y, 0)) && Block::transparent(tempChunk.GetBlockID(x, y, SIZE - 1)))
 						{
 							glm::vec3 blockWorldPos = glm::vec3(x + chunkPosition.x * SIZE, y, (0) + chunkPosition.y * SIZE);
-							IntegrateFace(Block::GetFace(CraftMine::Faces::BACK, type, blockWorldPos));
+							IntegrateFace(Block::GetFace(CraftMine::Faces::BACK, BlockIDMap[GetBlockID(x, y, 0)], blockWorldPos), true);
 							numFaces++;
-							AddIndices(numFaces);
+							//AddIndices(numFaces, chunkIndices);
 						}
 					}
 				}
-				AddIndices(numFaces);
+				AddIndices(numFaces, chunkIndices, indexCount);
 			}
 
 		}
@@ -331,84 +344,58 @@ void Chunk::GenChunk(float* heightMap)	//might need to be amended to include mor
 		}
 	}
 }
-
-void Chunk::IntegrateFace(FaceData faceData)
+void Chunk::IntegrateFace(FaceData faceData, bool solid)
 {
-	//FaceData faceData = block.GetFace(face);
-	chunkVerts.insert(chunkVerts.end(), faceData.vertices.begin(), faceData.vertices.end());
-	chunkUVs.insert(chunkUVs.end(), faceData.texCoords.begin(), faceData.texCoords.end());
+    //FaceData faceData = block.GetFace(face);
+    if(solid) {
+        chunkVerts.insert(chunkVerts.end(), faceData.vertices.begin(), faceData.vertices.end());
+        chunkUVs.insert(chunkUVs.end(), faceData.texCoords.begin(), faceData.texCoords.end());
+    }
+    else
+    {
+        transparentVerts.insert(transparentVerts.end(), faceData.vertices.begin(), faceData.vertices.end());
+        transparentUVs.insert(transparentUVs.end(), faceData.texCoords.begin(), faceData.texCoords.end());
+    }
 }
 
-void Chunk::AddIndices(int amtFaces)
+void Chunk::AddIndices(int amtFaces, std::vector<GLuint> &indices, GLsizei &_indexCount)
 {
 	for (int i = 0; i < amtFaces; i++)
 	{
-		chunkIndices.push_back(0 + indexCount);
-		chunkIndices.push_back(1 + indexCount);
-		chunkIndices.push_back(2 + indexCount);
-		chunkIndices.push_back(2 + indexCount);
-		chunkIndices.push_back(3 + indexCount);
-		chunkIndices.push_back(0 + indexCount);
+		indices.push_back(0 + _indexCount);
+        indices.push_back(1 + _indexCount);
+        indices.push_back(2 + _indexCount);
+        indices.push_back(2 + _indexCount);
+        indices.push_back(3 + _indexCount);
+        indices.push_back(0 + _indexCount);
 
-		indexCount += 4;	//uses element index, since each face only has 4 indices, we increment this everytime any block face is added
-	}
-}
-
-void Chunk::ReloadBufferData()
-{
-	//this part mainly used to update a side if there was a chunk loaded nearby, hence not deleting and recalculating buffers
-	if (chunkVertexVBO != nullptr && chunkUVVBO != nullptr && chunkIBO != nullptr && chunkVAO != nullptr)
-	{
-		chunkVAO->Bind();
-		chunkVertexVBO->SetNewData(chunkVerts);
-		chunkUVVBO->SetNewData(chunkUVs);
-		chunkIBO->SetNewData(chunkIndices);
-		chunkVertexVBO->Bind();
-		chunkVAO->LinkToVAO(0, 3, *chunkVertexVBO);
-		chunkUVVBO->Bind();
-		chunkVAO->LinkToVAO(1, 2, *chunkUVVBO);
-		chunkVertexVBO->Unbind();
-		chunkUVVBO->Unbind();
-		chunkVAO->Unbind();
-	}
-	else
-	{
-		LoadBufferData();
+        _indexCount += 4;	//uses element index, since each face only has 4 indices, we increment this everytime any block face is added
 	}
 }
 
 void Chunk::LoadBufferData()
 {
-	// Reset pointers to nullptr
-	Delete();
+    if(mesh != nullptr)
+    {
+        delete mesh;
+    }
+    mesh = new Mesh();
+    mesh->setData(chunkVerts, chunkUVs, chunkIndices);
+	mesh->loadData();
 
-	// Create new buffers and load data
-	chunkVAO = new VAO();
-	chunkVAO->Bind();
-
-	chunkVertexVBO = new VBO(chunkVerts);
-	chunkVertexVBO->Bind();
-	chunkVAO->LinkToVAO(0, 3, *chunkVertexVBO);
-	chunkVertexVBO->Unbind();
-
-	chunkUVVBO = new VBO(chunkUVs);
-	chunkUVVBO->Bind();
-	chunkVAO->LinkToVAO(1, 2, *chunkUVVBO);
-	chunkUVVBO->Unbind();
-
-	chunkVAO->Unbind();
-
-	chunkIBO = new IBO(chunkIndices);
-	//chunkIBO->Bind();
+    if(transparentMesh != nullptr)
+    {
+        delete transparentMesh;
+    }
+    transparentMesh = new Mesh();
+    transparentMesh->setData(transparentVerts, transparentUVs, transparentIndices);
+    transparentMesh->loadData();
 }
 
 void Chunk::RenderChunk()
 {
-	chunkVAO->Bind();
-	chunkIBO->Bind();
-	glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(chunkIndices.size()), GL_UNSIGNED_INT, 0);
-	chunkVAO->Unbind();
-	chunkIBO->Unbind();
+	mesh->render();
+    transparentMesh->render();
 }
 
 void Chunk::LoadChunkData() {
@@ -418,30 +405,12 @@ void Chunk::LoadChunkData() {
 
 void Chunk::Delete()
 {
-	if (chunkVAO != nullptr) {
-        chunkVAO->Delete();
-		delete chunkVAO;
-		chunkVAO = nullptr;
-	}
+    ClearVertexData();
+    delete mesh;
+    mesh = nullptr;
 
-	if (chunkVertexVBO != nullptr) {
-        chunkVertexVBO->Delete();
-		delete chunkVertexVBO;
-		chunkVertexVBO = nullptr;
-	}
-
-	if (chunkUVVBO != nullptr) {
-        chunkUVVBO->Delete();
-		delete chunkUVVBO;
-		chunkUVVBO = nullptr;
-	}
-
-	if (chunkIBO != nullptr) {
-        chunkIBO->Delete();
-		delete chunkIBO;
-		chunkIBO = nullptr;
-	}
-    //ClearVertexData();
+    delete transparentMesh;
+    transparentMesh = nullptr;
 }
 
 Chunk::~Chunk()

@@ -5,7 +5,7 @@
 World::World(Camera& _camera) : camera(_camera)
 {
     shader = new Shader("../resources/shader/shader.vs", "../resources/shader/shader.fs");
-    texture = new Texture("../resources/texture/atlas.png");
+    texture = new Texture("../resources/texture/terrain.png");
 	model = glm::mat4(1.0f);
 	view = glm::mat4(1.0f);
 	proj = glm::perspective(glm::radians(65.0f), 16.0f / 9.0f, 0.1f, 10000.0f);
@@ -31,9 +31,7 @@ World::World(Camera& _camera) : camera(_camera)
 			chunksToLoadData.pop_back();
 			mutexChunksToLoadData.unlock();
 
-                chunk->LoadChunkData();
-
-
+            chunk->LoadChunkData();
 
 			mutexChunksToLoadData.lock();
 			loadedChunks.push(std::ref(chunk));
@@ -67,6 +65,7 @@ World::World(Camera& _camera) : camera(_camera)
 
 void World::UpdateViewDistance(glm::ivec2 cameraChunkPos)
 {
+    //update comparator to current chunkPos
     playerChunkPos = cameraChunkPos;
     CompareChunks compareChunks;
     compareChunks._playerChunkPos = cameraChunkPos;
@@ -177,7 +176,7 @@ void World::GenerateChunkBuffers(std::vector<Chunk*>& addedChunks)
 	{
 		if (!chunk->inThread)
 		{
-			chunk->ReloadBufferData();
+			chunk->LoadBufferData();
 			chunk->generatedBuffData = true;
 			activeChunks.push_back(std::ref(chunk));
 		}

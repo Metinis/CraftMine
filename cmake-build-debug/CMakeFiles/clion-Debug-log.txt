@@ -1,4 +1,4 @@
-/snap/clion/261/bin/cmake/linux/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/snap/clion/261/bin/ninja/linux/x64/ninja -DCMAKE_BUILD_PARALLEL_LEVEL=4 -G Ninja -S /home/vodkasas/CraftMine -B /home/vodkasas/CraftMine/cmake-build-debug
+/snap/clion/263/bin/cmake/linux/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/snap/clion/263/bin/ninja/linux/x64/ninja -DCMAKE_BUILD_PARALLEL_LEVEL=4 -G Ninja -S /home/vodkasas/CraftMine -B /home/vodkasas/CraftMine/cmake-build-debug
 -- The C compiler identification is GNU 11.4.0
 -- The CXX compiler identification is GNU 11.4.0
 -- Detecting C compiler ABI info
@@ -27,7 +27,9 @@
 -- Looking for remove - found
 -- Looking for shmat
 -- Looking for shmat - found
--- Configuring done (0.8s)
+-- Looking for IceConnectionNumber in ICE
+-- Looking for IceConnectionNumber in ICE - found
+-- Configuring done (1.3s)
 -- Generating done (0.0s)
 CMake Warning:
   Manually-specified variables were not used by the project:

@@ -23,7 +23,7 @@ private:
 	glm::mat4 view{};
 	glm::mat4 proj{};
 
-    glm::vec2 playerChunkPos;
+    glm::vec2 playerChunkPos{};
 
 	bool threadFinished = true;
 
@@ -43,24 +43,23 @@ private:
 			return distance1 > distance2;
 		}
 	};
-	void GenerateChunkData(Chunk* chunk);
 	void GenerateChunkBuffers(std::vector<Chunk*>& addedChunks);
 	void BindPrograms();
 
 public:
-	static const int SIZE = 100;
-	int viewDistance = 10;
+	static const int SIZE = 1000;
+	int viewDistance = 12;
 	std::thread chunkThread;
 	std::thread worldGenThread;
 
-	std::vector<Chunk*> chunksToGenerate;  //used for world gen for chunks that havent been generated yet -> generates blocks
+	std::vector<Chunk*> chunksToGenerate;  //used for world gen for chunks that haven't been generated yet -> generates blocks
 	std::vector<Chunk*> chunksToLoadData; //used to load faces
 	std::queue<Chunk*> loadedChunks;	 //sent to main thread to be assigned buffers
 	std::vector<Chunk*> chunksToDelete;
 	std::vector<Chunk*> activeChunks;	 //chunks that are currently being rendered, any loaded chunks need to be sent from thread to here
     Chunk* chunks[SIZE*SIZE] = {nullptr};
 
-	World(Camera& camera);
+	explicit World(Camera& camera);
 
     [[noreturn]] void GenerateChunkThread();
 

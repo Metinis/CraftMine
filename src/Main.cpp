@@ -63,7 +63,7 @@ int main()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
 
-	camera.Position = glm::vec3(World::SIZE*Chunk::SIZE / 2, World::SIZE, World::SIZE*Chunk::SIZE / 2);
+	camera.Position = glm::vec3(World::SIZE*Chunk::SIZE / 2, Chunk::HEIGHT, World::SIZE*Chunk::SIZE / 2);
 	world = new World(camera);
 	
 

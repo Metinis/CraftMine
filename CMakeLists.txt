@@ -475,7 +475,9 @@ add_executable(CraftMine
         "src/World Gen/World.h"
         src/Camera.cpp
         src/Camera.h
-        src/Main.cpp)
+        src/Main.cpp
+        src/Graphics/Mesh.cpp
+        src/Graphics/Mesh.h)
 
 target_link_libraries(CraftMine PRIVATE glfw)
 target_compile_definitions(CraftMine PRIVATE SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")

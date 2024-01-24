@@ -12,6 +12,7 @@
 #include "SimplexNoise.h"
 //#include "World.h"
 #include <algorithm>
+#include "Mesh.h"
 
 class World;
 
@@ -21,20 +22,24 @@ private:
 	std::vector<glm::vec3> chunkVerts;
 	std::vector<glm::vec2> chunkUVs;
 	std::vector<GLuint> chunkIndices;
+
+    std::vector<glm::vec3> transparentVerts;
+    std::vector<glm::vec2> transparentUVs;
+    std::vector<GLuint> transparentIndices;
 	
 	GLsizei indexCount = 0;
+    GLsizei transparentIndexCount = 0;
 
-	VAO *chunkVAO = nullptr;
-	VBO *chunkVertexVBO = nullptr;
-	VBO *chunkUVVBO = nullptr;
-	IBO *chunkIBO = nullptr;
+    Mesh* mesh = nullptr;
+    Mesh* transparentMesh = nullptr;
 
 	World& world;
 
-	bool CheckFace(int x, int y, int z);
+	bool CheckFace(int x, int y, int z, bool isSolid);
+    void AddFaces(int x, int y, int z, int &numFaces, bool isSolid);
 	void GenChunk(float* heightMap);
-	void IntegrateFace(FaceData faceData);
-	void AddIndices(int amtFaces);
+    void IntegrateFace(FaceData faceData, bool solid);
+    void AddIndices(int amtFaces, std::vector<GLuint> &indices, GLsizei &_indexCount);
 	void UpdateNeighbours();
 	void GenFaces();
 	
@@ -47,13 +52,14 @@ public:
 	bool generatedBuffData = false;
 	bool inThread = false;
 
+
 	unsigned char blockIDs[SIZE * HEIGHT * SIZE];
 	glm::ivec2 chunkPosition;
 
 	Chunk(glm::ivec2 Position, World& world);
 	~Chunk();
-	Block GetBlock(int x, int y, int z);
 	unsigned char GetBlockID(int x, int y, int z);
+    Block GetBlock(glm::vec3 pos, int id);
 	void SetBlock(int x, int y, int z, unsigned char id);
 	void GenBlocks();
 	void UpdateSide(CraftMine::Faces face);
@@ -61,7 +67,6 @@ public:
 	//OpenGL stuff
 	void LoadChunkData();
 	void LoadBufferData();
-	void ReloadBufferData();
 	void RenderChunk();
 	void Delete();
 };

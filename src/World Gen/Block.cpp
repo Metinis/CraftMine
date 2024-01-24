@@ -1,11 +1,11 @@
 #include "Block.h"
 #include "TextureData.h"
 
-Block::Block(glm::vec3 position, CraftMine::BlockType type)
+Block::Block(glm::vec3 position, int id)
 {
 	Position = position;
 
-	blockType = type;
+	blockType = BlockIDMap[id];
 
 	if (blockType != CraftMine::EMPTY)
 	{
@@ -51,4 +51,12 @@ std::vector<glm::vec3> Block::AddTransformedVertices(std::vector<glm::vec3> vert
 		newVerts.push_back(vert + Position);
 	}
 	return newVerts;
+}
+bool Block::transparent(int id)
+{
+    if(std::find(transparentBlocks.begin(), transparentBlocks.end(), id) == transparentBlocks.end())
+    {
+        return false;
+    }
+    return true;
 }

@@ -3,6 +3,7 @@
 #include <glm/vec2.hpp>
 #include <map>
 #include "BlockData.h"
+#include <cmath>
 
 class TextureData
 {
