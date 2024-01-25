@@ -74,6 +74,12 @@ void Chunk::ClearVertexData()
 	chunkVerts.clear();
 	chunkUVs.clear();
 	chunkIndices.clear();
+
+    transparentVerts.clear();
+    transparentUVs.clear();
+    transparentIndices.clear();
+    transparentIndexCount = 0;
+
     generatedBuffData = false;
 }
 
@@ -379,7 +385,7 @@ void Chunk::LoadBufferData()
     {
         delete mesh;
     }
-    mesh = new Mesh();
+    mesh = new Mesh(world.shader);
     mesh->setData(chunkVerts, chunkUVs, chunkIndices);
 	mesh->loadData();
 
@@ -387,14 +393,17 @@ void Chunk::LoadBufferData()
     {
         delete transparentMesh;
     }
-    transparentMesh = new Mesh();
+    transparentMesh = new Mesh(world.transparentShader);
     transparentMesh->setData(transparentVerts, transparentUVs, transparentIndices);
     transparentMesh->loadData();
 }
 
 void Chunk::RenderChunk()
 {
-	mesh->render();
+
+    //TODO fix rendering of transparent mesh/shader
+    world.shader->use();
+    mesh->render();
     transparentMesh->render();
 }
 

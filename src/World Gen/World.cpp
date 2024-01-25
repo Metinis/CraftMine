@@ -5,6 +5,7 @@
 World::World(Camera& _camera) : camera(_camera)
 {
     shader = new Shader("../resources/shader/shader.vs", "../resources/shader/shader.fs");
+    transparentShader = new Shader("../resources/shader/transparent.vs", "../resources/shader/transparent.fs");
     texture = new Texture("../resources/texture/terrain.png");
 	model = glm::mat4(1.0f);
 	view = glm::mat4(1.0f);
@@ -190,10 +191,15 @@ Chunk* World::GetChunk(int x, int y)
 }
 void World::BindPrograms()
 {
-	shader->use();
-	shader->setMat4("model", model);
-	shader->setMat4("projection", proj);
-	texture->Bind();
+    shader->use();
+    shader->setMat4("model", model);
+    shader->setMat4("projection", proj);
+    texture->Bind();
+
+    transparentShader->use();
+    transparentShader->setMat4("model", model);
+    transparentShader->setMat4("projection", proj);
+    texture->Bind();
 }
 void World::RenderWorld(Camera _camera)
 {
@@ -214,6 +220,7 @@ void World::RenderWorld(Camera _camera)
 
 	view = _camera.GetViewMatrix();
 	shader->setMat4("view", view);
+    transparentShader->setMat4("view", view);
 
 	for (Chunk* chunk : activeChunks)
 	{

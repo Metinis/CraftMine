@@ -35,7 +35,7 @@ const std::map<CraftMine::BlockType, std::map<CraftMine::Faces, int>> TextureDat
 			{CraftMine::Faces::BOTTOM, 17}},
 		},
 		{CraftMine::BlockType::WATER,
-			{{CraftMine::Faces::BACK, 205},
+			{{CraftMine::Faces::BACK, 205},//205
 			{CraftMine::Faces::FRONT, 205},
 			{CraftMine::Faces::LEFT, 205},
 			{CraftMine::Faces::RIGHT, 205},

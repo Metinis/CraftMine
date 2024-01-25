@@ -5,9 +5,12 @@
 #include "Texture.h"
 #include <glm/vec3.hpp>
 #include <utility>
+#include "Shader.h"
 
 class Mesh {
 private:
+    Shader* shader;
+
     VAO *meshVAO = nullptr;
     VBO *meshVBO = nullptr;
     VBO *meshUVVBO = nullptr;
@@ -21,6 +24,8 @@ public:
     void clearData();
     void render();
     void loadData();
+
+    Mesh(Shader *_shader);
 
     ~Mesh()
     {

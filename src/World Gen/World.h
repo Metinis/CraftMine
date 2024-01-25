@@ -16,7 +16,7 @@ class World
 {
 private:
 	Camera& camera;
-	Shader* shader;
+
 	Texture* texture;
 
 	glm::mat4 model{};
@@ -47,6 +47,8 @@ private:
 	void BindPrograms();
 
 public:
+    Shader* shader;
+    Shader* transparentShader;
 	static const int SIZE = 1000;
 	int viewDistance = 12;
 	std::thread chunkThread;

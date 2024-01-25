@@ -1,5 +1,8 @@
 #include "Mesh.h"
-
+Mesh::Mesh(Shader *_shader)
+{
+    shader = _shader;
+}
 void Mesh::setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec2> _UVs, std::vector<GLuint> _indices)
 {
     vertices = _vertices;
@@ -34,6 +37,7 @@ void Mesh::clearData()
 }
 void Mesh::render()
 {
+    //shader->use();
     meshVAO->Bind();
     meshIBO->Bind();
     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
