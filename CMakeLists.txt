@@ -21,7 +21,7 @@ include_directories(include/glm/gtc)
 include_directories(include/glm/gtx)
 include_directories(include/glm/simd)
 include_directories(include/KHR)
-include_directories(include/SimplexNoise)
+include_directories(include/FastNoise)
 include_directories(include/stb)
 include_directories(src)
 include_directories(src/Graphics)
@@ -450,9 +450,9 @@ add_executable(CraftMine
         include/glm/vec4.hpp
         include/glm/vector_relational.hpp
         include/KHR/khrplatform.h
-        include/SimplexNoise/SimplexNoise.cpp
-        include/SimplexNoise/SimplexNoise.h
         include/stb/stb_image.h
+        include/FastNoise/FastNoise.cpp
+        include/FastNoise/FastNoise.h
         src/Graphics/IBO.cpp
         src/Graphics/IBO.h
         src/Graphics/Shader.cpp
