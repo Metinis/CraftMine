@@ -15,7 +15,7 @@ class Chunk;
 class World
 {
 private:
-	Camera& camera;
+
 
 	Texture* texture;
 
@@ -47,6 +47,7 @@ private:
 	void BindPrograms();
 
 public:
+    Camera& camera;
     Shader* shader;
     Shader* transparentShader;
 	static const int SIZE = 1000;

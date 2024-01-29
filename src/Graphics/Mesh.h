@@ -9,7 +9,7 @@
 
 class Mesh {
 private:
-    Shader* shader;
+    Shader& shader;
 
     VAO *meshVAO = nullptr;
     VBO *meshVBO = nullptr;
@@ -25,7 +25,7 @@ public:
     void render();
     void loadData();
 
-    Mesh(Shader *_shader);
+    Mesh(Shader& _shader);
 
     ~Mesh()
     {

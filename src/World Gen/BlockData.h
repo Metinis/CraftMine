@@ -21,7 +21,8 @@ namespace CraftMine {	//using namespace since it conflicts with some cameraMovem
 		DIRT,
 		STONE,
 		BEDROCK,
-		WATER
+		WATER,
+        SAND
 	};
     extern std::vector<int> transparentBlocks;
 	extern std::map<unsigned char, BlockType> BlockIDMap;

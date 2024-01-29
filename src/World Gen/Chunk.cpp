@@ -37,15 +37,20 @@ void Chunk::GenBlocks()
 		float amplitude = 1.0f;
 		float frequency = 0.01f;
 		int columnHeight = HEIGHT;
-	
+	    int seaLevel = HEIGHT / 2;
+
 		columnHeight = (int)((heightMap[x + SIZE * z] * 20) * frequency * amplitude * HEIGHT / 2) + (HEIGHT / 2);
 
 		unsigned char id = 0;
 
-		if (y >= columnHeight && y+2 < (HEIGHT / 2)){ //last argument is the sea level
+		if (y >= columnHeight && y+2 < seaLevel){ //last argument is the sea level
 		
 			id = 5;
 		}
+        else if( y == columnHeight - 1 && y < seaLevel)
+        {
+            id = 6;
+        }
 		else if (y == columnHeight - 1)
 		{
 			id = 1;						//Refer to id map, grass layer
@@ -385,7 +390,7 @@ void Chunk::LoadBufferData()
     {
         delete mesh;
     }
-    mesh = new Mesh(world.shader);
+    mesh = new Mesh(*world.shader);
     mesh->setData(chunkVerts, chunkUVs, chunkIndices);
 	mesh->loadData();
 
@@ -393,16 +398,13 @@ void Chunk::LoadBufferData()
     {
         delete transparentMesh;
     }
-    transparentMesh = new Mesh(world.transparentShader);
+    transparentMesh = new Mesh(*world.transparentShader);
     transparentMesh->setData(transparentVerts, transparentUVs, transparentIndices);
     transparentMesh->loadData();
 }
 
 void Chunk::RenderChunk()
 {
-
-    //TODO fix rendering of transparent mesh/shader
-    world.shader->use();
     mesh->render();
     transparentMesh->render();
 }

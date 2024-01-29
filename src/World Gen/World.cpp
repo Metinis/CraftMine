@@ -219,13 +219,21 @@ void World::RenderWorld(Camera _camera)
 	}
 
 	view = _camera.GetViewMatrix();
+    shader->use();
 	shader->setMat4("view", view);
+    transparentShader->use();
     transparentShader->setMat4("view", view);
+
+    //sort active chunks by farthest from the player in front -> for transparency
+    CompareChunks compareChunks;
+    compareChunks._playerChunkPos = playerChunkPos;
+    std::sort(activeChunks.begin(), activeChunks.end(), compareChunks);
 
 	for (Chunk* chunk : activeChunks)
 	{
-		if(chunk->generatedBuffData)
+		if(chunk->generatedBuffData && !chunk->inThread)
 		chunk->RenderChunk();
 	}
+
 }
 
