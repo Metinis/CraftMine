@@ -405,8 +405,10 @@ void Chunk::LoadBufferData()
 
 void Chunk::RenderChunk()
 {
-    mesh->render();
-    transparentMesh->render();
+    if(mesh != nullptr && transparentMesh != nullptr) {
+        mesh->render();
+        transparentMesh->render();
+    }
 }
 
 void Chunk::LoadChunkData() {

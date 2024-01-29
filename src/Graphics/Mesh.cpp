@@ -38,7 +38,7 @@ void Mesh::clearData()
 }
 void Mesh::render()
 {
-    if(meshVAO != nullptr && meshIBO != nullptr && indices.size() > 0 && &shader != nullptr) {
+    if(meshVAO != nullptr && meshIBO != nullptr && indices.size() > 0 && &shader != nullptr && meshUVVBO != nullptr && meshVBO != nullptr) {
         shader.use();
         meshVAO->Bind();
         meshIBO->Bind();
