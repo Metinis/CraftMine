@@ -1,6 +1,6 @@
 #include "BlockData.h"
 
-namespace CraftMine { //TODO need to add water data, bordering air block on top, offset y by a small amount, otherwise render like block
+namespace CraftMine {
 	const std::map<Faces, std::vector<glm::vec3>> FaceDataRaw::rawVertexData{
 			{FRONT, {glm::vec3(-0.5f, 0.5f, 0.5f), // topleft vert
 					 glm::vec3(0.5f, 0.5f, 0.5f),  // topright vert
@@ -44,5 +44,13 @@ namespace CraftMine { //TODO need to add water data, bordering air block on top,
     std::vector<int> transparentBlocks{
         0,
         5
+    };
+    std::map<Faces, float> brightnessMap{
+            {LEFT, 0.80f},
+            {RIGHT, 0.80f},
+            {TOP, 1.0f},
+            {BOTTOM, 1.0f},
+            {FRONT, 0.86f},
+            {BACK, 0.86f}
     };
 }

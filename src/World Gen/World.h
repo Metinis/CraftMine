@@ -27,6 +27,9 @@ private:
 
 	bool threadFinished = true;
 
+    int lastTexture = 1;
+    int lastTime = 0;
+
 	std::mutex mutexChunksToGenerate;
 	std::mutex mutexChunksToLoadData;
 	std::mutex mutexChunksToDelete;
@@ -45,6 +48,7 @@ private:
 	};
 	void GenerateChunkBuffers(std::vector<Chunk*>& addedChunks);
 	void BindPrograms();
+    void ChangeGlobalTexture();
 
 public:
     Camera& camera;

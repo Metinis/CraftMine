@@ -6,7 +6,7 @@ World::World(Camera& _camera) : camera(_camera)
 {
     shader = new Shader("../resources/shader/shader.vs", "../resources/shader/shader.fs");
     transparentShader = new Shader("../resources/shader/transparent.vs", "../resources/shader/transparent.fs");
-    texture = new Texture("../resources/texture/terrain.png");
+    texture = new Texture("../resources/texture/terrain1.png");
 	model = glm::mat4(1.0f);
 	view = glm::mat4(1.0f);
 	proj = glm::perspective(glm::radians(65.0f), 16.0f / 9.0f, 0.1f, 10000.0f);
@@ -201,8 +201,29 @@ void World::BindPrograms()
     transparentShader->setMat4("projection", proj);
     texture->Bind();
 }
+void World::ChangeGlobalTexture()
+{
+    if(lastTexture < 5) {
+        lastTexture++;
+    }
+    else {
+        lastTexture = 1;
+    }
+    std::stringstream path;
+    path << "../resources/texture/terrain" << lastTexture << ".png";
+    std::string texturePath = path.str();
+    texture->setTexture(texturePath.c_str());
+}
 void World::RenderWorld(Camera _camera)
 {
+    //changes global texture every second that passes
+    int currentTime = (int)glfwGetTime();
+    if(currentTime != lastTime)
+    {
+        ChangeGlobalTexture();
+        lastTime = currentTime;
+    }
+
 	if (!loadedChunks.empty())
 	{
 		std::vector<Chunk*> addedChunks;

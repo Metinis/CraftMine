@@ -28,7 +28,7 @@ public:
 	FaceData GetFace(Faces face);
 
 	static FaceData GetFace(Faces face, BlockType type, glm::vec3 position);
-	static std::vector<glm::vec3> AddTransformedVertices(std::vector<glm::vec3> vertices, glm::vec3 Position);
+	static std::vector<glm::vec3> AddTransformedVertices(std::vector<glm::vec3> vertices, glm::vec3 Position, BlockType type);
     static bool transparent(int id);
 
 };

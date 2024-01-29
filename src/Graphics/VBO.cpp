@@ -14,6 +14,12 @@ VBO::VBO(const std::vector<glm::vec2>& data)
 	glBindBuffer(GL_ARRAY_BUFFER, ID);
 	glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(glm::vec2), data.data(), GL_STATIC_DRAW);
 }
+VBO::VBO(const std::vector<float>& data)
+{
+    glGenBuffers(1, &ID);
+    glBindBuffer(GL_ARRAY_BUFFER, ID);
+    glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), data.data(), GL_STATIC_DRAW);
+}
 void VBO::SetNewData(const std::vector<glm::vec3>& data)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, ID);

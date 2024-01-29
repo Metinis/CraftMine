@@ -34,12 +34,9 @@ void Chunk::GenBlocks()
 		int y = i / (SIZE * SIZE);
 		int z = (i / SIZE) % SIZE;
 
-		float amplitude = 1.0f;
-		float frequency = 0.01f;
-		int columnHeight = HEIGHT;
 	    int seaLevel = HEIGHT / 2;
 
-		columnHeight = (int)((heightMap[x + SIZE * z] * 20) * frequency * amplitude * HEIGHT / 2) + (HEIGHT / 2);
+        int columnHeight = (int)heightMap[x + SIZE * z] + (seaLevel -20); //add sealevel so noise generates above it
 
 		unsigned char id = 0;
 
@@ -47,9 +44,9 @@ void Chunk::GenBlocks()
 		
 			id = 5;
 		}
-        else if( y == columnHeight - 1 && y < seaLevel)
+        else if( y <= columnHeight - 1 && y >= columnHeight - 3 && y < seaLevel - 2)
         {
-            id = 6;
+            id = 6; //sand
         }
 		else if (y == columnHeight - 1)
 		{
@@ -345,13 +342,25 @@ void Chunk::UpdateNeighbours()
 
 void Chunk::GenChunk(float* heightMap)	//might need to be amended to include more chunks
 {
+    FastNoise noise;
+
+    // Set noise parameters
+    noise.SetNoiseType(FastNoise::SimplexFractal);
+    noise.SetFractalType(FastNoise::FBM);
+    noise.SetFractalOctaves(4);
+    noise.SetSeed(123);
+    noise.SetFractalLacunarity(2.0f);
+    noise.SetFrequency(0.0075f);
+    float scaleFactor = 0.25f;
+
 	for (int x = 0; x < SIZE; x++)
 	{
 		for (int z = 0; z < SIZE; z++)
 		{
-			float _x = (float)x + (SIZE * (float)chunkPosition.x);
-			float _z = (float)z + (SIZE * (float)chunkPosition.y);
-			heightMap[x + SIZE * z] = SimplexNoise::noise(_x / 100.0f, _z / 100.0f);	//Don't play with his value, works good as it is
+
+            float noiseValue = noise.GetNoise((float)x + (SIZE * (float)chunkPosition.x), (float)z + (SIZE * (float)chunkPosition.y));
+            int terrainHeight = static_cast<int>((noiseValue + 1.0) * 100.0f * scaleFactor); //100.0f represents the highest point
+            heightMap[x + SIZE * z] = terrainHeight;
 		}
 	}
 }
@@ -361,11 +370,21 @@ void Chunk::IntegrateFace(FaceData faceData, bool solid)
     if(solid) {
         chunkVerts.insert(chunkVerts.end(), faceData.vertices.begin(), faceData.vertices.end());
         chunkUVs.insert(chunkUVs.end(), faceData.texCoords.begin(), faceData.texCoords.end());
+        //each vert has 4 points so need to repeat 4 times, can be adjusted to make nicer lighting later
+        for(int i = 0; i < 4; i++)
+        {
+            chunkBrightnessFloats.push_back(faceData.brightness);
+        }
     }
     else
     {
         transparentVerts.insert(transparentVerts.end(), faceData.vertices.begin(), faceData.vertices.end());
         transparentUVs.insert(transparentUVs.end(), faceData.texCoords.begin(), faceData.texCoords.end());
+        for(int i = 0; i < 4; i++)
+        {
+            transparentBrightnessFloats.push_back(faceData.brightness);
+        }
+
     }
 }
 
@@ -391,7 +410,7 @@ void Chunk::LoadBufferData()
         delete mesh;
     }
     mesh = new Mesh(*world.shader);
-    mesh->setData(chunkVerts, chunkUVs, chunkIndices);
+    mesh->setData(chunkVerts, chunkUVs, chunkIndices, chunkBrightnessFloats);
 	mesh->loadData();
 
     if(transparentMesh != nullptr)
@@ -399,7 +418,7 @@ void Chunk::LoadBufferData()
         delete transparentMesh;
     }
     transparentMesh = new Mesh(*world.transparentShader);
-    transparentMesh->setData(transparentVerts, transparentUVs, transparentIndices);
+    transparentMesh->setData(transparentVerts, transparentUVs, transparentIndices, transparentBrightnessFloats);
     transparentMesh->loadData();
 }
 

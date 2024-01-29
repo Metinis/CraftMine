@@ -12,6 +12,7 @@ class Texture
 
 	Texture(const char* fileLocation);
 
+    void setTexture(const char* fileLocation);
 	void Bind();
 	void Unbind();
 	void Delete();

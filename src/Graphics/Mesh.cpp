@@ -3,11 +3,12 @@ Mesh::Mesh(Shader& _shader) : shader(_shader)
 {
     //shader = _shader;
 }
-void Mesh::setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec2> _UVs, std::vector<GLuint> _indices)
+void Mesh::setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec2> _UVs, std::vector<GLuint> _indices, std::vector<float> _brightnessFloats)
 {
     vertices = _vertices;
     UVs = _UVs;
     indices = _indices;
+    brightnessFloats = _brightnessFloats;
 }
 void Mesh::clearData()
 {
@@ -34,6 +35,11 @@ void Mesh::clearData()
         meshIBO->Delete();
         delete meshIBO;
         meshIBO = nullptr;
+    }
+    if (meshBrightnessVBO != nullptr) {
+        meshBrightnessVBO->Delete();
+        delete meshBrightnessVBO;
+        meshBrightnessVBO = nullptr;
     }
 }
 void Mesh::render()
@@ -67,6 +73,10 @@ void Mesh::loadData()
     meshVAO->LinkToVAO(shader.getAttribLocation("aTexCoord"), 2, *meshUVVBO);
     meshUVVBO->Unbind();
 
+    meshBrightnessVBO = new VBO(brightnessFloats);
+    meshBrightnessVBO->Bind();
+    meshVAO->LinkToVAO(shader.getAttribLocation("aBrightness"), 1, *meshBrightnessVBO);
+    meshBrightnessVBO->Unbind();
     meshVAO->Unbind();
 
     meshIBO = new IBO(indices);

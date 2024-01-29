@@ -26,11 +26,13 @@ namespace CraftMine {	//using namespace since it conflicts with some cameraMovem
 	};
     extern std::vector<int> transparentBlocks;
 	extern std::map<unsigned char, BlockType> BlockIDMap;
+    extern std::map<Faces, float> brightnessMap;
 	struct FaceData
 	{
 	public:
 		std::vector<glm::vec3> vertices;
 		std::vector<glm::vec2> texCoords;
+        float brightness = 1.0f; //default brightness
 	};
 	struct FaceDataRaw
 	{

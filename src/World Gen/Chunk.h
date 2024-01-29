@@ -9,10 +9,9 @@
 #include "VAO.h"
 #include "IBO.h"
 #include "Texture.h"
-#include "SimplexNoise.h"
-//#include "World.h"
 #include <algorithm>
 #include "Mesh.h"
+#include "FastNoise/FastNoise.h"
 
 class World;
 
@@ -22,10 +21,12 @@ private:
 	std::vector<glm::vec3> chunkVerts;
 	std::vector<glm::vec2> chunkUVs;
 	std::vector<GLuint> chunkIndices;
+    std::vector<float> chunkBrightnessFloats;
 
     std::vector<glm::vec3> transparentVerts;
     std::vector<glm::vec2> transparentUVs;
     std::vector<GLuint> transparentIndices;
+    std::vector<float> transparentBrightnessFloats;
 	
 	GLsizei indexCount = 0;
     GLsizei transparentIndexCount = 0;

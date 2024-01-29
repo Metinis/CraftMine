@@ -139,6 +139,16 @@ void processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed)
 	{
 		*keyProccessed = false;
 	}
+    if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS) {
+        // Get the primary monitor
+        GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+
+        // Get the video mode of the primary monitor
+        const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+
+        // Switch the window to fullscreen mode
+        glfwSetWindowMonitor(window, primaryMonitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+    }
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		camera.ProcessKeyboardMovement(FORWARD, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)

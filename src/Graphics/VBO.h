@@ -18,6 +18,8 @@ class VBO
 
 		// Constructor for Vector2 data
 		VBO(const std::vector<glm::vec2>& data);
+        //constructor for brightness
+        VBO(const std::vector<float>& data);
 		void SetNewData(const std::vector<glm::vec3>& data);
 		void SetNewData(const std::vector<glm::vec2>& data);
 		void Bind();
