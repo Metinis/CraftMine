@@ -12,6 +12,7 @@
 #include <algorithm>
 #include "Mesh.h"
 #include "FastNoise/FastNoise.h"
+#include <random>
 
 class World;
 
@@ -38,8 +39,10 @@ private:
 
 	bool CheckFace(int x, int y, int z, bool isSolid);
     void AddFaces(int x, int y, int z, int &numFaces, bool isSolid);
+    static bool shouldGenTree();
+    void genTree(glm::ivec3 treeCoord);
 	void GenChunk(float* heightMap);
-    void IntegrateFace(FaceData faceData, bool solid);
+    void IntegrateFace(FaceData faceData, bool isTransparent);
     void AddIndices(int amtFaces, std::vector<GLuint> &indices, GLsizei &_indexCount);
 	void UpdateNeighbours();
 	void GenFaces();
@@ -54,7 +57,7 @@ public:
 	bool inThread = false;
 
 
-	unsigned char blockIDs[SIZE * HEIGHT * SIZE];
+	unsigned char blockIDs[SIZE * HEIGHT * SIZE] = {0}; //initialise all to empty block
 	glm::ivec2 chunkPosition;
 
 	Chunk(glm::ivec2 Position, World& world);

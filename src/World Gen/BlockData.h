@@ -22,7 +22,9 @@ namespace CraftMine {	//using namespace since it conflicts with some cameraMovem
 		STONE,
 		BEDROCK,
 		WATER,
-        SAND
+        SAND,
+        OAK_WOOD,
+        OAK_LEAF
 	};
     extern std::vector<int> transparentBlocks;
 	extern std::map<unsigned char, BlockType> BlockIDMap;

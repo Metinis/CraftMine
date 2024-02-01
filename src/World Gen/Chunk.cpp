@@ -21,7 +21,64 @@ void Chunk::SetBlock(int x, int y, int z, unsigned char id)
 {
 	blockIDs[x + SIZE * (y + HEIGHT * z)] = id;
 }
+bool Chunk::shouldGenTree()
+{
 
+    std::mt19937 rng(std::random_device{}());
+    // Define the probability (1 in 5000 chance)
+    std::uniform_int_distribution<> dis(1, 500);
+
+    // Generate a random number
+    int randomNumber = dis(rng);
+
+    // Check if the random number falls within the desired range
+    return randomNumber == 1;
+}
+void Chunk::genTree(glm::ivec3 treeCoord) //starts from bottom block
+{
+    int treeHeight = 5;
+    int leafHeight = 2;
+    for(int y = treeCoord.y; y < (treeHeight + treeCoord.y + leafHeight) && y < HEIGHT; y++)
+    {
+        //set the tree
+        if(y < treeHeight + treeCoord.y)
+        SetBlock(treeCoord.x, y, treeCoord.z, 7); //7 is wood
+        //TODO add missing leaves to neighbouring chunks
+
+        int localY = y - treeCoord.y;
+        if(localY > 2 && localY < treeHeight) {
+            //bottom layer
+            int startX = treeCoord.x - 2;
+            int endX = treeCoord.x + 3;
+            int startZ = treeCoord.z - 2;
+            int endZ = treeCoord.z + 3;
+
+            for (int x = startX; x > 0 && x < SIZE && x < endX; x++) {
+                for (int z = startZ; z > 0 && z < SIZE && z < endZ; z++) {
+                    if (GetBlockID(x, y, z) == 0)
+                        SetBlock(x, y, z, 8);
+                }
+            }
+        }
+            //top layer
+        else if(localY >= treeHeight && localY < (treeHeight + leafHeight))
+        {
+            int startX = treeCoord.x - 1;
+            int endX = treeCoord.x + 2;
+            int startZ = treeCoord.z - 1;
+            int endZ = treeCoord.z + 2;
+            for (int x = startX; x > 0 && x < SIZE && x < endX; x++) {
+                for (int z = startZ; z > 0 && z < SIZE && z < endZ; z++) {
+                    if (GetBlockID(x, y, z) == 0)
+                        SetBlock(x, y, z, 8);
+                }
+            }
+        }
+
+
+
+    }
+}
 void Chunk::GenBlocks()
 {
 	float heightMap[HEIGHT * HEIGHT];
@@ -39,33 +96,29 @@ void Chunk::GenBlocks()
         int columnHeight = (int)heightMap[x + SIZE * z] + (seaLevel -20); //add sealevel so noise generates above it
 
 		unsigned char id = 0;
+        if(GetBlockID(x,y,z) == 0) {    //so that trees/structures don't get overwritten
+            if (y >= columnHeight && y + 2 < seaLevel) { //last argument is the sea level
 
-		if (y >= columnHeight && y+2 < seaLevel){ //last argument is the sea level
-		
-			id = 5;
-		}
-        else if( y <= columnHeight - 1 && y >= columnHeight - 3 && y < seaLevel - 2)
-        {
-            id = 6; //sand
+                id = 5;
+            } else if (y <= columnHeight - 1 && y >= columnHeight - 3 && y < seaLevel - 2) {
+                id = 6; //sand
+            } else if (y == columnHeight - 1) {
+                id = 1;                        //Refer to id map, grass layer
+                //check to generate tree
+                if (shouldGenTree()) {
+                    id = 2; //if there's tree above, make dirt block, not grass
+                    genTree(glm::vec3(x, y+1, z));
+                }
+            } else if (y > columnHeight - 4 && y < columnHeight) {
+                id = 2;                        //dirt layer
+            } else if (y <= columnHeight - 4 && y > 0) {
+                id = 3;                        //stone layer
+            } else if (y == 0) {
+                id = 4;                        //bedrock layer
+            }
+
+            SetBlock(x, y, z, id);
         }
-		else if (y == columnHeight - 1)
-		{
-			id = 1;						//Refer to id map, grass layer
-		}
-		else if (y > columnHeight - 4 && y < columnHeight)
-		{
-			id = 2;						//dirt layer
-		}
-		else if (y <= columnHeight - 4 && y > 0)
-		{
-			id = 3;						//stone layer
-		}
-		else if (y == 0)
-		{
-			id = 4;						//bedrock layer
-		}
-
-		SetBlock(x, y, z, id);
 	}
     generatedBlockData = true;
 }
@@ -194,7 +247,9 @@ void Chunk::UpdateSide(CraftMine::Faces face)
 					for (int z = 0; z < SIZE; z++)
 					{
 						//BlockType type = BlockIDMap[GetBlockID(0, y, z)];
-						if (!Block::transparent(GetBlockID(0, y, z)) && Block::transparent(tempChunk.GetBlockID(SIZE - 1, y, z)))
+						if (!Block::transparent(GetBlockID(0, y, z)) && Block::transparent(tempChunk.GetBlockID(SIZE - 1, y, z)) ||
+                                (GetBlockID(0,y,z) != 0 && tempChunk.GetBlockID(SIZE - 1, y, z) == 0)
+                        )
 						{
 							glm::vec3 blockWorldPos = glm::vec3(0 + chunkPosition.x * SIZE, y, z + chunkPosition.y * SIZE);
 							IntegrateFace(Block::GetFace(CraftMine::Faces::LEFT, BlockIDMap[GetBlockID(0, y, z)], blockWorldPos), true);
@@ -219,7 +274,10 @@ void Chunk::UpdateSide(CraftMine::Faces face)
 					for (int z = 0; z < SIZE; z++)
 					{
 						//BlockType type = BlockIDMap[GetBlockID(SIZE - 1, y, z)];
-                        if (!Block::transparent(GetBlockID(SIZE-1, y, z)) && Block::transparent(tempChunk.GetBlockID(0, y, z)))
+                        //if (!Block::transparent(GetBlockID(SIZE-1, y, z)) && Block::transparent(tempChunk.GetBlockID(0, y, z)))
+                        if (!Block::transparent(GetBlockID(SIZE-1, y, z)) && Block::transparent(tempChunk.GetBlockID(0, y, z)) ||
+                                (GetBlockID(SIZE-1,y,z) != 0 && tempChunk.GetBlockID(0, y, z) == 0)
+                                )
 						{
 							glm::vec3 blockWorldPos = glm::vec3((SIZE - 1) + chunkPosition.x * SIZE, y, z + chunkPosition.y * SIZE);
 							IntegrateFace(Block::GetFace(CraftMine::Faces::RIGHT, BlockIDMap[GetBlockID(SIZE - 1, y, z)], blockWorldPos), true);
@@ -244,7 +302,10 @@ void Chunk::UpdateSide(CraftMine::Faces face)
 					for (int y = 0; y < HEIGHT; y++)
 					{
 						//BlockType type = BlockIDMap[GetBlockID(x, y, SIZE - 1)];
-                        if (!Block::transparent(GetBlockID(x, y, SIZE - 1)) && Block::transparent(tempChunk.GetBlockID(x, y, 0)))
+                        //if (!Block::transparent(GetBlockID(x, y, SIZE - 1)) && Block::transparent(tempChunk.GetBlockID(x, y, 0)))
+                        if (!Block::transparent(GetBlockID(x, y, SIZE - 1)) && Block::transparent(tempChunk.GetBlockID(x, y, 0)) ||
+                                (GetBlockID(x,y,SIZE - 1) != 0 && tempChunk.GetBlockID(x, y, 0) == 0)
+                                )
 						{
 							glm::vec3 blockWorldPos = glm::vec3(x + chunkPosition.x * SIZE, y, (SIZE-1) + chunkPosition.y * SIZE);
 							IntegrateFace(Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[GetBlockID(x, y, SIZE - 1)], blockWorldPos), true);
@@ -268,7 +329,10 @@ void Chunk::UpdateSide(CraftMine::Faces face)
 					for (int y = 0; y < HEIGHT; y++)
 					{
 						//BlockType type = BlockIDMap[GetBlockID(x, y, 0)];
-                        if (!Block::transparent(GetBlockID(x, y, 0)) && Block::transparent(tempChunk.GetBlockID(x, y, SIZE - 1)))
+                        //if (!Block::transparent(GetBlockID(x, y, 0)) && Block::transparent(tempChunk.GetBlockID(x, y, SIZE - 1)))
+                        if (!Block::transparent(GetBlockID(x, y, 0)) && Block::transparent(tempChunk.GetBlockID(x, y, SIZE - 1)) ||
+                                (GetBlockID(x,y,0) != 0 && tempChunk.GetBlockID(x, y, SIZE - 1) == 0)
+                                )
 						{
 							glm::vec3 blockWorldPos = glm::vec3(x + chunkPosition.x * SIZE, y, (0) + chunkPosition.y * SIZE);
 							IntegrateFace(Block::GetFace(CraftMine::Faces::BACK, BlockIDMap[GetBlockID(x, y, 0)], blockWorldPos), true);

@@ -34,6 +34,7 @@ public:
         vertices.clear();
         UVs.clear();
         indices.clear();
+        brightnessFloats.clear();
         clearData();
     }
 };

@@ -139,7 +139,7 @@ void World::UpdateViewDistance(glm::ivec2 cameraChunkPos)
     //All chunks which are in activeChunk list but not in new active chunk
     for(Chunk* chunk : chunksToLoadData)
     {
-        if(std::find(chunksLoading.begin(), chunksLoading.end(), chunk) == chunksLoading.end())
+        if(std::find(chunksLoading.begin(), chunksLoading.end(), chunk) == chunksLoading.end() && !chunk->inThread)
         {
             chunk->Delete();
             chunk->ClearVertexData();
@@ -147,7 +147,7 @@ void World::UpdateViewDistance(glm::ivec2 cameraChunkPos)
     }
     for(Chunk* chunk : activeChunks)
     {
-        if(std::find(newActiveChunks.begin(), newActiveChunks.end(), chunk) == newActiveChunks.end())
+        if(std::find(newActiveChunks.begin(), newActiveChunks.end(), chunk) == newActiveChunks.end() && !chunk->inThread)
         {
             chunk->Delete();
             chunk->ClearVertexData();
