@@ -44,6 +44,7 @@ private:
 	void GenChunk(float* heightMap);
     void IntegrateFace(FaceData faceData, bool isTransparent);
     void AddIndices(int amtFaces, std::vector<GLuint> &indices, GLsizei &_indexCount);
+    void AddEdgeFaces(glm::ivec3 localBlockPos, int &numFaces, int &numTransparentFaces, int neighbourZ, int neighbourX, Chunk* tempChunk, Faces face);
 	void UpdateNeighbours();
 	void GenFaces();
 	

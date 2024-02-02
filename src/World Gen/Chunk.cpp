@@ -129,11 +129,13 @@ void Chunk::ClearVertexData()
 	chunkVerts.clear();
 	chunkUVs.clear();
 	chunkIndices.clear();
+    chunkBrightnessFloats.clear();
 
     transparentVerts.clear();
     transparentUVs.clear();
     transparentIndices.clear();
     transparentIndexCount = 0;
+    transparentBrightnessFloats.clear();
 
     generatedBuffData = false;
 }
@@ -233,120 +235,83 @@ void Chunk::AddFaces(int x, int y, int z, int &numFaces, bool isSolid) //checks 
 
 void Chunk::UpdateSide(CraftMine::Faces face)
 {
+    //TODO Clean this up
+    Chunk* tempChunk = nullptr;
+    int numFaces = 0;
+    int numTransparentFaces = 0;
+
+    //Used for neighbouring blocks, we loop through the edges of chunks and compare these two
+    //e.g. our block could be in the start edge meaning neighbouring one will be in the endEdge
+
+    int startEdge = 0;
+    int endEdge = SIZE - 1;
+
 	switch (face)
 	{
 	case CraftMine::LEFT:
-		if (chunkPosition.x > 0)
-		{
-			Chunk& tempChunk = *world.GetChunk(chunkPosition.x - 1, chunkPosition.y);
-			if (&tempChunk != nullptr)
-			{
-				int numFaces = 0;
-				for (int y = 0; y < HEIGHT; y++)
-				{
-					for (int z = 0; z < SIZE; z++)
-					{
-						//BlockType type = BlockIDMap[GetBlockID(0, y, z)];
-						if (!Block::transparent(GetBlockID(0, y, z)) && Block::transparent(tempChunk.GetBlockID(SIZE - 1, y, z)) ||
-                                (GetBlockID(0,y,z) != 0 && tempChunk.GetBlockID(SIZE - 1, y, z) == 0)
-                        )
-						{
-							glm::vec3 blockWorldPos = glm::vec3(0 + chunkPosition.x * SIZE, y, z + chunkPosition.y * SIZE);
-							IntegrateFace(Block::GetFace(CraftMine::Faces::LEFT, BlockIDMap[GetBlockID(0, y, z)], blockWorldPos), true);
-							numFaces++;
-						}
-					}
-				}
-				AddIndices(numFaces, chunkIndices, indexCount);
-			}
-		}
+			tempChunk = world.GetChunk(chunkPosition.x - 1, chunkPosition.y);
+            for (int y = 0; y < HEIGHT; y++)
+            {
+                for (int z = 0; z < SIZE; z++)
+                {
+                    AddEdgeFaces(glm::ivec3(startEdge, y, z), numFaces, numTransparentFaces, z, endEdge, tempChunk, CraftMine::LEFT);
+                }
+            }
 		break;
 	case CraftMine::RIGHT:
-		if (chunkPosition.x < world.SIZE - 1)
-		{
-			//std::cout << "test";
-			Chunk& tempChunk = *world.GetChunk(chunkPosition.x + 1, chunkPosition.y);
-			if (&tempChunk != nullptr)
-			{
-				int numFaces = 0;
-				for (int y = 0; y < HEIGHT; y++)
-				{
-					for (int z = 0; z < SIZE; z++)
-					{
-						//BlockType type = BlockIDMap[GetBlockID(SIZE - 1, y, z)];
-                        //if (!Block::transparent(GetBlockID(SIZE-1, y, z)) && Block::transparent(tempChunk.GetBlockID(0, y, z)))
-                        if (!Block::transparent(GetBlockID(SIZE-1, y, z)) && Block::transparent(tempChunk.GetBlockID(0, y, z)) ||
-                                (GetBlockID(SIZE-1,y,z) != 0 && tempChunk.GetBlockID(0, y, z) == 0)
-                                )
-						{
-							glm::vec3 blockWorldPos = glm::vec3((SIZE - 1) + chunkPosition.x * SIZE, y, z + chunkPosition.y * SIZE);
-							IntegrateFace(Block::GetFace(CraftMine::Faces::RIGHT, BlockIDMap[GetBlockID(SIZE - 1, y, z)], blockWorldPos), true);
-							numFaces++;
-						}
-					}
-				}
-				AddIndices(numFaces, chunkIndices, indexCount);
-			}
-		}
+			tempChunk = world.GetChunk(chunkPosition.x + 1, chunkPosition.y);
+            for (int y = 0; y < HEIGHT; y++)
+            {
+                for (int z = 0; z < SIZE; z++)
+                {
+                    AddEdgeFaces(glm::ivec3(endEdge, y, z), numFaces, numTransparentFaces, z, startEdge, tempChunk, CraftMine::RIGHT);
+                }
+            }
 		break;
 	case CraftMine::FRONT:
-		if (chunkPosition.y < world.SIZE - 1)
-		{
-			//std::cout << "test1";
-			Chunk& tempChunk = *world.GetChunk(chunkPosition.x, chunkPosition.y + 1);
-			if (&tempChunk != nullptr)
-			{
-				int numFaces = 0;
-				for (int x = 0; x < SIZE; x++)
-				{
-					for (int y = 0; y < HEIGHT; y++)
-					{
-						//BlockType type = BlockIDMap[GetBlockID(x, y, SIZE - 1)];
-                        //if (!Block::transparent(GetBlockID(x, y, SIZE - 1)) && Block::transparent(tempChunk.GetBlockID(x, y, 0)))
-                        if (!Block::transparent(GetBlockID(x, y, SIZE - 1)) && Block::transparent(tempChunk.GetBlockID(x, y, 0)) ||
-                                (GetBlockID(x,y,SIZE - 1) != 0 && tempChunk.GetBlockID(x, y, 0) == 0)
-                                )
-						{
-							glm::vec3 blockWorldPos = glm::vec3(x + chunkPosition.x * SIZE, y, (SIZE-1) + chunkPosition.y * SIZE);
-							IntegrateFace(Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[GetBlockID(x, y, SIZE - 1)], blockWorldPos), true);
-							numFaces++;
-						}
-					}
-				}
-				AddIndices(numFaces, chunkIndices, indexCount);
-			}
-		}
+			tempChunk = world.GetChunk(chunkPosition.x, chunkPosition.y + 1);
+            for (int x = 0; x < SIZE; x++)
+            {
+                for (int y = 0; y < HEIGHT; y++)
+                {
+                    AddEdgeFaces(glm::ivec3(x, y, endEdge), numFaces, numTransparentFaces, startEdge, x, tempChunk, CraftMine::FRONT);
+                }
+            }
 		break;
 	case CraftMine::BACK:
-		if (chunkPosition.y > 0)
-		{
-			Chunk& tempChunk = *world.GetChunk(chunkPosition.x, chunkPosition.y - 1);
-			if (&tempChunk != nullptr)
-			{
-				int numFaces = 0;
-				for (int x = 0; x < SIZE; x++)
-				{
-					for (int y = 0; y < HEIGHT; y++)
-					{
-						//BlockType type = BlockIDMap[GetBlockID(x, y, 0)];
-                        //if (!Block::transparent(GetBlockID(x, y, 0)) && Block::transparent(tempChunk.GetBlockID(x, y, SIZE - 1)))
-                        if (!Block::transparent(GetBlockID(x, y, 0)) && Block::transparent(tempChunk.GetBlockID(x, y, SIZE - 1)) ||
-                                (GetBlockID(x,y,0) != 0 && tempChunk.GetBlockID(x, y, SIZE - 1) == 0)
-                                )
-						{
-							glm::vec3 blockWorldPos = glm::vec3(x + chunkPosition.x * SIZE, y, (0) + chunkPosition.y * SIZE);
-							IntegrateFace(Block::GetFace(CraftMine::Faces::BACK, BlockIDMap[GetBlockID(x, y, 0)], blockWorldPos), true);
-							numFaces++;
-							//AddIndices(numFaces, chunkIndices);
-						}
-					}
-				}
-				AddIndices(numFaces, chunkIndices, indexCount);
-			}
-
-		}
+			tempChunk = world.GetChunk(chunkPosition.x, chunkPosition.y - 1);
+            for (int x = 0; x < SIZE; x++)
+            {
+                for (int y = 0; y < HEIGHT; y++)
+                {
+                    AddEdgeFaces(glm::ivec3(x, y, startEdge), numFaces, numTransparentFaces, endEdge, x, tempChunk, CraftMine::BACK);
+                }
+            }
 		break;
 	}
+    AddIndices(numFaces, chunkIndices, indexCount);
+    AddIndices(numTransparentFaces, transparentIndices, transparentIndexCount);
+}
+void Chunk::AddEdgeFaces(glm::ivec3 localBlockPos, int &numFaces, int &numTransparentFaces, int neighbourZ, int neighbourX, Chunk* tempChunk, Faces face) //used to add the faces neighbouring chunks
+{
+    glm::vec3 blockWorldPos = glm::vec3(localBlockPos.x + chunkPosition.x * SIZE, localBlockPos.y, localBlockPos.z + chunkPosition.y * SIZE);
+
+    unsigned char blockID = GetBlockID(localBlockPos.x, localBlockPos.y, localBlockPos.z);
+
+    unsigned char neighbourBlockID = tempChunk->GetBlockID(neighbourX, localBlockPos.y, neighbourZ);
+
+    BlockType type = BlockIDMap[blockID];
+
+    if (!Block::transparent(blockID) && Block::transparent(neighbourBlockID))
+    {
+        IntegrateFace(Block::GetFace(face, type, blockWorldPos), true);
+        numFaces++;
+    }
+    else if(Block::transparent(blockID) && blockID != 0 && neighbourBlockID == 0)
+    {
+        IntegrateFace(Block::GetFace(face, type, blockWorldPos), false);
+        numTransparentFaces++;
+    }
 }
 
 void Chunk::UpdateNeighbours()
