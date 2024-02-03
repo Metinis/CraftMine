@@ -32,6 +32,7 @@ World::World(Camera& _camera) : camera(_camera)
 			chunksToLoadData.pop_back();
 			mutexChunksToLoadData.unlock();
 
+            CheckForBlocksToBeAdded(chunk);
             chunk->LoadChunkData();
 
 			mutexChunksToLoadData.lock();
@@ -55,6 +56,7 @@ World::World(Camera& _camera) : camera(_camera)
 			mutexChunksToGenerate.unlock();
 
 			chunk->GenBlocks();
+            CheckForBlocksToBeAdded(chunk);
 
             mutexChunksToLoadData.lock();
 			chunksToLoadData.insert(chunksToLoadData.begin(), chunk);
@@ -63,7 +65,32 @@ World::World(Camera& _camera) : camera(_camera)
 		}
 	}
 }
+void World::CheckForBlocksToBeAdded(Chunk* chunk)
+{
+    mutexBlocksToBeAddedList.lock();
 
+    std::vector<BlocksToBeAdded> newBlocksToBeAddedList;
+    for(int i = 0; i < blocksToBeAddedList.size(); i++)
+    {
+        BlocksToBeAdded &_blocksToBeAdded = blocksToBeAddedList[i];
+
+        if(_blocksToBeAdded.chunkPosition == chunk->chunkPosition)
+        {
+            chunk->SetBlock(glm::ivec3(_blocksToBeAdded.localPosition.x, _blocksToBeAdded.localPosition.y, _blocksToBeAdded.localPosition.z), 8);
+        }
+        else
+        {
+            newBlocksToBeAddedList.push_back(_blocksToBeAdded);
+        }
+    }
+    blocksToBeAddedList.clear();
+    for(BlocksToBeAdded _blocksToBeAdded : newBlocksToBeAddedList)
+    {
+        blocksToBeAddedList.push_back(_blocksToBeAdded);
+    }
+
+    mutexBlocksToBeAddedList.unlock();
+}
 void World::UpdateViewDistance(glm::ivec2 cameraChunkPos)
 {
     //update comparator to current chunkPos

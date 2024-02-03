@@ -7,19 +7,20 @@ Chunk::Chunk(glm::ivec2 Position, World& _world) : world(_world)
 	chunkPosition = Position;
 }
 
-unsigned char Chunk::GetBlockID(int x, int y, int z)
+unsigned char Chunk::GetBlockID(glm::ivec3 pos)
 {
-	return blockIDs[x + SIZE * (y + HEIGHT * z)];
-}
-Block Chunk::GetBlock(glm::vec3 pos, int id)
-{
-    Block tempBlock(pos, id);
-    return tempBlock;
+	return blockIDs[pos.x + SIZE * (pos.y + HEIGHT * pos.z)];
 }
 
-void Chunk::SetBlock(int x, int y, int z, unsigned char id)
+void Chunk::SetBlock(glm::ivec3 pos, unsigned char id)
 {
-	blockIDs[x + SIZE * (y + HEIGHT * z)] = id;
+    if(pos.x < 0 || pos.x > SIZE - 1 || pos.y < 0 || pos.y > HEIGHT - 1 || pos.z < 0 || pos.z > SIZE - 1)
+    {
+        std::cout<<"invalid block position at: "<<pos.x<<"x "<<pos.y<<"y "<<pos.z<<"z ";
+    }
+    else {
+        blockIDs[pos.x + SIZE * (pos.y + HEIGHT * pos.z)] = id;
+    }
 }
 bool Chunk::shouldGenTree()
 {
@@ -38,14 +39,14 @@ void Chunk::genTree(glm::ivec3 treeCoord) //starts from bottom block
 {
     int treeHeight = 5;
     int leafHeight = 2;
+
     for(int y = treeCoord.y; y < (treeHeight + treeCoord.y + leafHeight) && y < HEIGHT; y++)
     {
+        int localY = y - treeCoord.y;
         //set the tree
         if(y < treeHeight + treeCoord.y)
-        SetBlock(treeCoord.x, y, treeCoord.z, 7); //7 is wood
-        //TODO add missing leaves to neighbouring chunks
+        SetBlock(glm::ivec3(treeCoord.x, y, treeCoord.z), 7); //7 is wood
 
-        int localY = y - treeCoord.y;
         if(localY > 2 && localY < treeHeight) {
             //bottom layer
             int startX = treeCoord.x - 2;
@@ -53,12 +54,7 @@ void Chunk::genTree(glm::ivec3 treeCoord) //starts from bottom block
             int startZ = treeCoord.z - 2;
             int endZ = treeCoord.z + 3;
 
-            for (int x = startX; x > 0 && x < SIZE && x < endX; x++) {
-                for (int z = startZ; z > 0 && z < SIZE && z < endZ; z++) {
-                    if (GetBlockID(x, y, z) == 0)
-                        SetBlock(x, y, z, 8);
-                }
-            }
+            generateLeaves(startX, endX, startZ, endZ, y);
         }
             //top layer
         else if(localY >= treeHeight && localY < (treeHeight + leafHeight))
@@ -67,16 +63,120 @@ void Chunk::genTree(glm::ivec3 treeCoord) //starts from bottom block
             int endX = treeCoord.x + 2;
             int startZ = treeCoord.z - 1;
             int endZ = treeCoord.z + 2;
-            for (int x = startX; x > 0 && x < SIZE && x < endX; x++) {
-                for (int z = startZ; z > 0 && z < SIZE && z < endZ; z++) {
-                    if (GetBlockID(x, y, z) == 0)
-                        SetBlock(x, y, z, 8);
-                }
-            }
+
+            generateLeaves(startX, endX, startZ, endZ, y);
         }
 
 
 
+    }
+}
+void Chunk::generateLeaves(int startX, int endX, int startZ, int endZ, int y)
+{
+    for (int x = startX; x < endX; x++) {
+        for (int z = startZ; z < endZ; z++) {
+            //if x and z are in this chunk
+            if(x >= 0 && x < SIZE && z >= 0 && z < SIZE)
+            {
+                if (GetBlockID(glm::ivec3(x,y,z)) == 0)
+                    SetBlock(glm::ivec3(x,y,z), 8);
+            }
+            else
+            {
+                //find the chunk x and z are in, check if it is not null, convert x and y to that local chunk coordinates and set blocks and update buffers
+                //Add to loaded chunks for updating
+                int tempChunkX;
+                int tempChunkZ;
+
+                if(x < 0)
+                {
+                    tempChunkX = chunkPosition.x - 1;
+                }
+                else if(x > SIZE - 1)
+                {
+                    tempChunkX = chunkPosition.x + 1;
+                }
+                else
+                {
+                    tempChunkX = chunkPosition.x;
+                }
+                if(z < 0)
+                {
+                    tempChunkZ = chunkPosition.y - 1;
+                }
+                else if(z > SIZE - 1)
+                {
+                    tempChunkZ = chunkPosition.y + 1;
+                }
+                else
+                {
+                    tempChunkZ = chunkPosition.y;
+                }
+                //std::cout<<tempChunkX<<"x " <<tempChunkZ<<"z "<<"\n";
+
+                if(tempChunkX > 0 && tempChunkX < World::SIZE && tempChunkZ > 0 && tempChunkZ < World::SIZE)
+                {
+
+                    Chunk& tempChunk = *world.GetChunk(tempChunkX, tempChunkZ);
+                    int tempChunkLocalX;
+                    int tempChunkLocalZ;
+
+                    if(x < 0)
+                    {
+                        tempChunkLocalX = SIZE + x;
+                    }
+                    else if(x > 15)
+                    {
+                        tempChunkLocalX = x - SIZE;
+                    }
+                    else
+                    {
+                        tempChunkLocalX = x;
+                    }
+                    if(z < 0)
+                    {
+                        tempChunkLocalZ = SIZE + z;
+                    }
+                    else if (z > 15)
+                    {
+                        tempChunkLocalZ = z - SIZE;
+                    }
+                    else
+                    {
+                        tempChunkLocalZ = z;
+                    }
+                    if(&tempChunk != nullptr && tempChunk.generatedBlockData && !tempChunk.inThread && tempChunk.generatedBuffData)
+                    {
+                        if(tempChunk.GetBlockID(glm::ivec3(tempChunkLocalX,y,tempChunkLocalZ)) == 0) {
+                            //tempChunk.generatedBuffData = false;
+                            //tempChunk.generatedBlockData = false;
+                            tempChunk.SetBlock(glm::ivec3(tempChunkLocalX,y,tempChunkLocalZ), 8);
+                            world.chunksToLoadData.push_back(&tempChunk);
+                            //tempChunk.LoadChunkData();
+                            //tempChunk.generatedBuffData = true;
+                            //tempChunk.generatedBlockData = true;
+                            //world.loadedChunks.push(&tempChunk);
+
+                        }
+                    }
+                    else if(&tempChunk != nullptr && tempChunk.generatedBlockData && !tempChunk.inThread && !tempChunk.generatedBuffData)
+                    {
+                        if(tempChunk.GetBlockID(glm::ivec3(tempChunkLocalX,y,tempChunkLocalZ)) == 0) {
+                            tempChunk.SetBlock(glm::ivec3(tempChunkLocalX,y,tempChunkLocalZ), 8);
+                        }
+                    }
+                    else if(&tempChunk == nullptr || (&tempChunk != nullptr && (!tempChunk.inThread || (tempChunk.inThread && tempChunk.generatedBlockData))))
+                    {
+                        world.mutexBlocksToBeAddedList.lock();
+                        world.blocksToBeAddedList.push_back(BlocksToBeAdded{glm::ivec2(tempChunkX,tempChunkZ), glm::ivec3(tempChunkLocalX, y, tempChunkLocalZ), 8});
+                        world.mutexBlocksToBeAddedList.unlock();
+                    }
+
+                }
+
+            }
+
+        }
     }
 }
 void Chunk::GenBlocks()
@@ -96,7 +196,7 @@ void Chunk::GenBlocks()
         int columnHeight = (int)heightMap[x + SIZE * z] + (seaLevel -20); //add sealevel so noise generates above it
 
 		unsigned char id = 0;
-        if(GetBlockID(x,y,z) == 0) {    //so that trees/structures don't get overwritten
+        if(GetBlockID(glm::ivec3(x,y,z)) == 0) {    //so that trees/structures don't get overwritten
             if (y >= columnHeight && y + 2 < seaLevel) { //last argument is the sea level
 
                 id = 5;
@@ -117,7 +217,7 @@ void Chunk::GenBlocks()
                 id = 4;                        //bedrock layer
             }
 
-            SetBlock(x, y, z, id);
+            SetBlock(glm::ivec3(x,y,z), id);
         }
 	}
     generatedBlockData = true;
@@ -144,11 +244,11 @@ bool Chunk::CheckFace(int x, int y, int z, bool isSolid)
 {
 	if (x >= 0 && x < SIZE && y <= HEIGHT && y >= 0 && z >= 0 && z < SIZE)
 	{
-		if (Block::transparent(GetBlockID(x,y,z)) && isSolid)
+		if (Block::transparent(GetBlockID(glm::ivec3(x,y,z))) && isSolid)
 		{
 			return true;
 		}
-        else if(Block::transparent(GetBlockID(x,y,z)) && !isSolid && GetBlockID(x,y,z) == 0) //empty
+        else if(Block::transparent(GetBlockID(glm::ivec3(x,y,z))) && !isSolid && GetBlockID(glm::ivec3(x,y,z)) == 0) //empty
         {
             return true;
         }
@@ -168,11 +268,11 @@ void Chunk::GenFaces()
 			for (int y = 0; y < HEIGHT; y++)
 			{
 				glm::vec3 blockWorldPos = glm::vec3(x + chunkPosition.x * SIZE, y, z + chunkPosition.y * SIZE);
-				if (!Block::transparent(GetBlockID(x,y,z)))
+				if (!Block::transparent(GetBlockID(glm::ivec3(x,y,z))))
 				{
                     AddFaces(x,y,z, numFaces, true);
 				}
-                else if(GetBlockID(x,y,z) != 0) //if not empty
+                else if(GetBlockID(glm::ivec3(x,y,z)) != 0) //if not empty
                 {
                     //add to transparent mesh, integrate face only if bordering empty
                     AddFaces(x,y,z, numTransparentFaces, false);
@@ -185,7 +285,7 @@ void Chunk::GenFaces()
 }
 void Chunk::AddFaces(int x, int y, int z, int &numFaces, bool isSolid) //checks the isSolid faces and adds them
 {
-    BlockType type = BlockIDMap[GetBlockID(x, y, z)];
+    BlockType type = BlockIDMap[GetBlockID(glm::ivec3(x,y,z))];
 
     glm::vec3 blockWorldPos = glm::vec3(x + chunkPosition.x * SIZE, y, z + chunkPosition.y * SIZE);
 
@@ -254,6 +354,7 @@ void Chunk::UpdateSide(CraftMine::Faces face)
             {
                 for (int z = 0; z < SIZE; z++)
                 {
+                    leftSideUpdated = true;
                     AddEdgeFaces(glm::ivec3(startEdge, y, z), numFaces, numTransparentFaces, z, endEdge, tempChunk, CraftMine::LEFT);
                 }
             }
@@ -264,6 +365,7 @@ void Chunk::UpdateSide(CraftMine::Faces face)
             {
                 for (int z = 0; z < SIZE; z++)
                 {
+                    rightSideUpdated = true;
                     AddEdgeFaces(glm::ivec3(endEdge, y, z), numFaces, numTransparentFaces, z, startEdge, tempChunk, CraftMine::RIGHT);
                 }
             }
@@ -274,6 +376,7 @@ void Chunk::UpdateSide(CraftMine::Faces face)
             {
                 for (int y = 0; y < HEIGHT; y++)
                 {
+                    frontUpdated = true;
                     AddEdgeFaces(glm::ivec3(x, y, endEdge), numFaces, numTransparentFaces, startEdge, x, tempChunk, CraftMine::FRONT);
                 }
             }
@@ -284,6 +387,7 @@ void Chunk::UpdateSide(CraftMine::Faces face)
             {
                 for (int y = 0; y < HEIGHT; y++)
                 {
+                    backUpdated = true;
                     AddEdgeFaces(glm::ivec3(x, y, startEdge), numFaces, numTransparentFaces, endEdge, x, tempChunk, CraftMine::BACK);
                 }
             }
@@ -296,9 +400,9 @@ void Chunk::AddEdgeFaces(glm::ivec3 localBlockPos, int &numFaces, int &numTransp
 {
     glm::vec3 blockWorldPos = glm::vec3(localBlockPos.x + chunkPosition.x * SIZE, localBlockPos.y, localBlockPos.z + chunkPosition.y * SIZE);
 
-    unsigned char blockID = GetBlockID(localBlockPos.x, localBlockPos.y, localBlockPos.z);
+    unsigned char blockID = GetBlockID(localBlockPos);
 
-    unsigned char neighbourBlockID = tempChunk->GetBlockID(neighbourX, localBlockPos.y, neighbourZ);
+    unsigned char neighbourBlockID = tempChunk->GetBlockID(glm::ivec3(neighbourX, localBlockPos.y, neighbourZ));
 
     BlockType type = BlockIDMap[blockID];
 
@@ -319,53 +423,80 @@ void Chunk::UpdateNeighbours()
 	//update the right side of the left chunk
 	if (chunkPosition.x > 0)
 	{
-		Chunk& tempChunk = *world.GetChunk(chunkPosition.x - 1, chunkPosition.y);
-		
-		//need to update to wait for chunk to be loaded if in thread, should update in same thread or another to avoid lag
-		if (&tempChunk != nullptr && tempChunk.generatedBuffData)
-		{
-			UpdateSide(CraftMine::LEFT);
-			tempChunk.UpdateSide(CraftMine::RIGHT);
-			world.loadedChunks.push(&tempChunk);
-			
-		}
-		
+		Chunk* tempChunk = world.GetChunk(chunkPosition.x - 1, chunkPosition.y);
+
+        if (tempChunk != nullptr && tempChunk->generatedBlockData && tempChunk->generatedBuffData)
+        {
+            UpdateSide(CraftMine::LEFT);
+            if(!tempChunk->frontUpdated)
+            {
+                tempChunk->UpdateSide(CraftMine::RIGHT);
+                tempChunk->generatedBuffData = false;
+                world.loadedChunks.push(tempChunk);
+            }
+        }
+        else if (tempChunk != nullptr && tempChunk->generatedBlockData)
+        {
+            UpdateSide(CraftMine::LEFT);
+        }
 	}
 	//Update the left side of the right chunk
-	if (chunkPosition.x < world.SIZE - 1)
+	if (chunkPosition.x < World::SIZE - 1)
 	{
-		Chunk& tempChunk = *world.GetChunk(chunkPosition.x + 1, chunkPosition.y);
-		if (&tempChunk != nullptr && tempChunk.generatedBuffData)
-		{
-			UpdateSide(CraftMine::RIGHT);
-			tempChunk.UpdateSide(CraftMine::LEFT);
-			world.loadedChunks.push(&tempChunk);
-			
-		}
+		Chunk* tempChunk = world.GetChunk(chunkPosition.x + 1, chunkPosition.y);
+        if (tempChunk != nullptr && tempChunk->generatedBlockData && tempChunk->generatedBuffData)
+        {
+            UpdateSide(CraftMine::RIGHT);
+            if(!tempChunk->frontUpdated)
+            {
+                tempChunk->UpdateSide(CraftMine::LEFT);
+                tempChunk->generatedBuffData = false;
+                world.loadedChunks.push(tempChunk);
+            }
+        }
+        else if (tempChunk != nullptr && tempChunk->generatedBlockData)
+        {
+            UpdateSide(CraftMine::RIGHT);
+        }
 	}
 	//Update back side of the front chunk
-	if (chunkPosition.y < world.SIZE - 1)
+	if (chunkPosition.y < World::SIZE - 1)
 	{
-		Chunk& tempChunk = *world.GetChunk(chunkPosition.x, chunkPosition.y + 1);
-		if (&tempChunk != nullptr && tempChunk.generatedBuffData)
-		{
-			UpdateSide(CraftMine::FRONT);
-			tempChunk.UpdateSide(CraftMine::BACK);
-			world.loadedChunks.push(&tempChunk);
-			
-		}
+		Chunk* tempChunk = world.GetChunk(chunkPosition.x, chunkPosition.y + 1);
+        if (tempChunk != nullptr && tempChunk->generatedBlockData && tempChunk->generatedBuffData)
+        {
+            UpdateSide(CraftMine::FRONT);
+            if(!tempChunk->backUpdated)
+            {
+                tempChunk->UpdateSide(CraftMine::BACK);
+                tempChunk->generatedBuffData = false;
+                world.loadedChunks.push(tempChunk);
+            }
+        }
+        else if (tempChunk != nullptr && tempChunk->generatedBlockData)
+        {
+            UpdateSide(CraftMine::FRONT);
+        }
+
 	}
 	//Update front side of the back chunk
 	if (chunkPosition.y > 0)
 	{
-		Chunk& tempChunk = *world.GetChunk(chunkPosition.x, chunkPosition.y - 1);
-		if (&tempChunk != nullptr && tempChunk.generatedBuffData)
-		{
-			UpdateSide(CraftMine::BACK);
-			tempChunk.UpdateSide(CraftMine::FRONT);
-			world.loadedChunks.push(&tempChunk);
-			
-		}
+		Chunk* tempChunk = world.GetChunk(chunkPosition.x, chunkPosition.y - 1);
+        if (tempChunk != nullptr && tempChunk->generatedBlockData && tempChunk->generatedBuffData)
+        {
+            UpdateSide(CraftMine::BACK);
+            if(!tempChunk->frontUpdated)
+            {
+                tempChunk->UpdateSide(CraftMine::FRONT);
+                tempChunk->generatedBuffData = false;
+                world.loadedChunks.push(tempChunk);
+            }
+        }
+        else if (tempChunk != nullptr && tempChunk->generatedBlockData)
+        {
+            UpdateSide(CraftMine::BACK);
+        }
 	}
 }
 
@@ -460,6 +591,7 @@ void Chunk::RenderChunk()
 }
 
 void Chunk::LoadChunkData() {
+    ClearVertexData();
 	GenFaces();
 	UpdateNeighbours();
 }

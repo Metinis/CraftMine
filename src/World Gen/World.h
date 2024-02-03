@@ -33,7 +33,9 @@ private:
 	std::mutex mutexChunksToGenerate;
 	std::mutex mutexChunksToLoadData;
 	std::mutex mutexChunksToDelete;
-	struct CompareChunks {
+
+
+    struct CompareChunks {
         glm::ivec2 _playerChunkPos = glm::ivec2(50,50);
 
 		bool operator()(Chunk* chunk1, Chunk* chunk2){
@@ -46,6 +48,8 @@ private:
 			return distance1 > distance2;
 		}
 	};
+
+    void CheckForBlocksToBeAdded(Chunk* chunk);
 	void GenerateChunkBuffers(std::vector<Chunk*>& addedChunks);
 	void BindPrograms();
     void ChangeGlobalTexture();
@@ -64,6 +68,10 @@ public:
 	std::queue<Chunk*> loadedChunks;	 //sent to main thread to be assigned buffers
 	std::vector<Chunk*> chunksToDelete;
 	std::vector<Chunk*> activeChunks;	 //chunks that are currently being rendered, any loaded chunks need to be sent from thread to here
+    std::vector<BlocksToBeAdded> blocksToBeAddedList;
+
+    std::mutex mutexBlocksToBeAddedList;
+
     Chunk* chunks[SIZE*SIZE] = {nullptr};
 
 	explicit World(Camera& camera);
@@ -76,5 +84,7 @@ public:
 	Chunk* GetChunk(int x, int y);
 
 	void RenderWorld(Camera _camera);
+
 };
+
 

@@ -139,6 +139,7 @@ void processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed)
 	{
 		*keyProccessed = false;
 	}
+
     if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS) {
         // Get the primary monitor
         GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
@@ -148,6 +149,9 @@ void processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed)
 
         // Switch the window to fullscreen mode
         glfwSetWindowMonitor(window, primaryMonitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+    }
+    if (glfwGetKey(window, GLFW_KEY_F4) == GLFW_PRESS) {
+        std::cout<<world->blocksToBeAddedList[world->blocksToBeAddedList.size() - 1].localPosition.x << "x " << world->blocksToBeAddedList[0].localPosition.y<< "y " << world->blocksToBeAddedList[0].localPosition.z<< "z ";
     }
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		camera.ProcessKeyboardMovement(FORWARD, deltaTime);

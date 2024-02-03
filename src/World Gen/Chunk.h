@@ -13,6 +13,7 @@
 #include "Mesh.h"
 #include "FastNoise/FastNoise.h"
 #include <random>
+#include "BlockData.h"
 
 class World;
 
@@ -41,6 +42,7 @@ private:
     void AddFaces(int x, int y, int z, int &numFaces, bool isSolid);
     static bool shouldGenTree();
     void genTree(glm::ivec3 treeCoord);
+    void generateLeaves(int startX, int endX, int startZ, int endZ, int y);
 	void GenChunk(float* heightMap);
     void IntegrateFace(FaceData faceData, bool isTransparent);
     void AddIndices(int amtFaces, std::vector<GLuint> &indices, GLsizei &_indexCount);
@@ -57,15 +59,18 @@ public:
 	bool generatedBuffData = false;
 	bool inThread = false;
 
+    bool leftSideUpdated = false;
+    bool rightSideUpdated = false;
+    bool frontUpdated = false;
+    bool backUpdated = false;
 
 	unsigned char blockIDs[SIZE * HEIGHT * SIZE] = {0}; //initialise all to empty block
 	glm::ivec2 chunkPosition;
 
 	Chunk(glm::ivec2 Position, World& world);
 	~Chunk();
-	unsigned char GetBlockID(int x, int y, int z);
-    Block GetBlock(glm::vec3 pos, int id);
-	void SetBlock(int x, int y, int z, unsigned char id);
+    unsigned char GetBlockID(glm::ivec3 pos);
+    void SetBlock(glm::ivec3 pos, unsigned char id);
 	void GenBlocks();
 	void UpdateSide(CraftMine::Faces face);
 	void ClearVertexData();

@@ -6,6 +6,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 #include <map>
+
+class Chunk;
 namespace CraftMine {	//using namespace since it conflicts with some cameraMovement stuff
 	enum Faces {
 		FRONT,
@@ -42,4 +44,11 @@ namespace CraftMine {	//using namespace since it conflicts with some cameraMovem
 		static const std::map<Faces, std::vector<glm::vec3>> rawVertexData;
 
 	};
+    struct BlocksToBeAdded{
+        glm::ivec2 chunkPosition;
+        glm::ivec3 localPosition;
+        unsigned char blockID;
+
+        BlocksToBeAdded(const glm::ivec2& chunkPos, const glm::ivec3& localPos, unsigned char id);
+    };
 }

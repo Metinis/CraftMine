@@ -56,4 +56,8 @@ namespace CraftMine {
             {FRONT, 0.86f},
             {BACK, 0.86f}
     };
+    BlocksToBeAdded::BlocksToBeAdded(const glm::ivec2& chunkPos, const glm::ivec3& localPos, unsigned char id)
+            : chunkPosition(chunkPos), localPosition(localPos), blockID(id) {
+        // Implementation
+    }
 }
