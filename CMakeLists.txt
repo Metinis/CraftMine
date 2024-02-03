@@ -473,11 +473,19 @@ add_executable(CraftMine
         "src/World Gen/Chunk.h"
         "src/World Gen/World.cpp"
         "src/World Gen/World.h"
-        src/Camera.cpp
-        src/Camera.h
+        src/Input/Camera.cpp
+        src/Input/Camera.h
         src/Main.cpp
         src/Graphics/Mesh.cpp
-        src/Graphics/Mesh.h)
+        src/Graphics/Mesh.h
+        src/Input/MouseInput.cpp
+        src/Input/MouseInput.h
+        src/Game.cpp
+        src/Game.h
+        "src/World Gen/ChunkGeneration.cpp"
+        "src/World Gen/ChunkGeneration.h"
+        "src/World Gen/ChunkMeshGeneration.cpp"
+        "src/World Gen/ChunkMeshGeneration.h")
 
 target_link_libraries(CraftMine PRIVATE glfw)
 target_compile_definitions(CraftMine PRIVATE SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
