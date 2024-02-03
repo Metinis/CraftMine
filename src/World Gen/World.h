@@ -2,7 +2,7 @@
 #include <glad/glad.h>
 #include"Shader.h"
 #include<glm/vec3.hpp>
-#include"Camera.h"
+#include"Input/Camera.h"
 #include <thread>
 #include <future>
 #include <queue>
@@ -32,8 +32,6 @@ private:
 
 	std::mutex mutexChunksToGenerate;
 	std::mutex mutexChunksToLoadData;
-	std::mutex mutexChunksToDelete;
-
 
     struct CompareChunks {
         glm::ivec2 _playerChunkPos = glm::ivec2(50,50);

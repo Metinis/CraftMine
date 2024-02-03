@@ -15,54 +15,51 @@
 #include <random>
 #include "BlockData.h"
 
+class ChunkGeneration;
+
 class World;
+
+class ChunkMeshGeneration;
 
 class Chunk
 {
 private:
-	std::vector<glm::vec3> chunkVerts;
-	std::vector<glm::vec2> chunkUVs;
-	std::vector<GLuint> chunkIndices;
-    std::vector<float> chunkBrightnessFloats;
-
-    std::vector<glm::vec3> transparentVerts;
-    std::vector<glm::vec2> transparentUVs;
-    std::vector<GLuint> transparentIndices;
-    std::vector<float> transparentBrightnessFloats;
-	
-	GLsizei indexCount = 0;
-    GLsizei transparentIndexCount = 0;
-
     Mesh* mesh = nullptr;
     Mesh* transparentMesh = nullptr;
 
-	World& world;
+    struct ChunkData{
+        std::vector<glm::vec3> chunkVerts;
+        std::vector<glm::vec2> chunkUVs;
+        std::vector<GLuint> chunkIndices;
+        std::vector<float> chunkBrightnessFloats;
 
-	bool CheckFace(int x, int y, int z, bool isSolid);
-    void AddFaces(int x, int y, int z, int &numFaces, bool isSolid);
-    static bool shouldGenTree();
-    void genTree(glm::ivec3 treeCoord);
-    void generateLeaves(int startX, int endX, int startZ, int endZ, int y);
-	void GenChunk(float* heightMap);
-    void IntegrateFace(FaceData faceData, bool isTransparent);
-    void AddIndices(int amtFaces, std::vector<GLuint> &indices, GLsizei &_indexCount);
-    void AddEdgeFaces(glm::ivec3 localBlockPos, int &numFaces, int &numTransparentFaces, int neighbourZ, int neighbourX, Chunk* tempChunk, Faces face);
-	void UpdateNeighbours();
-	void GenFaces();
-	
+        std::vector<glm::vec3> transparentVerts;
+        std::vector<glm::vec2> transparentUVs;
+        std::vector<GLuint> transparentIndices;
+        std::vector<float> transparentBrightnessFloats;
+
+        GLsizei indexCount = 0;
+        GLsizei transparentIndexCount = 0;
+    };
+    struct ChunkBools{
+        bool leftSideUpdated = false;
+        bool rightSideUpdated = false;
+        bool frontUpdated = false;
+        bool backUpdated = false;
+    };
 	
 public:
 	static const int SIZE = 16;
 	static const int HEIGHT = 128;
 
+    ChunkData chunkData;
+    ChunkBools chunkBools;
+
     bool generatedBlockData = false;
 	bool generatedBuffData = false;
 	bool inThread = false;
 
-    bool leftSideUpdated = false;
-    bool rightSideUpdated = false;
-    bool frontUpdated = false;
-    bool backUpdated = false;
+    World& world;
 
 	unsigned char blockIDs[SIZE * HEIGHT * SIZE] = {0}; //initialise all to empty block
 	glm::ivec2 chunkPosition;
@@ -72,7 +69,6 @@ public:
     unsigned char GetBlockID(glm::ivec3 pos);
     void SetBlock(glm::ivec3 pos, unsigned char id);
 	void GenBlocks();
-	void UpdateSide(CraftMine::Faces face);
 	void ClearVertexData();
 	//OpenGL stuff
 	void LoadChunkData();

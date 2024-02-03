@@ -98,48 +98,15 @@ void World::UpdateViewDistance(glm::ivec2 cameraChunkPos)
     CompareChunks compareChunks;
     compareChunks._playerChunkPos = cameraChunkPos;
 
-	int min_x;
-	int min_z;
-	int max_x;
-	int max_z;
-
     std::vector<Chunk*> generateChunks; //chunks sent to the generation thread, gets sent to other thread to load buffer data
 	std::vector<Chunk*> addedChunks; //chunks that already have buffer data, no need to send to generate or load
 	std::vector<Chunk*> newActiveChunks; //chunks that are still in view, no need to process/remove
     std::vector<Chunk*> chunksLoading; //chunks that are in cameras view but didn't load yet, let them load, don't remove
-	if (cameraChunkPos.x > viewDistance)
-	{
-		min_x = cameraChunkPos.x - viewDistance;
-	}
-	else
-	{
-		min_x = 0;
-	}
-	if (cameraChunkPos.y > viewDistance)
-	{
-		min_z = cameraChunkPos.y - viewDistance;
-	}
-	else
-	{
-		min_z = 0;
-	}
 
-	if (SIZE > cameraChunkPos.x + viewDistance)
-	{
-		max_x = cameraChunkPos.x + viewDistance;
-	}
-	else
-	{
-		max_x = SIZE;
-	}
-	if (SIZE > cameraChunkPos.y + viewDistance)
-	{
-		max_z = cameraChunkPos.y + viewDistance;
-	}
-	else
-	{
-		max_z = SIZE;
-	}
+    int min_x = (cameraChunkPos.x > viewDistance) ? (cameraChunkPos.x - viewDistance) : 0;
+    int min_z = (cameraChunkPos.y > viewDistance) ? (cameraChunkPos.y - viewDistance) : 0;
+    int max_x = (SIZE > cameraChunkPos.x + viewDistance) ? (cameraChunkPos.x + viewDistance) : SIZE;
+    int max_z = (SIZE > cameraChunkPos.y + viewDistance) ? (cameraChunkPos.y + viewDistance) : SIZE;
 
 	for (int x = min_x; x < max_x; x++)
 	{
