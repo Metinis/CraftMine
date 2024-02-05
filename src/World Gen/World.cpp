@@ -231,9 +231,9 @@ bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDire
             localPos.z = globalPos.z - tempCurrentChunk->chunkPosition.y * Chunk::SIZE;
             if (tempCurrentChunk->GetBlockID(localPos) != 0) {
 
-                if(static_cast<int>(glm::abs(static_cast<int>(std::round(rayOrigin.x) - globalPos.x)) > 1) ||
-                static_cast<int>(glm::abs(static_cast<int>(std::round(rayOrigin.y) - globalPos.y)) > 1) ||
-                static_cast<int>(glm::abs(static_cast<int>(std::round(rayOrigin.z) - globalPos.z)) > 1))
+                if(static_cast<int>(glm::abs((rayOrigin.x - (rayOrigin.x + rayDirection.x * step))) > 1) ||
+                static_cast<int>(glm::abs((rayOrigin.y - (rayOrigin.y + rayDirection.y * step))) > 1) ||
+                static_cast<int>(glm::abs((rayOrigin.z - (rayOrigin.z + rayDirection.z * step))) > 1))
                 {
                     result = localPos;
                     return true;
