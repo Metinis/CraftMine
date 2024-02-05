@@ -5,9 +5,14 @@ in vec3 ourColor;
 in vec2 TexCoord;
 in float brightness;
 
-float minBrightness = 0.1f;
+float minBrightness = 0.5f;
 
+in vec4 FragPos;
 uniform sampler2D ourTexture;
+uniform vec3 cameraPos;
+uniform float fogStart;
+uniform float fogEnd;
+uniform vec3 fogColor;
 
 
 void main()
@@ -25,8 +30,13 @@ void main()
         adjustedColor = sampledColor.rgb * brightness;
     }
 
+    float distance = length(FragPos.xyz - cameraPos);
+
+    float fogFactor = smoothstep(fogStart, fogEnd, distance);
+
+    vec3 finalColor = mix(adjustedColor, fogColor, fogFactor);
 
     // Set the output color
-    FragColor = vec4(adjustedColor, sampledColor.a);
+    FragColor = vec4(finalColor, sampledColor.a);
 }
 

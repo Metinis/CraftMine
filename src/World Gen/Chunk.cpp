@@ -65,6 +65,7 @@ void Chunk::LoadBufferData()
     transparentMesh = new Mesh(*world.transparentShader);
     transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);
     transparentMesh->loadData();
+    chunkHasMeshes = true;
 }
 
 void Chunk::RenderChunk()
@@ -83,6 +84,7 @@ void Chunk::LoadChunkData() {
 
 void Chunk::Delete()
 {
+    chunkHasMeshes = false;
     ClearVertexData();
     delete mesh;
     mesh = nullptr;

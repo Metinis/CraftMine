@@ -1,5 +1,6 @@
 #include "Chunk.h"
 #include "World.h"
+#include "Input/MouseInput.h"
 
 
 World::World(Camera& _camera) : camera(_camera)
@@ -183,16 +184,151 @@ Chunk* World::GetChunk(int x, int y)
 {
 	return chunks[x + SIZE * y];
 }
+bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, glm::ivec3& result, Chunk*& currentChunk) {
+    float step = 0.0f;
+    float reach = 5.0f;
+
+    while (step < reach) {
+        glm::ivec3 globalPos;
+        globalPos.x = static_cast<int>(std::round(rayOrigin.x + rayDirection.x * step));
+        globalPos.y = static_cast<int>(std::round(rayOrigin.y + rayDirection.y * step));
+        globalPos.z = static_cast<int>(std::round(rayOrigin.z + rayDirection.z * step));
+
+        currentChunk = GetChunk(globalPos.x / Chunk::SIZE, globalPos.z / Chunk::SIZE);
+        if (currentChunk != nullptr && currentChunk->generatedBlockData) {
+
+            glm::ivec3 localPos;
+            localPos.x = globalPos.x - currentChunk->chunkPosition.x * Chunk::SIZE;
+            localPos.y = globalPos.y;
+            localPos.z = globalPos.z - currentChunk->chunkPosition.y * Chunk::SIZE;
+            if (currentChunk->GetBlockID(localPos) != 0) {
+                result = localPos;
+                return true;
+            }
+        }
+        step+=0.01f;
+    }
+
+    return false;
+}
+bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, glm::ivec3& result, Chunk*& currentChunk, glm::ivec3& lastEmptyPos) {
+
+    float step = 0.0f;
+    float reach = 5.0f;
+
+    while (step < reach) {
+        glm::ivec3 globalPos;
+        globalPos.x = static_cast<int>(std::round(rayOrigin.x + rayDirection.x * step));
+        globalPos.y = static_cast<int>(std::round(rayOrigin.y + rayDirection.y * step));
+        globalPos.z = static_cast<int>(std::round(rayOrigin.z + rayDirection.z * step));
+
+        Chunk* tempCurrentChunk = GetChunk(globalPos.x / Chunk::SIZE, globalPos.z / Chunk::SIZE);
+        if (tempCurrentChunk!= nullptr && tempCurrentChunk->generatedBlockData) {
+
+            glm::ivec3 localPos;
+            localPos.x = globalPos.x - tempCurrentChunk->chunkPosition.x * Chunk::SIZE;
+            localPos.y = globalPos.y;
+            localPos.z = globalPos.z - tempCurrentChunk->chunkPosition.y * Chunk::SIZE;
+            if (tempCurrentChunk->GetBlockID(localPos) != 0) {
+
+                if(static_cast<int>(glm::abs(static_cast<int>(std::round(rayOrigin.x) - globalPos.x)) > 1) ||
+                static_cast<int>(glm::abs(static_cast<int>(std::round(rayOrigin.y) - globalPos.y)) > 1) ||
+                static_cast<int>(glm::abs(static_cast<int>(std::round(rayOrigin.z) - globalPos.z)) > 1))
+                {
+                    result = localPos;
+                    return true;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else
+            {
+                lastEmptyPos = localPos;
+                currentChunk = GetChunk(globalPos.x / Chunk::SIZE, globalPos.z / Chunk::SIZE);
+            }
+        }
+        step+=0.01f;
+    }
+
+    return false;
+}
+void World::PlaceBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirection) {
+    glm::ivec3 localPos;
+    glm::ivec3 lastEmptyPos;
+    Chunk* currentChunk;
+
+    // Raycast to find the block to place the face on
+    if (RaycastBlockPos(rayOrigin, rayDirection, localPos, currentChunk, lastEmptyPos)) {
+
+        if(currentChunk->generatedBlockData) {
+            currentChunk->SetBlock(lastEmptyPos, 3);
+            mutexChunksToLoadData.lock();
+            chunksToLoadData.push_back(currentChunk);
+            mutexChunksToLoadData.unlock();
+        }
+    }
+}
+void World::BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirection){
+
+    glm::ivec3 localPos;
+    Chunk* currentChunk;
+    if(RaycastBlockPos(rayOrigin, rayDirection, localPos, currentChunk))
+    {
+        currentChunk->SetBlock(localPos, 0);
+        //if block broken was on border, check and update neighbouring chunk mesh
+        mutexChunksToLoadData.lock();
+        chunksToLoadData.push_back(currentChunk);
+        mutexChunksToLoadData.unlock();
+        int tempChunkX = currentChunk->chunkPosition.x;
+        int tempChunkZ = currentChunk->chunkPosition.y;
+        Chunk* tempChunk1 = nullptr;
+        Chunk* tempChunk2 = nullptr;
+        if(localPos.x == 0 || localPos.x == Chunk::SIZE-1)
+        {
+            tempChunkX = (localPos.x == 0) ? currentChunk->chunkPosition.x-1 : currentChunk->chunkPosition.x+1;
+            tempChunk1 = GetChunk(tempChunkX, currentChunk->chunkPosition.y);
+        }
+        if(localPos.z == 0 || localPos.z == Chunk::SIZE-1)
+        {
+            tempChunkZ = (localPos.z == 0) ? currentChunk->chunkPosition.y-1 : currentChunk->chunkPosition.y+1;
+            tempChunk2 = GetChunk(currentChunk->chunkPosition.x, tempChunkZ);
+        }
+        //2 temp chunks just in case we are in corner
+        if(tempChunk1 != nullptr && tempChunk1->generatedBlockData)
+        {
+            mutexChunksToLoadData.lock();
+            chunksToLoadData.push_back(tempChunk1);
+            mutexChunksToLoadData.unlock();
+        }
+        if(tempChunk2 != nullptr && tempChunk2->generatedBlockData)
+        {
+            mutexChunksToLoadData.lock();
+            chunksToLoadData.push_back(tempChunk2);
+            mutexChunksToLoadData.unlock();
+        }
+    }
+
+}
 void World::BindPrograms()
 {
     shader->use();
     shader->setMat4("model", model);
     shader->setMat4("projection", proj);
+    shader->setVec3("cameraPos", camera.Position);
+    shader->setFloat("fogStart", ((viewDistance - (viewDistance/3)) < viewDistance - 1 ? (viewDistance - (viewDistance/3)) : 0) * Chunk::SIZE);
+    shader->setFloat("fogEnd", (viewDistance-1) * Chunk::SIZE);
+    shader->setVec3("fogColor", glm::vec3(0.55f, 0.75f, 1.0f));
     texture->Bind();
 
     transparentShader->use();
     transparentShader->setMat4("model", model);
     transparentShader->setMat4("projection", proj);
+    transparentShader->setVec3("cameraPos", camera.Position);
+    transparentShader->setFloat("fogStart", ((viewDistance - (viewDistance/3)) < viewDistance - 1 ? (viewDistance - (viewDistance/3)) : 0) * Chunk::SIZE);
+    transparentShader->setFloat("fogEnd", (viewDistance-1) * Chunk::SIZE);
+    transparentShader->setVec3("fogColor", glm::vec3(0.55f, 0.75f, 1.0f));
     texture->Bind();
 }
 void World::ChangeGlobalTexture()
@@ -210,11 +346,17 @@ void World::ChangeGlobalTexture()
 }
 void World::RenderWorld(Camera _camera)
 {
+    shader->use();
+    shader->setVec3("cameraPos", camera.Position);
+    transparentShader->use();
+    transparentShader->setVec3("cameraPos", camera.Position);
+
     //changes global texture every second that passes
     int currentTime = (int)glfwGetTime();
     if(currentTime != lastTime)
     {
         ChangeGlobalTexture();
+
         lastTime = currentTime;
     }
 
@@ -246,7 +388,7 @@ void World::RenderWorld(Camera _camera)
 
 	for (Chunk* chunk : activeChunks)
 	{
-		if(chunk->generatedBuffData && !chunk->inThread)
+		if(chunk->chunkHasMeshes)
 		chunk->RenderChunk();
 	}
 

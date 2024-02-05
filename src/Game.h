@@ -42,6 +42,8 @@ private:
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
     static void processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, Camera& camera, World& world, float& deltaTime);
+
+
 };
 
 

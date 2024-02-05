@@ -40,7 +40,7 @@ Game::Game(){
 
     camera = new Camera();
     world = new World(*camera);
-    mouseInput = new MouseInput(SCR_WIDTH, SCR_HEIGHT, *camera);
+    mouseInput = new MouseInput(SCR_WIDTH, SCR_HEIGHT, *camera, *world);
 
     glfwSetWindowUserPointer(window, mouseInput);
 
@@ -48,6 +48,7 @@ Game::Game(){
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(window, MouseInput::mouse_callback);
+    glfwSetMouseButtonCallback(window, MouseInput::mouse_button_callback);
 
     deltaTime = 0.0f;
     lastFrame = 0.0f;
@@ -136,4 +137,9 @@ void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed
         camera.ProcessKeyboardMovement(cameraMovement::LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.ProcessKeyboardMovement(cameraMovement::RIGHT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+        camera.ProcessKeyboardMovement(cameraMovement::DOWN, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        camera.ProcessKeyboardMovement(cameraMovement::UP, deltaTime);
 }
+

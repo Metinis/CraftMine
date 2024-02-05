@@ -57,6 +57,7 @@ public:
 
     bool generatedBlockData = false;
 	bool generatedBuffData = false;
+    bool chunkHasMeshes = false;
 	bool inThread = false;
 
     World& world;

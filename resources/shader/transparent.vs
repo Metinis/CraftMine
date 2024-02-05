@@ -11,6 +11,7 @@ uniform mat4 projection;
 
 out vec3 ourColor;
 out float brightness;
+out vec4 FragPos;
 
 void main()
 {
@@ -18,4 +19,5 @@ void main()
     ourColor = vec3(0.5, 0.0, 0.0);
     TexCoord = aTexCoord;
     brightness = aBrightness;
+    FragPos = model * vec4(aPos, 1.0);
 }

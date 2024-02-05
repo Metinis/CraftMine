@@ -12,16 +12,18 @@ enum cameraMovement {
 	FORWARD,
 	BACKWARD,
 	LEFT,
-	RIGHT
+	RIGHT,
+    DOWN,
+    UP
 };
 
 class Camera
 {
 private:
-	glm::vec3 Right, Up, Front, WorldUp;
+	glm::vec3 Right, Up, WorldUp;
 	void updateCameraVectors();
 public:
-	
+    glm::vec3 Front;
 	float Yaw;
 	float Pitch;
 	float movementSpeed;

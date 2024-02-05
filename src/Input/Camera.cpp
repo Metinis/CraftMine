@@ -9,7 +9,7 @@ Camera::Camera()
     Up = glm::normalize(glm::cross(Right, Front));
     Yaw = -90.0f;
     Pitch = 0.0f;
-    movementSpeed = 50.5f;
+    movementSpeed = 25.0f;
     MouseSensitivity = 0.1f;
 }
 glm::mat4 Camera::GetViewMatrix()
@@ -20,13 +20,17 @@ void Camera::ProcessKeyboardMovement(cameraMovement dir, float deltaTime)
 {
 	float velocity = movementSpeed * deltaTime;
 	if (dir == cameraMovement::FORWARD)
-		Position += Front * velocity;
+		Position += glm::normalize(glm::vec3(Front.x, 0, Front.z)) * velocity;
 	if (dir == cameraMovement::BACKWARD)
-		Position -= Front * velocity;
+		Position -= glm::normalize(glm::vec3(Front.x, 0, Front.z)) * velocity;
 	if (dir == cameraMovement::LEFT)
 		Position -= Right * velocity;
 	if (dir == cameraMovement::RIGHT)
 		Position += Right * velocity;
+    if (dir == cameraMovement::DOWN)
+        Position.y -= velocity;
+    if (dir == cameraMovement::UP)
+        Position.y += velocity;
 }
 void Camera::ProcessMouseMovement(float xoffset, float yoffset)
 {

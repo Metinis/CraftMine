@@ -10,6 +10,9 @@
 #include <cmath>
 #include <iostream>
 #include <filesystem>
+
+class MouseInput;
+
 class Chunk;
 
 class World
@@ -52,6 +55,7 @@ private:
 	void BindPrograms();
     void ChangeGlobalTexture();
 
+
 public:
     Camera& camera;
     Shader* shader;
@@ -80,6 +84,14 @@ public:
 	void UpdateViewDistance(glm::ivec2 cameraPos);
 
 	Chunk* GetChunk(int x, int y);
+
+    bool RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, glm::ivec3& result, Chunk*& chunk);
+
+    bool RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, glm::ivec3& result, Chunk*& currentChunk, glm::ivec3& lastEmptyPos);
+
+    void PlaceBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirection);
+
+    void BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirection);
 
 	void RenderWorld(Camera _camera);
 
