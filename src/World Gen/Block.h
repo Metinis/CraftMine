@@ -16,6 +16,8 @@ class Block
 public:
 	static FaceData GetFace(Faces face, BlockType type, glm::vec3 position);
 	static std::vector<glm::vec3> AddTransformedVertices(std::vector<glm::vec3> vertices, glm::vec3 Position, BlockType type);
+    static std::vector<glm::vec3> GetOutline(glm::vec3 position);
+    static std::vector<glm::vec3> AddOutlineVertices(std::vector<glm::vec3> vertices, glm::vec3 Position);
     static bool transparent(int id);
 
 };

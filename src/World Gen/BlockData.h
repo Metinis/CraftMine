@@ -10,12 +10,12 @@
 class Chunk;
 namespace CraftMine {	//using namespace since it conflicts with some cameraMovement stuff
 	enum Faces {
-		FRONT,
-		RIGHT,
-		BACK,
 		LEFT,
-		TOP,
-		BOTTOM
+        RIGHT,
+        FRONT,
+        BACK,
+        TOP,
+        BOTTOM
 	};
 	enum BlockType {
 		EMPTY,

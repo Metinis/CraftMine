@@ -32,6 +32,9 @@ private:
 
     int lastTexture = 1;
     int lastTime = 0;
+    int _indexCount = 0; //for outline
+
+    glm::ivec3 lastOutlinePos;
 
 	std::mutex mutexChunksToGenerate;
 	std::mutex mutexChunksToLoadData;
@@ -54,12 +57,20 @@ private:
 	void GenerateChunkBuffers(std::vector<Chunk*>& addedChunks);
 	void BindPrograms();
     void ChangeGlobalTexture();
+    void UpdateOutlineBuffers(glm::ivec3& globalPos);
+    void DrawOutline();
 
 
 public:
     Camera& camera;
     Shader* shader;
     Shader* transparentShader;
+    Shader* outlineShader;
+
+    VAO* outlineVAO = nullptr;
+    VBO* outlineVBO = nullptr;
+    IBO* outlineIBO = nullptr;
+
 	static const int SIZE = 1000;
 	int viewDistance = 12;
 	std::thread chunkThread;
@@ -92,6 +103,8 @@ public:
     void PlaceBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirection);
 
     void BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirection);
+
+    void RenderBlockOutline();
 
 	void RenderWorld(Camera _camera);
 

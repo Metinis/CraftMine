@@ -5,6 +5,28 @@ FaceData Block::GetFace(Faces face, BlockType type, glm::vec3 position)
 {
 	return FaceData{ AddTransformedVertices(FaceDataRaw::rawVertexData.at(face), position, type), TextureData::GetBlockTypeUV(type, face), CraftMine::brightnessMap.at(face) };
 }
+std::vector<glm::vec3> Block::GetOutline(glm::vec3 position)
+{
+    std::vector<glm::vec3> newVertices;
+    for(int i = 0; i < 6; i++)
+    {
+        Faces currentFace = static_cast<Faces>(i);
+        std::vector<glm::vec3> vertices = AddOutlineVertices(FaceDataRaw::rawVertexData.at(currentFace), position);
+        newVertices.insert(newVertices.end(),vertices.begin(), vertices.end());
+    }
+    return newVertices;
+}
+std::vector<glm::vec3> Block::AddOutlineVertices(std::vector<glm::vec3> vertices, glm::vec3 Position)
+{
+    std::vector<glm::vec3> newVerts;
+
+    for (glm::vec3 vert : vertices)
+    {
+        vert = vert * 1.025f;
+        newVerts.push_back(vert + Position);
+    }
+    return newVerts;
+}
 std::vector<glm::vec3> Block::AddTransformedVertices(std::vector<glm::vec3> vertices, glm::vec3 Position, BlockType type)
 {
 	std::vector<glm::vec3> newVerts;

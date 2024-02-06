@@ -6,6 +6,7 @@
 World::World(Camera& _camera) : camera(_camera)
 {
     shader = new Shader("../resources/shader/shader.vs", "../resources/shader/shader.fs");
+    outlineShader = new Shader("../resources/shader/OutlineShader.vs", "../resources/shader/OutlineShader.fs");
     transparentShader = new Shader("../resources/shader/transparent.vs", "../resources/shader/transparent.fs");
     texture = new Texture("../resources/texture/terrain1.png");
 	model = glm::mat4(1.0f);
@@ -322,6 +323,10 @@ void World::BindPrograms()
     shader->setVec3("fogColor", glm::vec3(0.55f, 0.75f, 1.0f));
     texture->Bind();
 
+    outlineShader->use();
+    outlineShader->setMat4("model", model);
+    outlineShader->setMat4("projection", proj);
+
     transparentShader->use();
     transparentShader->setMat4("model", model);
     transparentShader->setMat4("projection", proj);
@@ -344,12 +349,92 @@ void World::ChangeGlobalTexture()
     std::string texturePath = path.str();
     texture->setTexture(texturePath.c_str());
 }
+void World::RenderBlockOutline()
+{
+    glm::ivec3 result;
+    Chunk* currentChunk;
+    if(RaycastBlockPos(camera.Position, camera.Front, result, currentChunk)){
+        glm::ivec3 globalPos = glm::vec3(result.x + currentChunk->chunkPosition.x * Chunk::SIZE, result.y, result.z + currentChunk->chunkPosition.y * Chunk::SIZE);
+        if(globalPos != lastOutlinePos)
+        {
+            UpdateOutlineBuffers(globalPos);
+            DrawOutline();
+        }
+        else
+        {
+            DrawOutline();
+        }
+        lastOutlinePos = globalPos;
+
+    }
+
+}
+void World::UpdateOutlineBuffers(glm::ivec3& globalPos){
+    outlineShader->use();
+    if(outlineVAO != nullptr)
+    {
+        outlineVAO->Delete();
+        delete outlineVAO;
+        outlineVAO = nullptr;
+    }
+    if(outlineVBO != nullptr)
+    {
+        outlineVBO->Delete();
+        delete outlineVBO;
+        outlineVBO = nullptr;
+    }
+    if(outlineIBO != nullptr)
+    {
+        outlineIBO->Delete();
+        delete outlineIBO;
+        outlineIBO = nullptr;
+    }
+    std::vector<glm::vec3> vertices = Block::GetOutline(globalPos);
+    std::vector<GLuint> indices;
+
+    _indexCount = 0;
+    for (int i = 0; i < 6; i++)
+    {
+        indices.push_back(0 + _indexCount);
+        indices.push_back(1 + _indexCount);
+        indices.push_back(2 + _indexCount);
+        indices.push_back(2 + _indexCount);
+        indices.push_back(3 + _indexCount);
+        indices.push_back(0 + _indexCount);
+
+        _indexCount += 4;
+    }
+
+    outlineVAO = new VAO();
+
+    outlineVBO = new VBO(vertices);
+    outlineVBO->Bind();
+
+    outlineVAO->LinkToVAO(outlineShader->getAttribLocation("aPos"), 3, *outlineVBO);
+
+    outlineVBO->Unbind();
+
+    outlineIBO = new IBO(indices);
+}
+
+void World::DrawOutline()
+{
+    int indexCount = 36;
+    outlineShader->use();
+    outlineVAO->Bind();
+    outlineIBO->Bind();
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indexCount), GL_UNSIGNED_INT, nullptr);
+    outlineVAO->Unbind();
+    outlineIBO->Unbind();
+}
 void World::RenderWorld(Camera _camera)
 {
     shader->use();
     shader->setVec3("cameraPos", camera.Position);
     transparentShader->use();
     transparentShader->setVec3("cameraPos", camera.Position);
+
+
 
     //changes global texture every second that passes
     int currentTime = (int)glfwGetTime();
@@ -380,6 +465,10 @@ void World::RenderWorld(Camera _camera)
 	shader->setMat4("view", view);
     transparentShader->use();
     transparentShader->setMat4("view", view);
+    outlineShader->use();
+    outlineShader->setMat4("view", view);
+
+
 
     //sort active chunks by farthest from the player in front -> for transparency
     CompareChunks compareChunks;
@@ -391,6 +480,8 @@ void World::RenderWorld(Camera _camera)
 		if(chunk->chunkHasMeshes)
 		chunk->RenderChunk();
 	}
+    RenderBlockOutline();
+
 
 }
 
