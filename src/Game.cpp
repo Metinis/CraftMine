@@ -85,7 +85,7 @@ void Game::run(){
         glClearColor(0.55f, 0.75f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         ui->renderCrosshair();
-        world->RenderWorld(*camera);
+        world->RenderWorld();
 
         glfwSwapBuffers(window);
         glfwPollEvents();

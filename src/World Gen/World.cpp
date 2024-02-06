@@ -1,24 +1,37 @@
 #include "Chunk.h"
 #include "World.h"
 #include "Input/MouseInput.h"
+#include "ChunkMeshGeneration.h"
 
 
 World::World(Camera& _camera) : camera(_camera)
 {
     shader = new Shader("../resources/shader/shader.vs", "../resources/shader/shader.fs");
+
     outlineShader = new Shader("../resources/shader/OutlineShader.vs", "../resources/shader/OutlineShader.fs");
+
     transparentShader = new Shader("../resources/shader/transparent.vs", "../resources/shader/transparent.fs");
+
     texture = new Texture("../resources/texture/terrain1.png");
+
 	model = glm::mat4(1.0f);
 	view = glm::mat4(1.0f);
 	proj = glm::perspective(glm::radians(65.0f), 16.0f / 9.0f, 0.1f, 10000.0f);
+
+    outlineShader->use();
+    outlineShader->setMat4("model", model);
+    outlineShader->setMat4("projection", proj);
+
     playerChunkPos = glm::ivec2(camera.Position.x / Chunk::SIZE, camera.Position.z / Chunk::SIZE); //used for priority queues, chunks closest have priority
+
+    //initialise threads
 	chunkThread = std::thread(&World::GenerateChunkThread, this);
 	chunkThread.detach();
 	worldGenThread = std::thread(&World::GenerateWorldThread, this);
 	worldGenThread.detach();
 
-	BindPrograms();
+	LoadShader(shader);
+    LoadShader(transparentShader);
 }
 
 [[noreturn]] void World::GenerateChunkThread()
@@ -185,6 +198,7 @@ Chunk* World::GetChunk(int x, int y)
 {
 	return chunks[x + SIZE * y];
 }
+//used for breaking blocks
 bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, glm::ivec3& result, Chunk*& currentChunk) {
     float step = 0.0f;
     float reach = 5.0f;
@@ -212,6 +226,7 @@ bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDire
 
     return false;
 }
+//Used for place blocks
 bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, glm::ivec3& result, Chunk*& currentChunk, glm::ivec3& lastEmptyPos) {
 
     float step = 0.0f;
@@ -312,7 +327,7 @@ void World::BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
     }
 
 }
-void World::BindPrograms()
+void World::LoadShader(Shader* shader)
 {
     shader->use();
     shader->setMat4("model", model);
@@ -322,32 +337,27 @@ void World::BindPrograms()
     shader->setFloat("fogEnd", (viewDistance-1) * Chunk::SIZE);
     shader->setVec3("fogColor", glm::vec3(0.55f, 0.75f, 1.0f));
     texture->Bind();
-
-    outlineShader->use();
-    outlineShader->setMat4("model", model);
-    outlineShader->setMat4("projection", proj);
-
-    transparentShader->use();
-    transparentShader->setMat4("model", model);
-    transparentShader->setMat4("projection", proj);
-    transparentShader->setVec3("cameraPos", camera.Position);
-    transparentShader->setFloat("fogStart", ((viewDistance - (viewDistance/3)) < viewDistance - 1 ? (viewDistance - (viewDistance/3)) : 0) * Chunk::SIZE);
-    transparentShader->setFloat("fogEnd", (viewDistance-1) * Chunk::SIZE);
-    transparentShader->setVec3("fogColor", glm::vec3(0.55f, 0.75f, 1.0f));
-    texture->Bind();
 }
 void World::ChangeGlobalTexture()
 {
-    if(lastTexture < 5) {
-        lastTexture++;
+    //Updates every second
+    int currentTime = (int)glfwGetTime();
+    if(currentTime != lastTime)
+    {
+        if(lastTexture < 5) {
+            lastTexture++;
+        }
+        else {
+            lastTexture = 1;
+        }
+        std::stringstream path;
+        path << "../resources/texture/terrain" << lastTexture << ".png";
+        std::string texturePath = path.str();
+        texture->setTexture(texturePath.c_str());
+
+        lastTime = currentTime;
     }
-    else {
-        lastTexture = 1;
-    }
-    std::stringstream path;
-    path << "../resources/texture/terrain" << lastTexture << ".png";
-    std::string texturePath = path.str();
-    texture->setTexture(texturePath.c_str());
+
 }
 void World::RenderBlockOutline()
 {
@@ -371,6 +381,9 @@ void World::RenderBlockOutline()
 }
 void World::UpdateOutlineBuffers(glm::ivec3& globalPos){
     outlineShader->use();
+    std::vector<glm::vec3> vertices = Block::GetOutline(globalPos);
+    std::vector<GLuint> indices;
+
     if(outlineVAO != nullptr)
     {
         outlineVAO->Delete();
@@ -389,21 +402,9 @@ void World::UpdateOutlineBuffers(glm::ivec3& globalPos){
         delete outlineIBO;
         outlineIBO = nullptr;
     }
-    std::vector<glm::vec3> vertices = Block::GetOutline(globalPos);
-    std::vector<GLuint> indices;
-
-    _indexCount = 0;
-    for (int i = 0; i < 6; i++)
-    {
-        indices.push_back(0 + _indexCount);
-        indices.push_back(1 + _indexCount);
-        indices.push_back(2 + _indexCount);
-        indices.push_back(2 + _indexCount);
-        indices.push_back(3 + _indexCount);
-        indices.push_back(0 + _indexCount);
-
-        _indexCount += 4;
-    }
+    //Calculates the indices for the vertices, reusing a method for chunks
+    int _indexCount = 0;
+    ChunkMeshGeneration::AddIndices(6, indices, _indexCount);
 
     outlineVAO = new VAO();
 
@@ -417,7 +418,7 @@ void World::UpdateOutlineBuffers(glm::ivec3& globalPos){
     outlineIBO = new IBO(indices);
 }
 
-void World::DrawOutline()
+void World::DrawOutline() const
 {
     int indexCount = 36;
     outlineShader->use();
@@ -427,61 +428,60 @@ void World::DrawOutline()
     outlineVAO->Unbind();
     outlineIBO->Unbind();
 }
-void World::RenderWorld(Camera _camera)
+void World::UpdateShaders()
 {
     shader->use();
     shader->setVec3("cameraPos", camera.Position);
     transparentShader->use();
     transparentShader->setVec3("cameraPos", camera.Position);
-
-
-
-    //changes global texture every second that passes
-    int currentTime = (int)glfwGetTime();
-    if(currentTime != lastTime)
-    {
-        ChangeGlobalTexture();
-
-        lastTime = currentTime;
-    }
-
-	if (!loadedChunks.empty())
-	{
-		std::vector<Chunk*> addedChunks;
-		mutexChunksToLoadData.lock();
-		for (int i = 0; i < loadedChunks.size(); i++)
-		{
-			Chunk* chunk = loadedChunks.front();
-			addedChunks.push_back(chunk);
-			loadedChunks.pop();
-		}
-		mutexChunksToLoadData.unlock();
-		if (!addedChunks.empty())
-			GenerateChunkBuffers(addedChunks); //adds to active chunks
-	}
-
-	view = _camera.GetViewMatrix();
+    view = camera.GetViewMatrix();
     shader->use();
-	shader->setMat4("view", view);
+    shader->setMat4("view", view);
     transparentShader->use();
     transparentShader->setMat4("view", view);
     outlineShader->use();
     outlineShader->setMat4("view", view);
-
-
-
+}
+void World::LoadThreadDataToMain()
+{
+    if (!loadedChunks.empty())
+    {
+        std::vector<Chunk*> addedChunks;
+        mutexChunksToLoadData.lock();
+        for (int i = 0; i < loadedChunks.size(); i++)
+        {
+            Chunk* chunk = loadedChunks.front();
+            addedChunks.push_back(chunk);
+            loadedChunks.pop();
+        }
+        mutexChunksToLoadData.unlock();
+        if (!addedChunks.empty())
+            GenerateChunkBuffers(addedChunks); //adds to active chunks
+    }
+}
+void World::SortAndRenderChunks()
+{
     //sort active chunks by farthest from the player in front -> for transparency
     CompareChunks compareChunks;
     compareChunks._playerChunkPos = playerChunkPos;
     std::sort(activeChunks.begin(), activeChunks.end(), compareChunks);
 
-	for (Chunk* chunk : activeChunks)
-	{
-		if(chunk->chunkHasMeshes)
-		chunk->RenderChunk();
-	}
+    for (Chunk* chunk : activeChunks)
+    {
+        if(chunk->chunkHasMeshes)
+            chunk->RenderChunk();
+    }
+}
+void World::RenderWorld()
+{
+    UpdateShaders();
+    //changes global texture every second that passes
+    ChangeGlobalTexture();
+
+    LoadThreadDataToMain();
+
+    SortAndRenderChunks();
+
     RenderBlockOutline();
-
-
 }
 

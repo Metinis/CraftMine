@@ -15,6 +15,8 @@ class MouseInput;
 
 class Chunk;
 
+class ChunkMeshGeneration;
+
 class World
 {
 private:
@@ -32,7 +34,6 @@ private:
 
     int lastTexture = 1;
     int lastTime = 0;
-    int _indexCount = 0; //for outline
 
     glm::ivec3 lastOutlinePos;
 
@@ -55,10 +56,13 @@ private:
 
     void CheckForBlocksToBeAdded(Chunk* chunk);
 	void GenerateChunkBuffers(std::vector<Chunk*>& addedChunks);
-	void BindPrograms();
+	void LoadShader(Shader* shader);
     void ChangeGlobalTexture();
     void UpdateOutlineBuffers(glm::ivec3& globalPos);
-    void DrawOutline();
+    void DrawOutline() const;
+    void UpdateShaders();
+    void LoadThreadDataToMain();
+    void SortAndRenderChunks();
 
 
 public:
@@ -106,7 +110,7 @@ public:
 
     void RenderBlockOutline();
 
-	void RenderWorld(Camera _camera);
+	void RenderWorld();
 
 };
 
