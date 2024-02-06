@@ -41,6 +41,7 @@ Game::Game(){
     camera = new Camera();
     world = new World(*camera);
     mouseInput = new MouseInput(SCR_WIDTH, SCR_HEIGHT, *camera, *world);
+    ui = new UI();
 
     glfwSetWindowUserPointer(window, mouseInput);
 
@@ -82,7 +83,7 @@ void Game::run(){
         }
         glClearColor(0.55f, 0.75f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        ui->renderCrosshair();
         world->RenderWorld(*camera);
 
         glfwSwapBuffers(window);

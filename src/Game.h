@@ -13,6 +13,7 @@
 #include "Input/Camera.h"
 #include "Chunk.h"
 #include "World.h"
+#include "UI.h"
 #include "Input/MouseInput.h"
 
 #define SCR_WIDTH 1280
@@ -27,6 +28,7 @@ public:
     void run();
 
 private:
+    UI* ui;
     GLFWwindow* window;
     Camera* camera;
     World* world;
