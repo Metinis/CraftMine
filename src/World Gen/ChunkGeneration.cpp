@@ -59,7 +59,18 @@ bool ChunkGeneration::shouldGenTree()
 }
 void ChunkGeneration::genTree(glm::ivec3 treeCoord, Chunk& chunk) //starts from bottom block
 {
-    int treeHeight = 5;
+    std::random_device rd;
+    std::mt19937 rng(rd());
+
+    // Define the range
+    int lower_bound = 4;
+    int upper_bound = 5;
+
+    // Create a uniform integer distribution
+    std::uniform_int_distribution<int> distribution(lower_bound, upper_bound);
+
+    // Generate a random number between 5 and 7
+    int treeHeight = distribution(rng);
     int leafHeight = 2;
 
     for(int y = treeCoord.y; y < (treeHeight + treeCoord.y + leafHeight) && y < Chunk::HEIGHT; y++)
@@ -69,7 +80,7 @@ void ChunkGeneration::genTree(glm::ivec3 treeCoord, Chunk& chunk) //starts from 
         if(y < treeHeight + treeCoord.y)
             chunk.SetBlock(glm::ivec3(treeCoord.x, y, treeCoord.z), 7); //7 is wood
 
-        if(localY > 2 && localY < treeHeight) {
+        if(localY >= treeHeight - 2 && localY < treeHeight) {
             //bottom layer
             int startX = treeCoord.x - 2;
             int endX = treeCoord.x + 3;
