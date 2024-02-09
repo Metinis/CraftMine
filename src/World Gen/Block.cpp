@@ -22,7 +22,7 @@ std::vector<glm::vec3> Block::AddOutlineVertices(std::vector<glm::vec3> vertices
 
     for (glm::vec3 vert : vertices)
     {
-        vert = vert * 1.025f;
+        vert = vert * 1.01f;
         newVerts.push_back(vert + Position);
     }
     return newVerts;

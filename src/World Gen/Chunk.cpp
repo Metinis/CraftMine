@@ -11,7 +11,13 @@ Chunk::Chunk(glm::ivec2 Position, World& _world) : world(_world)
 
 unsigned char Chunk::GetBlockID(glm::ivec3 pos)
 {
-    return blockIDs[pos.x + SIZE * (pos.y + HEIGHT * pos.z)];
+    if(pos.x < 0 || pos.x > SIZE - 1 || pos.y < 0 || pos.y > HEIGHT - 1 || pos.z < 0 || pos.z > SIZE - 1)
+    {
+        return 0;
+    }
+    else {
+        return blockIDs[pos.x + SIZE * (pos.y + HEIGHT * pos.z)];
+    }
 }
 
 void Chunk::SetBlock(glm::ivec3 pos, unsigned char id)

@@ -16,7 +16,7 @@ World::World(Camera& _camera) : camera(_camera)
 
 	model = glm::mat4(1.0f);
 	view = glm::mat4(1.0f);
-	proj = glm::perspective(glm::radians(65.0f), 16.0f / 9.0f, 0.1f, 10000.0f);
+	proj = glm::perspective(glm::radians(65.0f), 16.0f / 9.0f, 0.25f, 10000.0f);
 
     outlineShader->use();
     outlineShader->setMat4("model", model);
@@ -380,7 +380,6 @@ void World::RenderBlockOutline()
 
 }
 void World::UpdateOutlineBuffers(glm::ivec3& globalPos){
-    outlineShader->use();
     std::vector<glm::vec3> vertices = Block::GetOutline(globalPos);
     std::vector<GLuint> indices;
 
@@ -404,7 +403,19 @@ void World::UpdateOutlineBuffers(glm::ivec3& globalPos){
     }
     //Calculates the indices for the vertices, reusing a method for chunks
     int _indexCount = 0;
-    ChunkMeshGeneration::AddIndices(6, indices, _indexCount);
+    for (int i = 0; i < 6; i++)
+    {
+        indices.push_back(3 + _indexCount);
+        indices.push_back(0 + _indexCount);
+        indices.push_back(0 + _indexCount);
+        indices.push_back(1 + _indexCount);
+        indices.push_back(1 + _indexCount);
+        indices.push_back(2 + _indexCount);
+        indices.push_back(2 + _indexCount);
+        indices.push_back(3 + _indexCount);
+
+        _indexCount += 4;	//uses element index, since each face only has 4 indices, we increment this everytime any block face is added
+    }
 
     outlineVAO = new VAO();
 
@@ -414,17 +425,18 @@ void World::UpdateOutlineBuffers(glm::ivec3& globalPos){
     outlineVAO->LinkToVAO(outlineShader->getAttribLocation("aPos"), 3, *outlineVBO);
 
     outlineVBO->Unbind();
+    outlineVAO->Unbind();
 
     outlineIBO = new IBO(indices);
 }
 
 void World::DrawOutline() const
 {
-    int indexCount = 36;
+    int indexCount = 48;
     outlineShader->use();
     outlineVAO->Bind();
     outlineIBO->Bind();
-    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indexCount), GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_LINES, static_cast<GLsizei>(indexCount), GL_UNSIGNED_INT, nullptr);
     outlineVAO->Unbind();
     outlineIBO->Unbind();
 }
@@ -435,12 +447,13 @@ void World::UpdateShaders()
     transparentShader->use();
     transparentShader->setVec3("cameraPos", camera.Position);
     view = camera.GetViewMatrix();
+    outlineShader->use();
+    outlineShader->setMat4("view", view);
     shader->use();
     shader->setMat4("view", view);
     transparentShader->use();
     transparentShader->setMat4("view", view);
-    outlineShader->use();
-    outlineShader->setMat4("view", view);
+
 }
 void World::LoadThreadDataToMain()
 {

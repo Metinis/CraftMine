@@ -84,8 +84,11 @@ void Game::run(){
         }
         glClearColor(0.55f, 0.75f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        ui->renderCrosshair();
+
         world->RenderWorld();
+        glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_SRC_ALPHA);
+        ui->renderCrosshair();
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
