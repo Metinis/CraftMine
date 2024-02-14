@@ -11,6 +11,8 @@
 #include <iostream>
 #include <filesystem>
 
+class Player;
+
 class MouseInput;
 
 class Chunk;

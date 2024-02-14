@@ -2,6 +2,7 @@
 #include "World.h"
 #include "Input/MouseInput.h"
 #include "ChunkMeshGeneration.h"
+#include "Player/Player.h"
 
 
 World::World(Camera& _camera) : camera(_camera)
@@ -16,13 +17,13 @@ World::World(Camera& _camera) : camera(_camera)
 
 	model = glm::mat4(1.0f);
 	view = glm::mat4(1.0f);
-	proj = glm::perspective(glm::radians(65.0f), 16.0f / 9.0f, 0.25f, 10000.0f);
+	proj = glm::perspective(glm::radians(65.0f), 16.0f / 9.0f, 0.2f, 10000.0f);
 
     outlineShader->use();
     outlineShader->setMat4("model", model);
     outlineShader->setMat4("projection", proj);
 
-    playerChunkPos = glm::ivec2(camera.Position.x / Chunk::SIZE, camera.Position.z / Chunk::SIZE); //used for priority queues, chunks closest have priority
+    playerChunkPos = glm::ivec2((*camera.position).x / Chunk::SIZE, (*camera.position).z / Chunk::SIZE); //used for priority queues, chunks closest have priority
 
     //initialise threads
 	chunkThread = std::thread(&World::GenerateChunkThread, this);
@@ -332,7 +333,7 @@ void World::LoadShader(Shader* shader)
     shader->use();
     shader->setMat4("model", model);
     shader->setMat4("projection", proj);
-    shader->setVec3("cameraPos", camera.Position);
+    shader->setVec3("cameraPos", *camera.position);
     shader->setFloat("fogStart", ((viewDistance - (viewDistance/3)) < viewDistance - 1 ? (viewDistance - (viewDistance/3)) : 0) * Chunk::SIZE);
     shader->setFloat("fogEnd", (viewDistance-1) * Chunk::SIZE);
     shader->setVec3("fogColor", glm::vec3(0.55f, 0.75f, 1.0f));
@@ -363,7 +364,7 @@ void World::RenderBlockOutline()
 {
     glm::ivec3 result;
     Chunk* currentChunk;
-    if(RaycastBlockPos(camera.Position, camera.Front, result, currentChunk)){
+    if(RaycastBlockPos(*camera.position, camera.Front, result, currentChunk)){
         glm::ivec3 globalPos = glm::vec3(result.x + currentChunk->chunkPosition.x * Chunk::SIZE, result.y, result.z + currentChunk->chunkPosition.y * Chunk::SIZE);
         if(globalPos != lastOutlinePos)
         {
@@ -375,9 +376,7 @@ void World::RenderBlockOutline()
             DrawOutline();
         }
         lastOutlinePos = globalPos;
-
     }
-
 }
 void World::UpdateOutlineBuffers(glm::ivec3& globalPos){
     std::vector<glm::vec3> vertices = Block::GetOutline(globalPos);
@@ -443,9 +442,9 @@ void World::DrawOutline() const
 void World::UpdateShaders()
 {
     shader->use();
-    shader->setVec3("cameraPos", camera.Position);
+    shader->setVec3("cameraPos", *camera.position);
     transparentShader->use();
-    transparentShader->setVec3("cameraPos", camera.Position);
+    transparentShader->setVec3("cameraPos", *camera.position);
     view = camera.GetViewMatrix();
     outlineShader->use();
     outlineShader->setMat4("view", view);

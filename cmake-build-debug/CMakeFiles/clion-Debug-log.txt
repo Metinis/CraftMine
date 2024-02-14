@@ -10,6 +10,6 @@ CMake Deprecation Warning:
 
 -- CMAKE_CURRENT_SOURCE_DIR: C:/Users/denis/Desktop/CraftMine
 -- Using Win32 for window creation
--- Configuring done (0.3s)
+-- Configuring done (0.7s)
 -- Generating done (0.2s)
 -- Build files have been written to: C:/Users/denis/Desktop/CraftMine/cmake-build-debug

@@ -487,7 +487,9 @@ add_executable(CraftMine
         "src/World Gen/ChunkMeshGeneration.cpp"
         "src/World Gen/ChunkMeshGeneration.h"
         src/Graphics/UI.cpp
-        src/Graphics/UI.h)
+        src/Graphics/UI.h
+        src/Player/Player.cpp
+        src/Player/Player.h)
 
 target_link_libraries(CraftMine PRIVATE glfw)
 target_compile_definitions(CraftMine PRIVATE SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")

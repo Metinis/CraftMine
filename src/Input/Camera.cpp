@@ -2,35 +2,18 @@
 
 Camera::Camera()
 {
-    Position = glm::vec3(16.0f, 20.0f, 16.0f);
+    MouseSensitivity = 0.1f;
     WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
     Front = glm::vec3(0.0f, 0.0f, -1.0f);
     Right = glm::normalize(glm::cross(Front, WorldUp));
     Up = glm::normalize(glm::cross(Right, Front));
     Yaw = -90.0f;
     Pitch = 0.0f;
-    movementSpeed = 25.0f;
-    MouseSensitivity = 0.1f;
+
 }
 glm::mat4 Camera::GetViewMatrix()
 {
-	return glm::lookAt(Position, Position + Front, WorldUp);
-}
-void Camera::ProcessKeyboardMovement(cameraMovement dir, float deltaTime)
-{
-	float velocity = movementSpeed * deltaTime;
-	if (dir == cameraMovement::FORWARD)
-		Position += glm::normalize(glm::vec3(Front.x, 0, Front.z)) * velocity;
-	if (dir == cameraMovement::BACKWARD)
-		Position -= glm::normalize(glm::vec3(Front.x, 0, Front.z)) * velocity;
-	if (dir == cameraMovement::LEFT)
-		Position -= Right * velocity;
-	if (dir == cameraMovement::RIGHT)
-		Position += Right * velocity;
-    if (dir == cameraMovement::DOWN)
-        Position.y -= velocity;
-    if (dir == cameraMovement::UP)
-        Position.y += velocity;
+	return glm::lookAt(*position, *position + Front, WorldUp);
 }
 void Camera::ProcessMouseMovement(float xoffset, float yoffset)
 {

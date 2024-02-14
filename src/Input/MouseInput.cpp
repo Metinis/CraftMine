@@ -42,13 +42,13 @@ void MouseInput::mouseButtonCallback(GLFWwindow* window, int button, int action,
     if(button == GLFW_MOUSE_BUTTON_LEFT){
         if(action == GLFW_PRESS)
         {
-            world.BreakBlocks(camera.Position, camera.Front);
+            world.BreakBlocks(*camera.position, camera.Front);
         }
     }
     if(button == GLFW_MOUSE_BUTTON_RIGHT){
         if(action == GLFW_PRESS)
         {
-            world.PlaceBlocks(camera.Position, camera.Front);
+            world.PlaceBlocks(*camera.position, camera.Front);
         }
     }
 }

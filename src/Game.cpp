@@ -3,6 +3,8 @@
 //
 
 #include "Game.h"
+
+
 Game::Game(){
 
     glfwInit();
@@ -39,14 +41,17 @@ Game::Game(){
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_LINE_SMOOTH);
 
-    camera = new Camera();
+    player = new Player();
+    camera = &player->camera;
     world = new World(*camera);
+    player->world = world;
+
     mouseInput = new MouseInput(SCR_WIDTH, SCR_HEIGHT, *camera, *world);
     ui = new UI();
 
     glfwSetWindowUserPointer(window, mouseInput);
 
-    camera->Position = glm::vec3(World::SIZE*Chunk::SIZE / 2, Chunk::HEIGHT, World::SIZE*Chunk::SIZE / 2);
+    player->position = glm::vec3(World::SIZE*Chunk::SIZE / 2, Chunk::HEIGHT, World::SIZE*Chunk::SIZE / 2);
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(window, MouseInput::mouse_callback);
@@ -55,8 +60,8 @@ Game::Game(){
     deltaTime = 0.0f;
     lastFrame = 0.0f;
 
-    lastChunkPos = glm::ivec2(camera->Position.x / Chunk::SIZE, camera->Position.z / Chunk::SIZE);
-    newChunkPos = glm::ivec2(camera->Position.x / Chunk::SIZE, camera->Position.z / Chunk::SIZE);
+    lastChunkPos = glm::ivec2(player->position.x / Chunk::SIZE, player->position.z / Chunk::SIZE);
+    newChunkPos = glm::ivec2(player->position.x / Chunk::SIZE, player->position.z / Chunk::SIZE);
 
     updateingInt = 1; //world->viewDistance/2; //so it doesn't update every chunk
     world->UpdateViewDistance(newChunkPos);
@@ -73,8 +78,8 @@ void Game::run(){
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        processInput(window, &wireframe, &keyProcessed, *camera, *world, deltaTime);
-        newChunkPos = glm::ivec2(camera->Position.x / Chunk::SIZE, camera->Position.z / Chunk::SIZE);
+        processInput(window, &wireframe, &keyProcessed, *player, *world, deltaTime);
+        newChunkPos = glm::ivec2(player->position.x / Chunk::SIZE, player->position.z / Chunk::SIZE);
 
         if (std::abs(newChunkPos.x - lastChunkPos.x) >= updateingInt ||
             std::abs(newChunkPos.y - lastChunkPos.y) >= updateingInt) {
@@ -99,7 +104,7 @@ void Game::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
-void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, Camera& camera, World& world, float& deltaTime)
+void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, Player& player, World& world, float& deltaTime)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
@@ -135,16 +140,16 @@ void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed
         std::cout<<world.blocksToBeAddedList[world.blocksToBeAddedList.size() - 1].localPosition.x << "x " << world.blocksToBeAddedList[0].localPosition.y<< "y " << world.blocksToBeAddedList[0].localPosition.z<< "z ";
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboardMovement(FORWARD, deltaTime);
+        player.ProcessKeyboardMovement(FORWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboardMovement(BACKWARD, deltaTime);
+        player.ProcessKeyboardMovement(BACKWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboardMovement(cameraMovement::LEFT, deltaTime);
+        player.ProcessKeyboardMovement(cameraMovement::LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboardMovement(cameraMovement::RIGHT, deltaTime);
+        player.ProcessKeyboardMovement(cameraMovement::RIGHT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        camera.ProcessKeyboardMovement(cameraMovement::DOWN, deltaTime);
+        player.ProcessKeyboardMovement(cameraMovement::DOWN, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        camera.ProcessKeyboardMovement(cameraMovement::UP, deltaTime);
+        player.ProcessKeyboardMovement(cameraMovement::UP, deltaTime);
 }
 

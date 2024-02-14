@@ -20,21 +20,18 @@ enum cameraMovement {
 class Camera
 {
 private:
-	glm::vec3 Right, Up, WorldUp;
+    float MouseSensitivity;
+	glm::vec3 Up, WorldUp;
 	void updateCameraVectors();
 public:
+    glm::vec3 Right;
     glm::vec3 Front;
 	float Yaw;
 	float Pitch;
-	float movementSpeed;
-	float MouseSensitivity;
-	glm::vec3 Position;
-
+    glm::vec3 *position;
 	Camera();
 
 	glm::mat4 GetViewMatrix();
-
-	void ProcessKeyboardMovement(cameraMovement dir, float deltaTime);
 	void ProcessMouseMovement(float xoffset, float yoffset);
 
 };

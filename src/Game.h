@@ -15,6 +15,7 @@
 #include "World.h"
 #include "UI.h"
 #include "Input/MouseInput.h"
+#include "Player/Player.h"
 
 #define SCR_WIDTH 1280
 #define SCR_HEIGHT 720
@@ -30,6 +31,7 @@ public:
 private:
     UI* ui;
     GLFWwindow* window;
+    Player* player;
     Camera* camera;
     World* world;
     MouseInput* mouseInput;
@@ -43,7 +45,7 @@ private:
 
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
-    static void processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, Camera& camera, World& world, float& deltaTime);
+    static void processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, Player& player, World& world, float& deltaTime);
 
 
 };
