@@ -29,17 +29,17 @@ public:
         globalPos.y = static_cast<int>(std::round(position.y));
         globalPos.z = static_cast<int>(std::round(position.z));
 
-        chunkPosition.x = static_cast<int>(position.x / Chunk::SIZE);
-        chunkPosition.y = static_cast<int>(position.z / Chunk::SIZE);
+        chunkPosition.x = static_cast<int>(globalPos.x / Chunk::SIZE);
+        chunkPosition.y = static_cast<int>(globalPos.z / Chunk::SIZE);
 
         Chunk* currentChunk = world->GetChunk(chunkPosition.x, chunkPosition.y);
 
 
         glm::vec3 newChunkPos;
         glm::ivec3 localChunkPos; //position in chunk
-        localChunkPos.x = position.x - currentChunk->chunkPosition.x * Chunk::SIZE;
-        localChunkPos.y = position.y;
-        localChunkPos.z = position.z - currentChunk->chunkPosition.y * Chunk::SIZE;
+        localChunkPos.x = globalPos.x - currentChunk->chunkPosition.x * Chunk::SIZE;
+        localChunkPos.y = globalPos.y;
+        localChunkPos.z = globalPos.z - currentChunk->chunkPosition.y * Chunk::SIZE;
 
 
         //newChunkPos.y = localChunkPos.y;
@@ -68,27 +68,62 @@ public:
         if (dir == cameraMovement::BACKWARD) {
             glm::vec3 newPosition = position - glm::normalize(glm::vec3(camera.Front.x, 0, camera.Front.z)) * velocity;
 
-            if(!isColliding(newPosition, glm::vec3(-camera.Front.x, 0, -camera.Front.z)))
+            //if(!isColliding(newPosition, camera.Front))
+            //position += glm::normalize(glm::vec3(camera.Front.x, 0, camera.Front.z)) * velocity;
+            if(!isColliding(newPosition, camera.Front))
+            {
                 position -= glm::normalize(glm::vec3(camera.Front.x, 0, camera.Front.z)) * velocity;
+            }
+            else if(!checkNewPositionX(camera.Front, newPosition) && checkNewPositionZ(camera.Front, newPosition))
+            {
+                position.x -= (glm::normalize(glm::vec3(camera.Front.x, 0, camera.Front.z)) * velocity).x;
+            }
+            else if(!checkNewPositionZ(camera.Front, newPosition) && checkNewPositionX(camera.Front, newPosition))
+            {
+                position.z -= (glm::normalize(glm::vec3(camera.Front.x, 0, camera.Front.z)) * velocity).z;
+            }
         }
         if (dir == cameraMovement::LEFT) {
             glm::vec3 newPosition = position - camera.Right * velocity;
 
-            if(!isColliding(newPosition, -camera.Right))
+            if(!isColliding(newPosition, camera.Front))
+            {
                 position -= glm::normalize(camera.Right) * velocity;
+            }
+            else if(!checkNewPositionX(camera.Front, newPosition) && checkNewPositionZ(camera.Front, newPosition))
+            {
+                position.x -= (glm::normalize(camera.Right) * velocity).x;
+            }
+            else if(!checkNewPositionZ(camera.Front, newPosition) && checkNewPositionX(camera.Front, newPosition))
+            {
+                position.z -= (glm::normalize(camera.Right) * velocity).z;
+            }
         }
         if (dir == cameraMovement::RIGHT) {
             glm::vec3 newPosition = position + camera.Right * velocity;
 
-            if(!isColliding(newPosition, camera.Right))
+            //if(!isColliding(newPosition, camera.Right))
+            //    position += glm::normalize(camera.Right) * velocity;
+            if(!isColliding(newPosition, camera.Front))
+            {
                 position += glm::normalize(camera.Right) * velocity;
+            }
+            else if(!checkNewPositionX(camera.Front, newPosition) && checkNewPositionZ(camera.Front, newPosition))
+            {
+                position.x += (glm::normalize(camera.Right) * velocity).x;
+            }
+            else if(!checkNewPositionZ(camera.Front, newPosition) && checkNewPositionX(camera.Front, newPosition))
+            {
+                position.z += (glm::normalize(camera.Right) * velocity).z;
+            }
         }
         if (dir == cameraMovement::DOWN) {
-            if(currentChunk->GetBlockID(glm::round(glm::vec3(localChunkPos.x, position.y - velocity, localChunkPos.z))) == 0)
+            if(currentChunk->GetBlockID(glm::round(glm::vec3(localChunkPos.x, position.y - velocity - 1.5, localChunkPos.z))) == 0 &&
+                    currentChunk->GetBlockID(glm::round(glm::vec3(localChunkPos.x, position.y - velocity - 0.5, localChunkPos.z))) == 0)
                 position.y -= velocity;
         }
         if (dir == cameraMovement::UP) {
-            if(currentChunk->GetBlockID(glm::round(glm::vec3(localChunkPos.x, position.y + velocity, localChunkPos.z))) == 0)
+            if(currentChunk->GetBlockID(glm::round(glm::vec3(localChunkPos.x, position.y - velocity + 0.4, localChunkPos.z))) == 0)
                 position.y += velocity;
         }
     }
@@ -123,15 +158,10 @@ public:
         }
 
         newChunkPos.z = (newPosition.z - currentChunk->chunkPosition.y * Chunk::SIZE);
-        newChunkPos.z = glm::round(_width + newChunkPos.z);
+        newChunkPos.z = glm::round(newChunkPos.z + _width);
 
-        if(currentChunk->chunkPosition.x != chunkPosition.x || currentChunk->chunkPosition.y != chunkPosition.y)
-        {
-            std::cout<<currentChunk->chunkPosition.x<<"xx "<<currentChunk->chunkPosition.y<<"yy \n";
-            std::cout<<chunkPosition.x<<"xx "<<chunkPosition.y<<"yy \n";
-
-        }
-        if(currentChunk->GetBlockID(glm::vec3(localChunkPos.x, localChunkPos.y, newChunkPos.z)) != 0)
+        if(currentChunk->GetBlockID(glm::vec3(localChunkPos.x, localChunkPos.y, newChunkPos.z)) != 0 ||
+                currentChunk->GetBlockID(glm::vec3(localChunkPos.x, localChunkPos.y-1, newChunkPos.z)) != 0)
         {
             return true;
         }
@@ -160,9 +190,10 @@ public:
         }
 
         newChunkPos.x = (newPosition.x - currentChunk->chunkPosition.x * Chunk::SIZE);
-        newChunkPos.x = glm::round(_width + newChunkPos.x);
+        newChunkPos.x = glm::round(newChunkPos.x + _width);
 
-        if(currentChunk->GetBlockID(glm::vec3(newChunkPos.x, localChunkPos.y, localChunkPos.z)) != 0)
+        if(currentChunk->GetBlockID(glm::vec3(newChunkPos.x, localChunkPos.y, localChunkPos.z)) != 0 ||
+                currentChunk->GetBlockID(glm::vec3(newChunkPos.x, localChunkPos.y-1, localChunkPos.z)) != 0)
         {
             return true;
         }
@@ -191,10 +222,10 @@ public:
         newChunkPos.x = (newPosition.x - currentChunk->chunkPosition.x * Chunk::SIZE);
         newChunkPos.y = glm::round(localChunkPos.y);
         newChunkPos.z = (newPosition.z - currentChunk->chunkPosition.y * Chunk::SIZE);
-        newChunkPos.x = glm::round(_widthX + newChunkPos.x);
-        newChunkPos.z = glm::round(_widthZ + newChunkPos.z);
+        newChunkPos.x = glm::round(newChunkPos.x + _widthX);
+        newChunkPos.z = glm::round(newChunkPos.z + _widthZ);
 
-        if(currentChunk->GetBlockID(glm::vec3(newChunkPos)) != 0)
+        if(currentChunk->GetBlockID(glm::vec3(newChunkPos.x, newChunkPos.y, newChunkPos.z)))
         {
             return true;
         }
