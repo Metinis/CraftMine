@@ -113,7 +113,7 @@ void Player::ProcessKeyboardMovement(cameraMovement dir, float deltaTime)
     }
 
     if (dir == cameraMovement::RIGHT) {
-        acceleration += glm::normalize(glm::vec3(camera.Right.x, 0, camera.Right.z)) * ACCELERATION;
+        acceleration += glm::normalize(glm:: vec3(camera.Right.x, 0, camera.Right.z)) * ACCELERATION;
     }
 
 // Update playerVelocity based on acceleration
@@ -134,7 +134,7 @@ void Player::ProcessKeyboardMovement(cameraMovement dir, float deltaTime)
         {
             playerVelocity.y = 0;
             isJumping = true;
-            playerVelocity.y += 6.5;
+            playerVelocity.y += 6.25f;
         }
 
     }
