@@ -27,17 +27,18 @@ public:
     World* world{};
     Camera camera;
     glm::vec3 position{};
-    glm::ivec2 chunkPosition{};
+
     Player();
     void Update(float deltaTime);
-    void UpdatePositionGravity(float& deltaTime);
-    void UpdatePositionXZ(float& deltaTime);
+    void UpdatePositionY(float& deltaTime, glm::vec3& newPosition);
+    void UpdatePositionXZ(float& deltaTime, glm::vec3& newPosition);
     void UpdateDeceleration(float& deltaTime);
     void ProcessKeyboardMovement(cameraMovement dir, float deltaTime);
     bool isColliding(glm::vec3& newPosition, glm::vec3 front) const;
     bool checkNewPositionZ(float newZ) const;
     bool checkNewPositionX(float newZ) const;
     bool checkNewPositionXZ(glm::vec3 newPosition) const;
+    bool checkNewPositionY(float newY) const;
 };
 
 

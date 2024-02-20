@@ -129,7 +129,7 @@ void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed
     }
 
     if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS) {
-        if(!_isFullscreen && !*keyProccessed){
+        //if(!_isFullscreen && !*keyProccessed){
             // Get the primary monitor
             GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
 
@@ -140,8 +140,8 @@ void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed
             glfwSetWindowMonitor(window, primaryMonitor, 0, 0, mode->width, mode->height, mode->refreshRate);
             *keyProccessed = true;
             *_isFullscreen = true;
-        }
-        else if(!*keyProccessed)
+        //}
+        /*else if(!*keyProccessed)
         {
             // Get the primary monitor
             GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
@@ -153,7 +153,7 @@ void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed
             glfwSetWindowMonitor(window, NULL, 0, 0, mode->width, mode->height, mode->refreshRate);
             *keyProccessed = true;
             *_isFullscreen = false;
-        }
+        }*/
     }
     if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_RELEASE){
         *keyProccessed = false;
