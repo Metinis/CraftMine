@@ -8,9 +8,9 @@ void Player::Update(float deltaTime){
 
     glm::vec3 newPosition = position + playerVelocity * deltaTime;
 
-    UpdatePositionXZ(deltaTime, newPosition);
-
     UpdatePositionY(deltaTime, newPosition);
+
+    UpdatePositionXZ(deltaTime, newPosition);
 
     if(isJumping && playerVelocity.y <= 0)
     {
@@ -21,21 +21,21 @@ void Player::Update(float deltaTime){
 
     if(isShifting && !shiftChanged){
         position.y -= 0.2f;
-        HEIGHT = 1.75f;
+        HEIGHT = 1.73f;
         movementSpeed = 2.5f;
         shiftChanged = true;
     }
     else if(!isShifting && shiftChanged)
     {
         position.y += 0.2f;
-        HEIGHT = 1.73f;
+        HEIGHT = 1.75f;
         movementSpeed = 5.0f;
         shiftChanged = false;
     }
 }
 void Player::UpdatePositionY(float& deltaTime, glm::vec3& newPosition) {
 
-    glm::vec3 newYPos = glm::vec3(position.x, newPosition.y + HEIGHT + 0.1f, position.z);
+    glm::vec3 newYPos = glm::vec3(position.x, newPosition.y + HEIGHT + 0.2f, position.z);
     if(!checkNewPositionY(newYPos)) {
         position.y = newPosition.y;
     }
@@ -62,16 +62,16 @@ void Player::UpdatePositionXZ(float &deltaTime, glm::vec3& newPosition) {
     glm::vec3 newPosZ = glm::vec3(position.x, newPosition.y, newPosition.z);
     if(!isColliding(newPosition, camera.Front))
     {
-        if(isShifting && checkNewPositionY(newPosition))
+        if((isShifting && checkNewPositionY(newPosition)) || (isShifting && !isGrounded))
         {
             position.x = newPosition.x;
             position.z = newPosition.z;
         }
-        else if(isShifting && checkNewPositionY(newPosX))
+        else if((isShifting && checkNewPositionY(newPosX)) || (isShifting && !isGrounded))
         {
             position.x = newPosition.x;
         }
-        else if(isShifting && checkNewPositionY(newPosZ)){
+        else if(isShifting && checkNewPositionY(newPosZ) || (isShifting && !isGrounded)){
             position.z = newPosition.z;
         }
         else if(!isShifting)
@@ -85,7 +85,7 @@ void Player::UpdatePositionXZ(float &deltaTime, glm::vec3& newPosition) {
         glm::vec2 newVelocity;
         if(!checkNewPositionX(newPosition.x) )
         {
-            if(isShifting && checkNewPositionY(newPosX))
+            if((isShifting && checkNewPositionY(newPosX)) || (isShifting && !isGrounded))
             {
                 position.x = newPosition.x;
             }
@@ -100,7 +100,7 @@ void Player::UpdatePositionXZ(float &deltaTime, glm::vec3& newPosition) {
         }
         if(!checkNewPositionZ(newPosition.z))
         {
-            if(isShifting && checkNewPositionY(newPosZ))
+            if((isShifting && checkNewPositionY(newPosZ)) || (isShifting && !isGrounded))
             {
                 position.z = newPosition.z;
             }
