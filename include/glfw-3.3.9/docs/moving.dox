@@ -199,14 +199,14 @@ added, which can be set with @ref glfwSetFramebufferSizeCallback.
 
 @par Old basic viewport setup
 @code
-glfwGetWindowSize(&width, &height);
-glViewport(0, 0, width, height);
+glfwGetWindowSize(&WIDTH, &HEIGHT);
+glViewport(0, 0, WIDTH, HEIGHT);
 @endcode
 
 @par New basic viewport setup
 @code
-glfwGetFramebufferSize(window, &width, &height);
-glViewport(0, 0, width, height);
+glfwGetFramebufferSize(window, &WIDTH, &HEIGHT);
+glViewport(0, 0, WIDTH, HEIGHT);
 @endcode
 
 

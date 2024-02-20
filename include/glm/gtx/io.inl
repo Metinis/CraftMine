@@ -28,7 +28,7 @@ namespace io
 		: std::locale::facet(0)
 		, formatted(a.formatted)
 		, precision(a.precision)
-		, width(a.width)
+		, width(a.WIDTH)
 		, separator(a.separator)
 		, delim_left(a.delim_left)
 		, delim_right(a.delim_right)
@@ -54,7 +54,7 @@ namespace io
 	{
 		state_.imbue(locale_);
 		state_.fill(fill_);
-		state_.width(width_);
+		state_.WIDTH(width_);
 		state_.precision(precision_);
 		state_.flags(flags_);
 	}
@@ -125,7 +125,7 @@ namespace io
 	template<typename CTy, typename CTr>
 	GLM_FUNC_QUALIFIER std::basic_ostream<CTy, CTr>& operator<<(std::basic_ostream<CTy, CTr>& os, width const& a)
 	{
-		const_cast<format_punct<CTy>&>(get_facet<format_punct<CTy> >(os)).width = a.value;
+		const_cast<format_punct<CTy>&>(get_facet<format_punct<CTy> >(os)).WIDTH = a.value;
 		return os;
 	}
 
@@ -171,7 +171,7 @@ namespace detail
 
 				for(length_t i(0); i < components; ++i)
 				{
-					os << std::setw(fmt.width) << a[i];
+					os << std::setw(fmt.WIDTH) << a[i];
 					if(components-1 != i)
 						os << fmt.separator;
 				}

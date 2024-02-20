@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="WIDTH=device-WIDTH, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.7"/>
 <title>GLFW: Getting started</title>
@@ -138,7 +138,7 @@ Creating a window and context</h2>
 <div class="line">{</div>
 <div class="line">    <span class="comment">// Window or OpenGL context creation failed</span></div>
 <div class="line">}</div>
-<div class="ttc" id="agroup__window_html_ga3555a418df92ad53f917597fe2f64aeb"><div class="ttname"><a href="group__window.html#ga3555a418df92ad53f917597fe2f64aeb">glfwCreateWindow</a></div><div class="ttdeci">GLFWwindow * glfwCreateWindow(int width, int height, const char *title, GLFWmonitor *monitor, GLFWwindow *share)</div><div class="ttdoc">Creates a window and its associated context.</div></div>
+<div class="ttc" id="agroup__window_html_ga3555a418df92ad53f917597fe2f64aeb"><div class="ttname"><a href="group__window.html#ga3555a418df92ad53f917597fe2f64aeb">glfwCreateWindow</a></div><div class="ttdeci">GLFWwindow * glfwCreateWindow(int WIDTH, int HEIGHT, const char *title, GLFWmonitor *monitor, GLFWwindow *share)</div><div class="ttdoc">Creates a window and its associated context.</div></div>
 <div class="ttc" id="agroup__window_html_ga3c96d80d363e67d13a41b5d1821f3242"><div class="ttname"><a href="group__window.html#ga3c96d80d363e67d13a41b5d1821f3242">GLFWwindow</a></div><div class="ttdeci">struct GLFWwindow GLFWwindow</div><div class="ttdoc">Opaque window object.</div><div class="ttdef"><b>Definition</b> glfw3.h:1195</div></div>
 </div><!-- fragment --><p>This creates a 640 by 480 windowed mode window with an OpenGL context. If window or OpenGL context creation fails, <code>NULL</code> will be returned. You should always check the return value. While window creation rarely fails, context creation depends on properly installed drivers and may fail even on machines with the necessary hardware.</p>
 <p>By default, the OpenGL context GLFW creates may have any version. You can require a minimum OpenGL version by setting the <code>GLFW_CONTEXT_VERSION_MAJOR</code> and <code>GLFW_CONTEXT_VERSION_MINOR</code> hints <em>before</em> creation. If the required minimum version is not supported on the machine, context (and window) creation fails.</p>
@@ -195,10 +195,10 @@ Receiving input events</h2>
 <h2><a class="anchor" id="quick_render"></a>
 Rendering with OpenGL</h2>
 <p>Once you have a current OpenGL context, you can use OpenGL normally. In this tutorial, a multicolored rotating triangle will be rendered. The framebuffer size needs to be retrieved for <code>glViewport</code>.</p>
-<div class="fragment"><div class="line"><span class="keywordtype">int</span> width, height;</div>
-<div class="line"><a class="code hl_function" href="group__window.html#ga0e2637a4161afb283f5300c7f94785c9">glfwGetFramebufferSize</a>(window, &amp;width, &amp;height);</div>
-<div class="line">glViewport(0, 0, width, height);</div>
-<div class="ttc" id="agroup__window_html_ga0e2637a4161afb283f5300c7f94785c9"><div class="ttname"><a href="group__window.html#ga0e2637a4161afb283f5300c7f94785c9">glfwGetFramebufferSize</a></div><div class="ttdeci">void glfwGetFramebufferSize(GLFWwindow *window, int *width, int *height)</div><div class="ttdoc">Retrieves the size of the framebuffer of the specified window.</div></div>
+<div class="fragment"><div class="line"><span class="keywordtype">int</span> WIDTH, HEIGHT;</div>
+<div class="line"><a class="code hl_function" href="group__window.html#ga0e2637a4161afb283f5300c7f94785c9">glfwGetFramebufferSize</a>(window, &amp;WIDTH, &amp;HEIGHT);</div>
+<div class="line">glViewport(0, 0, WIDTH, HEIGHT);</div>
+<div class="ttc" id="agroup__window_html_ga0e2637a4161afb283f5300c7f94785c9"><div class="ttname"><a href="group__window.html#ga0e2637a4161afb283f5300c7f94785c9">glfwGetFramebufferSize</a></div><div class="ttdeci">void glfwGetFramebufferSize(GLFWwindow *window, int *WIDTH, int *HEIGHT)</div><div class="ttdoc">Retrieves the size of the framebuffer of the specified window.</div></div>
 </div><!-- fragment --><p>You can also set a framebuffer size callback using <a class="el" href="group__window.html#gab3fb7c3366577daef18c0023e2a8591f">glfwSetFramebufferSizeCallback</a> and be notified when the size changes.</p>
 <p>The details of how to render with OpenGL is outside the scope of this tutorial, but there are many excellent resources for learning modern OpenGL. Here are a few of them:</p>
 <ul>
@@ -347,13 +347,13 @@ Putting it together</h1>
 <div class="line">    <span class="keywordflow">while</span> (!<a class="code hl_function" href="group__window.html#ga24e02fbfefbb81fc45320989f8140ab5">glfwWindowShouldClose</a>(window))</div>
 <div class="line">    {</div>
 <div class="line">        <span class="keywordtype">float</span> ratio;</div>
-<div class="line">        <span class="keywordtype">int</span> width, height;</div>
+<div class="line">        <span class="keywordtype">int</span> WIDTH, HEIGHT;</div>
 <div class="line">        mat4x4 m, p, mvp;</div>
 <div class="line"> </div>
-<div class="line">        <a class="code hl_function" href="group__window.html#ga0e2637a4161afb283f5300c7f94785c9">glfwGetFramebufferSize</a>(window, &amp;width, &amp;height);</div>
-<div class="line">        ratio = width / (float) height;</div>
+<div class="line">        <a class="code hl_function" href="group__window.html#ga0e2637a4161afb283f5300c7f94785c9">glfwGetFramebufferSize</a>(window, &amp;WIDTH, &amp;HEIGHT);</div>
+<div class="line">        ratio = WIDTH / (float) HEIGHT;</div>
 <div class="line"> </div>
-<div class="line">        glViewport(0, 0, width, height);</div>
+<div class="line">        glViewport(0, 0, WIDTH, HEIGHT);</div>
 <div class="line">        glClear(GL_COLOR_BUFFER_BIT);</div>
 <div class="line"> </div>
 <div class="line">        mat4x4_identity(m);</div>

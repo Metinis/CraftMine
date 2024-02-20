@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="WIDTH=device-WIDTH, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.7"/>
 <title>GLFW: Moving from GLFW 2 to 3</title>
@@ -149,7 +149,7 @@ Explicit monitor selection</h2>
 </div><!-- fragment --></dd></dl>
 <dl class="section user"><dt>New basic full screen</dt><dd><div class="fragment"><div class="line">window = <a class="code hl_function" href="group__window.html#ga3555a418df92ad53f917597fe2f64aeb">glfwCreateWindow</a>(640, 480, <span class="stringliteral">&quot;My Window&quot;</span>, <a class="code hl_function" href="group__monitor.html#gac3adb24947eb709e1874028272e5dfc5">glfwGetPrimaryMonitor</a>(), NULL);</div>
 <div class="ttc" id="agroup__monitor_html_gac3adb24947eb709e1874028272e5dfc5"><div class="ttname"><a href="group__monitor.html#gac3adb24947eb709e1874028272e5dfc5">glfwGetPrimaryMonitor</a></div><div class="ttdeci">GLFWmonitor * glfwGetPrimaryMonitor(void)</div><div class="ttdoc">Returns the primary monitor.</div></div>
-<div class="ttc" id="agroup__window_html_ga3555a418df92ad53f917597fe2f64aeb"><div class="ttname"><a href="group__window.html#ga3555a418df92ad53f917597fe2f64aeb">glfwCreateWindow</a></div><div class="ttdeci">GLFWwindow * glfwCreateWindow(int width, int height, const char *title, GLFWmonitor *monitor, GLFWwindow *share)</div><div class="ttdoc">Creates a window and its associated context.</div></div>
+<div class="ttc" id="agroup__window_html_ga3555a418df92ad53f917597fe2f64aeb"><div class="ttname"><a href="group__window.html#ga3555a418df92ad53f917597fe2f64aeb">glfwCreateWindow</a></div><div class="ttdeci">GLFWwindow * glfwCreateWindow(int WIDTH, int HEIGHT, const char *title, GLFWmonitor *monitor, GLFWwindow *share)</div><div class="ttdoc">Creates a window and its associated context.</div></div>
 </div><!-- fragment --></dd></dl>
 <dl class="section note"><dt>Note</dt><dd>The framebuffer bit depth parameters of <code>glfwOpenWindow</code> have been turned into <a class="el" href="window_guide.html#window_hints">window hints</a>, but as they have been given <a class="el" href="window_guide.html#window_hints_values">sane defaults</a> you rarely need to set these hints.</dd></dl>
 <h2><a class="anchor" id="moving_autopoll"></a>
@@ -179,13 +179,13 @@ Explicit context management</h2>
 <h2><a class="anchor" id="moving_hidpi"></a>
 Separation of window and framebuffer sizes</h2>
 <p>Window positions and sizes now use screen coordinates, which may not be the same as pixels on machines with high-DPI monitors. This is important as OpenGL uses pixels, not screen coordinates. For example, the rectangle specified with <code>glViewport</code> needs to use pixels. Therefore, framebuffer size functions have been added. You can retrieve the size of the framebuffer of a window with <a class="el" href="group__window.html#ga0e2637a4161afb283f5300c7f94785c9">glfwGetFramebufferSize</a> function. A framebuffer size callback has also been added, which can be set with <a class="el" href="group__window.html#gab3fb7c3366577daef18c0023e2a8591f">glfwSetFramebufferSizeCallback</a>.</p>
-<dl class="section user"><dt>Old basic viewport setup</dt><dd><div class="fragment"><div class="line"><a class="code hl_function" href="group__window.html#gaeea7cbc03373a41fb51cfbf9f2a5d4c6">glfwGetWindowSize</a>(&amp;width, &amp;height);</div>
-<div class="line">glViewport(0, 0, width, height);</div>
-<div class="ttc" id="agroup__window_html_gaeea7cbc03373a41fb51cfbf9f2a5d4c6"><div class="ttname"><a href="group__window.html#gaeea7cbc03373a41fb51cfbf9f2a5d4c6">glfwGetWindowSize</a></div><div class="ttdeci">void glfwGetWindowSize(GLFWwindow *window, int *width, int *height)</div><div class="ttdoc">Retrieves the size of the content area of the specified window.</div></div>
+<dl class="section user"><dt>Old basic viewport setup</dt><dd><div class="fragment"><div class="line"><a class="code hl_function" href="group__window.html#gaeea7cbc03373a41fb51cfbf9f2a5d4c6">glfwGetWindowSize</a>(&amp;WIDTH, &amp;HEIGHT);</div>
+<div class="line">glViewport(0, 0, WIDTH, HEIGHT);</div>
+<div class="ttc" id="agroup__window_html_gaeea7cbc03373a41fb51cfbf9f2a5d4c6"><div class="ttname"><a href="group__window.html#gaeea7cbc03373a41fb51cfbf9f2a5d4c6">glfwGetWindowSize</a></div><div class="ttdeci">void glfwGetWindowSize(GLFWwindow *window, int *WIDTH, int *HEIGHT)</div><div class="ttdoc">Retrieves the size of the content area of the specified window.</div></div>
 </div><!-- fragment --></dd></dl>
-<dl class="section user"><dt>New basic viewport setup</dt><dd><div class="fragment"><div class="line"><a class="code hl_function" href="group__window.html#ga0e2637a4161afb283f5300c7f94785c9">glfwGetFramebufferSize</a>(window, &amp;width, &amp;height);</div>
-<div class="line">glViewport(0, 0, width, height);</div>
-<div class="ttc" id="agroup__window_html_ga0e2637a4161afb283f5300c7f94785c9"><div class="ttname"><a href="group__window.html#ga0e2637a4161afb283f5300c7f94785c9">glfwGetFramebufferSize</a></div><div class="ttdeci">void glfwGetFramebufferSize(GLFWwindow *window, int *width, int *height)</div><div class="ttdoc">Retrieves the size of the framebuffer of the specified window.</div></div>
+<dl class="section user"><dt>New basic viewport setup</dt><dd><div class="fragment"><div class="line"><a class="code hl_function" href="group__window.html#ga0e2637a4161afb283f5300c7f94785c9">glfwGetFramebufferSize</a>(window, &amp;WIDTH, &amp;HEIGHT);</div>
+<div class="line">glViewport(0, 0, WIDTH, HEIGHT);</div>
+<div class="ttc" id="agroup__window_html_ga0e2637a4161afb283f5300c7f94785c9"><div class="ttname"><a href="group__window.html#ga0e2637a4161afb283f5300c7f94785c9">glfwGetFramebufferSize</a></div><div class="ttdeci">void glfwGetFramebufferSize(GLFWwindow *window, int *WIDTH, int *HEIGHT)</div><div class="ttdoc">Retrieves the size of the framebuffer of the specified window.</div></div>
 </div><!-- fragment --></dd></dl>
 <h2><a class="anchor" id="moving_window_close"></a>
 Window closing changes</h2>

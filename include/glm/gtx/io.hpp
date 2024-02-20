@@ -13,7 +13,7 @@
 ///
 /// std::[w]ostream support for glm types
 ///
-/// std::[w]ostream support for glm types + qualifier/width/etc. manipulators
+/// std::[w]ostream support for glm types + qualifier/WIDTH/etc. manipulators
 /// based on howard hinnant's std::chrono io proposal
 /// [http://home.roadrunner.com/~hinnant/bloomington/chrono_io.html]
 

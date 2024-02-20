@@ -563,8 +563,8 @@ GLFWAPI EGLSurface glfwGetEGLSurface(GLFWwindow* window);
 /*! @brief Retrieves the color buffer associated with the specified window.
  *
  *  @param[in] window The window whose color buffer to retrieve.
- *  @param[out] width Where to store the width of the color buffer, or `NULL`.
- *  @param[out] height Where to store the height of the color buffer, or `NULL`.
+ *  @param[out] WIDTH Where to store the WIDTH of the color buffer, or `NULL`.
+ *  @param[out] HEIGHT Where to store the HEIGHT of the color buffer, or `NULL`.
  *  @param[out] format Where to store the OSMesa pixel format of the color
  *  buffer, or `NULL`.
  *  @param[out] buffer Where to store the address of the color buffer, or
@@ -582,13 +582,13 @@ GLFWAPI EGLSurface glfwGetEGLSurface(GLFWwindow* window);
  *
  *  @ingroup native
  */
-GLFWAPI int glfwGetOSMesaColorBuffer(GLFWwindow* window, int* width, int* height, int* format, void** buffer);
+GLFWAPI int glfwGetOSMesaColorBuffer(GLFWwindow* window, int* WIDTH, int* HEIGHT, int* format, void** buffer);
 
 /*! @brief Retrieves the depth buffer associated with the specified window.
  *
  *  @param[in] window The window whose depth buffer to retrieve.
- *  @param[out] width Where to store the width of the depth buffer, or `NULL`.
- *  @param[out] height Where to store the height of the depth buffer, or `NULL`.
+ *  @param[out] WIDTH Where to store the WIDTH of the depth buffer, or `NULL`.
+ *  @param[out] HEIGHT Where to store the HEIGHT of the depth buffer, or `NULL`.
  *  @param[out] bytesPerValue Where to store the number of bytes per depth
  *  buffer element, or `NULL`.
  *  @param[out] buffer Where to store the address of the depth buffer, or
@@ -606,7 +606,7 @@ GLFWAPI int glfwGetOSMesaColorBuffer(GLFWwindow* window, int* width, int* height
  *
  *  @ingroup native
  */
-GLFWAPI int glfwGetOSMesaDepthBuffer(GLFWwindow* window, int* width, int* height, int* bytesPerValue, void** buffer);
+GLFWAPI int glfwGetOSMesaDepthBuffer(GLFWwindow* window, int* WIDTH, int* HEIGHT, int* bytesPerValue, void** buffer);
 
 /*! @brief Returns the `OSMesaContext` of the specified window.
  *

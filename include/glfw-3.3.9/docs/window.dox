@@ -69,8 +69,8 @@ information about retrieving video modes, see @ref monitor_modes.
 
 Video mode field        | Corresponds to
 ----------------        | --------------
-GLFWvidmode.width       | `width` parameter of @ref glfwCreateWindow
-GLFWvidmode.height      | `height` parameter of @ref glfwCreateWindow
+GLFWvidmode.WIDTH       | `WIDTH` parameter of @ref glfwCreateWindow
+GLFWvidmode.HEIGHT      | `HEIGHT` parameter of @ref glfwCreateWindow
 GLFWvidmode.redBits     | @ref GLFW_RED_BITS hint
 GLFWvidmode.greenBits   | @ref GLFW_GREEN_BITS hint
 GLFWvidmode.blueBits    | @ref GLFW_BLUE_BITS hint
@@ -109,7 +109,7 @@ glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
 glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
 glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
-GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "My Title", monitor, NULL);
+GLFWwindow* window = glfwCreateWindow(mode->WIDTH, mode->HEIGHT, "My Title", monitor, NULL);
 @endcode
 
 This also works for windowed mode windows that are made full screen.
@@ -117,7 +117,7 @@ This also works for windowed mode windows that are made full screen.
 @code
 const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
-glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+glfwSetWindowMonitor(window, monitor, 0, 0, mode->WIDTH, mode->HEIGHT, mode->refreshRate);
 @endcode
 
 Note that @ref glfwGetVideoMode returns the _current_ video mode of a monitor,
@@ -608,7 +608,7 @@ The callback function receives the new size, in screen coordinates, of the
 content area of the window when the window is resized.
 
 @code
-void window_size_callback(GLFWwindow* window, int width, int height)
+void window_size_callback(GLFWwindow* window, int WIDTH, int HEIGHT)
 {
 }
 @endcode
@@ -617,8 +617,8 @@ There is also @ref glfwGetWindowSize for directly retrieving the current size of
 a window.
 
 @code
-int width, height;
-glfwGetWindowSize(window, &width, &height);
+int WIDTH, HEIGHT;
+glfwGetWindowSize(window, &WIDTH, &HEIGHT);
 @endcode
 
 @note Do not pass the window size to `glViewport` or other pixel-based OpenGL
@@ -659,9 +659,9 @@ The callback function receives the new size of the framebuffer when it is
 resized, which can for example be used to update the OpenGL viewport.
 
 @code
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebuffer_size_callback(GLFWwindow* window, int WIDTH, int HEIGHT)
 {
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, WIDTH, HEIGHT);
 }
 @endcode
 
@@ -669,9 +669,9 @@ There is also @ref glfwGetFramebufferSize for directly retrieving the current
 size of the framebuffer of a window.
 
 @code
-int width, height;
-glfwGetFramebufferSize(window, &width, &height);
-glViewport(0, 0, width, height);
+int WIDTH, HEIGHT;
+glfwGetFramebufferSize(window, &WIDTH, &HEIGHT);
+glViewport(0, 0, WIDTH, HEIGHT);
 @endcode
 
 The size of a framebuffer may change independently of the size of a window, for
@@ -753,13 +753,13 @@ glfwSetWindowAspectRatio(window, 16, 9);
 @endcode
 
 The aspect ratio is specified as a numerator and denominator, corresponding to
-the width and height, respectively.  If you want a window to maintain its
+the WIDTH and HEIGHT, respectively.  If you want a window to maintain its
 current aspect ratio, use its current size as the ratio.
 
 @code
-int width, height;
-glfwGetWindowSize(window, &width, &height);
-glfwSetWindowAspectRatio(window, width, height);
+int WIDTH, HEIGHT;
+glfwGetWindowSize(window, &WIDTH, &HEIGHT);
+glfwSetWindowAspectRatio(window, WIDTH, HEIGHT);
 @endcode
 
 To disable the aspect ratio limit for a window, set both terms to
@@ -878,14 +878,14 @@ rate.  The position arguments are ignored.
 @code
 const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
-glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+glfwSetWindowMonitor(window, monitor, 0, 0, mode->WIDTH, mode->HEIGHT, mode->refreshRate);
 @endcode
 
 When making the window windowed, specify the desired position and size.  The
 refresh rate argument is ignored.
 
 @code
-glfwSetWindowMonitor(window, NULL, xpos, ypos, width, height, 0);
+glfwSetWindowMonitor(window, NULL, xpos, ypos, WIDTH, HEIGHT, 0);
 @endcode
 
 This restores any previous window settings such as whether it is decorated,

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="WIDTH=device-WIDTH, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.7"/>
 <title>GLFW: Monitor guide</title>
@@ -150,7 +150,7 @@ Video modes</h2>
 </div><!-- fragment --><p>The resolution of a video mode is specified in <a class="el" href="intro_guide.html#coordinate_systems">screen coordinates</a>, not pixels.</p>
 <h2><a class="anchor" id="monitor_size"></a>
 Physical size</h2>
-<p>The physical size of a monitor in millimetres, or an estimation of it, can be retrieved with <a class="el" href="group__monitor.html#ga7d8bffc6c55539286a6bd20d32a8d7ea">glfwGetMonitorPhysicalSize</a>. This has no relation to its current <em>resolution</em>, i.e. the width and height of its current <a class="el" href="monitor_guide.html#monitor_modes">video mode</a>.</p>
+<p>The physical size of a monitor in millimetres, or an estimation of it, can be retrieved with <a class="el" href="group__monitor.html#ga7d8bffc6c55539286a6bd20d32a8d7ea">glfwGetMonitorPhysicalSize</a>. This has no relation to its current <em>resolution</em>, i.e. the WIDTH and HEIGHT of its current <a class="el" href="monitor_guide.html#monitor_modes">video mode</a>.</p>
 <div class="fragment"><div class="line"><span class="keywordtype">int</span> width_mm, height_mm;</div>
 <div class="line"><a class="code hl_function" href="group__monitor.html#ga7d8bffc6c55539286a6bd20d32a8d7ea">glfwGetMonitorPhysicalSize</a>(monitor, &amp;width_mm, &amp;height_mm);</div>
 <div class="ttc" id="agroup__monitor_html_ga7d8bffc6c55539286a6bd20d32a8d7ea"><div class="ttname"><a href="group__monitor.html#ga7d8bffc6c55539286a6bd20d32a8d7ea">glfwGetMonitorPhysicalSize</a></div><div class="ttdeci">void glfwGetMonitorPhysicalSize(GLFWmonitor *monitor, int *widthMM, int *heightMM)</div><div class="ttdoc">Returns the physical size of the monitor.</div></div>
@@ -172,9 +172,9 @@ Virtual position</h2>
 </div><!-- fragment --><h2><a class="anchor" id="monitor_workarea"></a>
 Work area</h2>
 <p>The area of a monitor not occupied by global task bars or menu bars is the work area. This is specified in <a class="el" href="intro_guide.html#coordinate_systems">screen coordinates</a> and can be retrieved with <a class="el" href="group__monitor.html#ga7387a3bdb64bfe8ebf2b9e54f5b6c9d0">glfwGetMonitorWorkarea</a>.</p>
-<div class="fragment"><div class="line"><span class="keywordtype">int</span> xpos, ypos, width, height;</div>
-<div class="line"><a class="code hl_function" href="group__monitor.html#ga7387a3bdb64bfe8ebf2b9e54f5b6c9d0">glfwGetMonitorWorkarea</a>(monitor, &amp;xpos, &amp;ypos, &amp;width, &amp;height);</div>
-<div class="ttc" id="agroup__monitor_html_ga7387a3bdb64bfe8ebf2b9e54f5b6c9d0"><div class="ttname"><a href="group__monitor.html#ga7387a3bdb64bfe8ebf2b9e54f5b6c9d0">glfwGetMonitorWorkarea</a></div><div class="ttdeci">void glfwGetMonitorWorkarea(GLFWmonitor *monitor, int *xpos, int *ypos, int *width, int *height)</div><div class="ttdoc">Retrieves the work area of the monitor.</div></div>
+<div class="fragment"><div class="line"><span class="keywordtype">int</span> xpos, ypos, WIDTH, HEIGHT;</div>
+<div class="line"><a class="code hl_function" href="group__monitor.html#ga7387a3bdb64bfe8ebf2b9e54f5b6c9d0">glfwGetMonitorWorkarea</a>(monitor, &amp;xpos, &amp;ypos, &amp;WIDTH, &amp;HEIGHT);</div>
+<div class="ttc" id="agroup__monitor_html_ga7387a3bdb64bfe8ebf2b9e54f5b6c9d0"><div class="ttname"><a href="group__monitor.html#ga7387a3bdb64bfe8ebf2b9e54f5b6c9d0">glfwGetMonitorWorkarea</a></div><div class="ttdeci">void glfwGetMonitorWorkarea(GLFWmonitor *monitor, int *xpos, int *ypos, int *WIDTH, int *HEIGHT)</div><div class="ttdoc">Retrieves the work area of the monitor.</div></div>
 </div><!-- fragment --><h2><a class="anchor" id="monitor_name"></a>
 Human-readable name</h2>
 <p>The human-readable, UTF-8 encoded name of a monitor is returned by <a class="el" href="group__monitor.html#ga7af83e13489d90379588fb331b9e4b68">glfwGetMonitorName</a>. See the reference documentation for the lifetime of the returned string.</p>

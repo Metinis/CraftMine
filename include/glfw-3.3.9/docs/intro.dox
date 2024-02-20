@@ -237,7 +237,7 @@ _content area_ or _content area_.  Both use the same unit: _virtual screen
 coordinates_, or just _screen coordinates_, which don't necessarily correspond
 to pixels.
 
-<img src="spaces.svg" width="90%" />
+<img src="spaces.svg" WIDTH="90%" />
 
 Both the virtual screen and the content area coordinate systems have the X-axis
 pointing to the right and the Y-axis pointing down.

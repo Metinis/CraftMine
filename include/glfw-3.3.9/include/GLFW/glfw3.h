@@ -1258,12 +1258,12 @@ typedef void (* GLFWwindowposfun)(GLFWwindow* window, int xpos, int ypos);
  *  This is the function pointer type for window size callbacks.  A window size
  *  callback function has the following signature:
  *  @code
- *  void callback_name(GLFWwindow* window, int width, int height)
+ *  void callback_name(GLFWwindow* window, int WIDTH, int HEIGHT)
  *  @endcode
  *
  *  @param[in] window The window that was resized.
- *  @param[in] width The new width, in screen coordinates, of the window.
- *  @param[in] height The new height, in screen coordinates, of the window.
+ *  @param[in] width The new WIDTH, in screen coordinates, of the window.
+ *  @param[in] height The new HEIGHT, in screen coordinates, of the window.
  *
  *  @sa @ref window_size
  *  @sa @ref glfwSetWindowSizeCallback
@@ -1383,12 +1383,12 @@ typedef void (* GLFWwindowmaximizefun)(GLFWwindow* window, int maximized);
  *  This is the function pointer type for framebuffer size callbacks.
  *  A framebuffer size callback function has the following signature:
  *  @code
- *  void function_name(GLFWwindow* window, int width, int height)
+ *  void function_name(GLFWwindow* window, int WIDTH, int HEIGHT)
  *  @endcode
  *
  *  @param[in] window The window whose framebuffer was resized.
- *  @param[in] width The new width, in pixels, of the framebuffer.
- *  @param[in] height The new height, in pixels, of the framebuffer.
+ *  @param[in] width The new WIDTH, in pixels, of the framebuffer.
+ *  @param[in] height The new HEIGHT, in pixels, of the framebuffer.
  *
  *  @sa @ref window_fbsize
  *  @sa @ref glfwSetFramebufferSizeCallback
@@ -1666,10 +1666,10 @@ typedef void (* GLFWjoystickfun)(int jid, int event);
  */
 typedef struct GLFWvidmode
 {
-    /*! The width, in screen coordinates, of the video mode.
+    /*! The WIDTH, in screen coordinates, of the video mode.
      */
     int width;
-    /*! The height, in screen coordinates, of the video mode.
+    /*! The HEIGHT, in screen coordinates, of the video mode.
      */
     int height;
     /*! The bit depth of the red channel of the video mode.
@@ -1729,10 +1729,10 @@ typedef struct GLFWgammaramp
  */
 typedef struct GLFWimage
 {
-    /*! The width, in pixels, of this image.
+    /*! The WIDTH, in pixels, of this image.
      */
     int width;
-    /*! The height, in pixels, of this image.
+    /*! The HEIGHT, in pixels, of this image.
      */
     int height;
     /*! The pixel data of this image, arranged left-to-right, top-to-bottom.
@@ -2100,8 +2100,8 @@ GLFWAPI void glfwGetMonitorPos(GLFWmonitor* monitor, int* xpos, int* ypos);
  *  @param[in] monitor The monitor to query.
  *  @param[out] xpos Where to store the monitor x-coordinate, or `NULL`.
  *  @param[out] ypos Where to store the monitor y-coordinate, or `NULL`.
- *  @param[out] width Where to store the monitor width, or `NULL`.
- *  @param[out] height Where to store the monitor height, or `NULL`.
+ *  @param[out] width Where to store the monitor WIDTH, or `NULL`.
+ *  @param[out] height Where to store the monitor HEIGHT, or `NULL`.
  *
  *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref
  *  GLFW_PLATFORM_ERROR.
@@ -2130,9 +2130,9 @@ GLFWAPI void glfwGetMonitorWorkarea(GLFWmonitor* monitor, int* xpos, int* ypos, 
  *  non-`NULL` size arguments will be set to zero.
  *
  *  @param[in] monitor The monitor to query.
- *  @param[out] widthMM Where to store the width, in millimetres, of the
+ *  @param[out] widthMM Where to store the WIDTH, in millimetres, of the
  *  monitor's display area, or `NULL`.
- *  @param[out] heightMM Where to store the height, in millimetres, of the
+ *  @param[out] heightMM Where to store the HEIGHT, in millimetres, of the
  *  monitor's display area, or `NULL`.
  *
  *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED.
@@ -2293,7 +2293,7 @@ GLFWAPI GLFWmonitorfun glfwSetMonitorCallback(GLFWmonitorfun callback);
  *  This function returns an array of all video modes supported by the specified
  *  monitor.  The returned array is sorted in ascending order, first by color
  *  bit depth (the sum of all channel depths), then by resolution area (the
- *  product of width and height), then resolution width and finally by refresh
+ *  product of WIDTH and HEIGHT), then resolution WIDTH and finally by refresh
  *  rate.
  *
  *  @param[in] monitor The monitor to query.
@@ -2597,9 +2597,9 @@ GLFWAPI void glfwWindowHintString(int hint, const char* value);
  *  The [swap interval](@ref buffer_swap) is not set during window creation and
  *  the initial value may vary depending on driver settings and defaults.
  *
- *  @param[in] width The desired width, in screen coordinates, of the window.
+ *  @param[in] width The desired WIDTH, in screen coordinates, of the window.
  *  This must be greater than zero.
- *  @param[in] height The desired height, in screen coordinates, of the window.
+ *  @param[in] height The desired HEIGHT, in screen coordinates, of the window.
  *  This must be greater than zero.
  *  @param[in] title The initial, UTF-8 encoded window title.
  *  @param[in] monitor The monitor to use for full screen mode, or `NULL` for
@@ -2920,9 +2920,9 @@ GLFWAPI void glfwSetWindowPos(GLFWwindow* window, int xpos, int ypos);
  *  non-`NULL` size arguments will be set to zero.
  *
  *  @param[in] window The window whose size to retrieve.
- *  @param[out] width Where to store the width, in screen coordinates, of the
+ *  @param[out] width Where to store the WIDTH, in screen coordinates, of the
  *  content area, or `NULL`.
- *  @param[out] height Where to store the height, in screen coordinates, of the
+ *  @param[out] height Where to store the HEIGHT, in screen coordinates, of the
  *  content area, or `NULL`.
  *
  *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref
@@ -2954,13 +2954,13 @@ GLFWAPI void glfwGetWindowSize(GLFWwindow* window, int* width, int* height);
  *  dimensions and all must be greater than or equal to zero.
  *
  *  @param[in] window The window to set limits for.
- *  @param[in] minwidth The minimum width, in screen coordinates, of the content
+ *  @param[in] minwidth The minimum WIDTH, in screen coordinates, of the content
  *  area, or `GLFW_DONT_CARE`.
- *  @param[in] minheight The minimum height, in screen coordinates, of the
+ *  @param[in] minheight The minimum HEIGHT, in screen coordinates, of the
  *  content area, or `GLFW_DONT_CARE`.
- *  @param[in] maxwidth The maximum width, in screen coordinates, of the content
+ *  @param[in] maxwidth The maximum WIDTH, in screen coordinates, of the content
  *  area, or `GLFW_DONT_CARE`.
- *  @param[in] maxheight The maximum height, in screen coordinates, of the
+ *  @param[in] maxheight The maximum HEIGHT, in screen coordinates, of the
  *  content area, or `GLFW_DONT_CARE`.
  *
  *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED, @ref
@@ -3043,9 +3043,9 @@ GLFWAPI void glfwSetWindowAspectRatio(GLFWwindow* window, int numer, int denom);
  *  and should not override these limits.
  *
  *  @param[in] window The window to resize.
- *  @param[in] width The desired width, in screen coordinates, of the window
+ *  @param[in] width The desired WIDTH, in screen coordinates, of the window
  *  content area.
- *  @param[in] height The desired height, in screen coordinates, of the window
+ *  @param[in] height The desired HEIGHT, in screen coordinates, of the window
  *  content area.
  *
  *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref
@@ -3077,9 +3077,9 @@ GLFWAPI void glfwSetWindowSize(GLFWwindow* window, int width, int height);
  *  non-`NULL` size arguments will be set to zero.
  *
  *  @param[in] window The window whose framebuffer to query.
- *  @param[out] width Where to store the width, in pixels, of the framebuffer,
+ *  @param[out] width Where to store the WIDTH, in pixels, of the framebuffer,
  *  or `NULL`.
- *  @param[out] height Where to store the height, in pixels, of the framebuffer,
+ *  @param[out] height Where to store the HEIGHT, in pixels, of the framebuffer,
  *  or `NULL`.
  *
  *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref
@@ -3449,11 +3449,11 @@ GLFWAPI GLFWmonitor* glfwGetWindowMonitor(GLFWwindow* window);
  *  This function sets the monitor that the window uses for full screen mode or,
  *  if the monitor is `NULL`, makes it windowed mode.
  *
- *  When setting a monitor, this function updates the width, height and refresh
+ *  When setting a monitor, this function updates the WIDTH, HEIGHT and refresh
  *  rate of the desired video mode and switches to the video mode closest to it.
  *  The window position is ignored when setting a monitor.
  *
- *  When the monitor is `NULL`, the position, width and height are used to
+ *  When the monitor is `NULL`, the position, WIDTH and HEIGHT are used to
  *  place the window content area.  The refresh rate is ignored when no monitor
  *  is specified.
  *
@@ -3472,7 +3472,7 @@ GLFWAPI GLFWmonitor* glfwGetWindowMonitor(GLFWwindow* window);
  *  content area.
  *  @param[in] width The desired with, in screen coordinates, of the content
  *  area or video mode.
- *  @param[in] height The desired height, in screen coordinates, of the content
+ *  @param[in] height The desired HEIGHT, in screen coordinates, of the content
  *  area or video mode.
  *  @param[in] refreshRate The desired refresh rate, in Hz, of the video mode,
  *  or `GLFW_DONT_CARE`.
@@ -3670,7 +3670,7 @@ GLFWAPI GLFWwindowposfun glfwSetWindowPosCallback(GLFWwindow* window, GLFWwindow
  *
  *  @callback_signature
  *  @code
- *  void function_name(GLFWwindow* window, int width, int height)
+ *  void function_name(GLFWwindow* window, int WIDTH, int HEIGHT)
  *  @endcode
  *  For more information about the callback parameters, see the
  *  [function pointer type](@ref GLFWwindowsizefun).
@@ -3875,7 +3875,7 @@ GLFWAPI GLFWwindowmaximizefun glfwSetWindowMaximizeCallback(GLFWwindow* window, 
  *
  *  @callback_signature
  *  @code
- *  void function_name(GLFWwindow* window, int width, int height)
+ *  void function_name(GLFWwindow* window, int WIDTH, int HEIGHT)
  *  @endcode
  *  For more information about the callback parameters, see the
  *  [function pointer type](@ref GLFWframebuffersizefun).

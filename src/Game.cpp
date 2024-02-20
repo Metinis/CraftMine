@@ -14,6 +14,7 @@ Game::Game(){
 
     wireframe = false;
     keyProcessed = false;
+    isFullscreen = false;
 
     window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "CraftMine", nullptr, nullptr);
 
@@ -78,7 +79,7 @@ void Game::run(){
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        processInput(window, &wireframe, &keyProcessed, *player, *world, deltaTime);
+        processInput(window, &wireframe, &keyProcessed, &isFullscreen, *player, *world, deltaTime);
         newChunkPos = glm::ivec2(player->position.x / Chunk::SIZE, player->position.z / Chunk::SIZE);
 
         if (std::abs(newChunkPos.x - lastChunkPos.x) >= updateingInt ||
@@ -94,6 +95,7 @@ void Game::run(){
         glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_SRC_ALPHA);
         ui->renderCrosshair();
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        player->Update(deltaTime);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -104,7 +106,7 @@ void Game::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
-void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, Player& player, World& world, float& deltaTime)
+void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, bool* _isFullscreen, Player& player, World& world, float& deltaTime)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
@@ -127,14 +129,34 @@ void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed
     }
 
     if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS) {
-        // Get the primary monitor
-        GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+        if(!_isFullscreen && !*keyProccessed){
+            // Get the primary monitor
+            GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
 
-        // Get the video mode of the primary monitor
-        const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+            // Get the video mode of the primary monitor
+            const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
 
-        // Switch the window to fullscreen mode
-        glfwSetWindowMonitor(window, primaryMonitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+            // Switch the window to fullscreen mode
+            glfwSetWindowMonitor(window, primaryMonitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+            *keyProccessed = true;
+            *_isFullscreen = true;
+        }
+        else if(!*keyProccessed)
+        {
+            // Get the primary monitor
+            GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+
+            // Get the video mode of the primary monitor
+            const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+
+            // Switch the window to windowed mode
+            glfwSetWindowMonitor(window, NULL, 0, 0, mode->width, mode->height, mode->refreshRate);
+            *keyProccessed = true;
+            *_isFullscreen = false;
+        }
+    }
+    if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_RELEASE){
+        *keyProccessed = false;
     }
     if (glfwGetKey(window, GLFW_KEY_F4) == GLFW_PRESS) {
         std::cout<<world.blocksToBeAddedList[world.blocksToBeAddedList.size() - 1].localPosition.x << "x " << world.blocksToBeAddedList[0].localPosition.y<< "y " << world.blocksToBeAddedList[0].localPosition.z<< "z ";

@@ -39,13 +39,14 @@ private:
     glm::ivec2 newChunkPos{};
     bool wireframe;
     bool keyProcessed;
+    bool isFullscreen;
     float deltaTime;
     float lastFrame;
     int updateingInt;
 
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
-    static void processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, Player& player, World& world, float& deltaTime);
+    static void processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, bool* _isFullscreen, Player& player, World& world, float& deltaTime);
 
 
 };

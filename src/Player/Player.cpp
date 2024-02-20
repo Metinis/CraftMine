@@ -1,11 +1,25 @@
 #include "Player.h"
 Player::Player(){
-    movementSpeed = 17.5f;
+    movementSpeed = 5.0f;
     position = glm::vec3(16.0f, 20.0f, 16.0f);
     camera.position = &position;
 }
-void Player::ProcessKeyboardMovement(cameraMovement dir, float deltaTime)
-{
+void Player::Update(float deltaTime){
+
+    UpdatePositionGravity(deltaTime);
+
+    if(isJumping && playerVelocity.y <= 0)
+    {
+        isJumping = false;
+    }
+
+    UpdatePositionXZ(deltaTime);
+
+    UpdateDeceleration(deltaTime);
+
+}
+void Player::UpdatePositionGravity(float& deltaTime) {
+    //TODO add 2 more current chunk refs for edges
     glm::ivec3 globalPos;
 
     globalPos.x = static_cast<int>(std::round(position.x));
@@ -17,204 +31,222 @@ void Player::ProcessKeyboardMovement(cameraMovement dir, float deltaTime)
 
     Chunk* currentChunk = world->GetChunk(chunkPosition.x, chunkPosition.y);
 
+    glm::vec3 localChunkPos; //position in chunk
+    localChunkPos.x = (position.x - (float)currentChunk->chunkPosition.x * Chunk::SIZE);
+    localChunkPos.y = (position.y);
+    localChunkPos.z = (position.z - (float)currentChunk->chunkPosition.y * Chunk::SIZE);
 
-    glm::vec3 newChunkPos;
-    glm::ivec3 localChunkPos; //position in chunk
-    localChunkPos.x = globalPos.x - currentChunk->chunkPosition.x * Chunk::SIZE;
-    localChunkPos.y = globalPos.y;
-    localChunkPos.z = globalPos.z - currentChunk->chunkPosition.y * Chunk::SIZE;
+    int xPos = (int)glm::round(localChunkPos.x + WIDTH);
+    int xNeg = (int)glm::round(localChunkPos.x - WIDTH);
+    int zPos = (int)glm::round(localChunkPos.z + WIDTH);
+    int zNeg = (int)glm::round(localChunkPos.z - WIDTH);
 
+    if(currentChunk->GetBlockID(glm::round(glm::vec3(xPos, position.y - HEIGHT, zPos))) == 0 &&
+       currentChunk->GetBlockID(glm::round(glm::vec3(xPos, position.y - HEIGHT, zNeg))) == 0 &&
+       currentChunk->GetBlockID(glm::round(glm::vec3(xNeg, position.y - HEIGHT, zPos))) == 0 &&
+       currentChunk->GetBlockID(glm::round(glm::vec3(xNeg, position.y - HEIGHT, zNeg))) == 0 && !isJumping)
+    {
+        isGrounded = false;
+    }
+    else if(!isJumping && !isGrounded){
+        isGrounded = true;
+        playerVelocity.y = 0;
+    }
 
-    //newChunkPos.y = localChunkPos.y;
+    if(!isGrounded)
+    {
+        if(playerVelocity.y > -MAX_VELOCITY)
+            playerVelocity.y -= GRAVITY * deltaTime * GRAVITY_MULTIPLIER;
+    }
+}
+void Player::UpdatePositionXZ(float &deltaTime) {
+    glm::vec3 newPosition = position + playerVelocity * deltaTime;// * deltaTime;
+    position.y = newPosition.y;
+    if(!isColliding(newPosition, camera.Front))
+    {
+        position.x = newPosition.x;
+        position.z = newPosition.z;
+    }
+    else{
+        glm::vec2 newVelocity;
+        if(!checkNewPositionX(newPosition.x))
+        {
+            position.x = newPosition.x;
+        }
+        else
+        {
+            playerVelocity.x = 0;
+        }
+        if(!checkNewPositionZ(newPosition.z))
+        {
+            position.z = newPosition.z;
+        }
+        else
+        {
+            playerVelocity.z = 0;
+        }
+    }
+}
+void Player::UpdateDeceleration(float &deltaTime){
+    // Calculate the magnitude of the velocity vector in the XZ plane
+    float velocityMagnitudeXZ = glm::length(glm::vec2(playerVelocity.x, playerVelocity.z));
 
-    float velocity = movementSpeed * deltaTime;
+    // Apply deceleration only to the X and Z components
+    if (velocityMagnitudeXZ > 0) {
+        // Calculate the deceleration amount based on your chosen factor (e.g., 25)
+        float deceleration = 25 * deltaTime;
 
-    //TODO fix chunk borders on width calculations00
+        // Ensure the deceleration doesn't overshoot zero
+        velocityMagnitudeXZ = glm::max(0.0f, velocityMagnitudeXZ - deceleration);
+
+        // Normalize the X and Z components and multiply by the new magnitude
+        glm::vec2 velocityXZ = glm::normalize(glm::vec2(playerVelocity.x, playerVelocity.z)) * velocityMagnitudeXZ;
+
+        // Update the playerVelocity vector with the new X and Z components, keeping the Y component unchanged
+        playerVelocity = glm::vec3(velocityXZ.x, playerVelocity.y, velocityXZ.y);
+    } else {
+        playerVelocity.x = 0.0f;
+        playerVelocity.z = 0.0f;
+    }
+}
+void Player::ProcessKeyboardMovement(cameraMovement dir, float deltaTime)
+{
+    glm::vec2 playerVelocityXZ;
+    playerVelocityXZ.x = playerVelocity.x;
+    playerVelocityXZ.y = playerVelocity.z;
+
     if (dir == cameraMovement::FORWARD){
-        glm::vec3 newPosition = position + glm::normalize(glm::vec3(camera.Front.x, 0, camera.Front.z)) * velocity;
+        if(glm::length(playerVelocityXZ) < movementSpeed){
+            playerVelocity += glm::normalize(glm::vec3(camera.Front.x, 0, camera.Front.z)) * deltaTime * ACCELERATION;
+        }
 
-        //if(!isColliding(newPosition, camera.Front))
-        //position += glm::normalize(glm::vec3(camera.Front.x, 0, camera.Front.z)) * velocity;
-        if(!isColliding(newPosition, camera.Front))
-        {
-            position += glm::normalize(glm::vec3(camera.Front.x, 0, camera.Front.z)) * velocity;
-        }
-        else if(!checkNewPositionX(camera.Front, newPosition) && checkNewPositionZ(camera.Front, newPosition))
-        {
-            position.x += (glm::normalize(glm::vec3(camera.Front.x, 0, camera.Front.z)) * velocity).x;
-        }
-        else if(!checkNewPositionZ(camera.Front, newPosition) && checkNewPositionX(camera.Front, newPosition))
-        {
-            position.z += (glm::normalize(glm::vec3(camera.Front.x, 0, camera.Front.z)) * velocity).z;
-        }
+
     }
     if (dir == cameraMovement::BACKWARD) {
-        glm::vec3 newPosition = position - glm::normalize(glm::vec3(camera.Front.x, 0, camera.Front.z)) * velocity;
+        if(glm::length(playerVelocityXZ) < movementSpeed){
+            playerVelocity -= glm::normalize(glm::vec3(camera.Front.x, 0, camera.Front.z)) * deltaTime * ACCELERATION;
+        }
 
-        //if(!isColliding(newPosition, camera.Front))
-        //position += glm::normalize(glm::vec3(camera.Front.x, 0, camera.Front.z)) * velocity;
-        if(!isColliding(newPosition, camera.Front))
-        {
-            position -= glm::normalize(glm::vec3(camera.Front.x, 0, camera.Front.z)) * velocity;
-        }
-        else if(!checkNewPositionX(camera.Front, newPosition) && checkNewPositionZ(camera.Front, newPosition))
-        {
-            position.x -= (glm::normalize(glm::vec3(camera.Front.x, 0, camera.Front.z)) * velocity).x;
-        }
-        else if(!checkNewPositionZ(camera.Front, newPosition) && checkNewPositionX(camera.Front, newPosition))
-        {
-            position.z -= (glm::normalize(glm::vec3(camera.Front.x, 0, camera.Front.z)) * velocity).z;
-        }
     }
     if (dir == cameraMovement::LEFT) {
-        glm::vec3 newPosition = position - camera.Right * velocity;
+        //if(glm::length(playerVelocityXZ) < movementSpeed){
+            playerVelocity -= camera.Right * deltaTime * ACCELERATION;
+        //}
 
-        if(!isColliding(newPosition, camera.Front))
-        {
-            position -= glm::normalize(camera.Right) * velocity;
-        }
-        else if(!checkNewPositionX(camera.Front, newPosition) && checkNewPositionZ(camera.Front, newPosition))
-        {
-            position.x -= (glm::normalize(camera.Right) * velocity).x;
-        }
-        else if(!checkNewPositionZ(camera.Front, newPosition) && checkNewPositionX(camera.Front, newPosition))
-        {
-            position.z -= (glm::normalize(camera.Right) * velocity).z;
-        }
+
     }
     if (dir == cameraMovement::RIGHT) {
-        glm::vec3 newPosition = position + camera.Right * velocity;
-
-        //if(!isColliding(newPosition, camera.Right))
-        //    position += glm::normalize(camera.Right) * velocity;
-        if(!isColliding(newPosition, camera.Front))
-        {
-            position += glm::normalize(camera.Right) * velocity;
-        }
-        else if(!checkNewPositionX(camera.Front, newPosition) && checkNewPositionZ(camera.Front, newPosition))
-        {
-            position.x += (glm::normalize(camera.Right) * velocity).x;
-        }
-        else if(!checkNewPositionZ(camera.Front, newPosition) && checkNewPositionX(camera.Front, newPosition))
-        {
-            position.z += (glm::normalize(camera.Right) * velocity).z;
-        }
+        //if(glm::length(playerVelocityXZ) < movementSpeed){
+            playerVelocity += camera.Right * deltaTime * ACCELERATION;
+        //}
     }
     if (dir == cameraMovement::DOWN) {
-        if(currentChunk->GetBlockID(glm::round(glm::vec3(localChunkPos.x, position.y - velocity - 1.5, localChunkPos.z))) == 0 &&
-           currentChunk->GetBlockID(glm::round(glm::vec3(localChunkPos.x, position.y - velocity - 0.5, localChunkPos.z))) == 0)
-            position.y -= velocity;
+        //TODO Implement shifting
     }
     if (dir == cameraMovement::UP) {
-        if(currentChunk->GetBlockID(glm::round(glm::vec3(localChunkPos.x, position.y - velocity + 0.4, localChunkPos.z))) == 0)
-            position.y += velocity;
+        if(isGrounded && !isJumping)
+        {
+            playerVelocity.y = 0;
+            isGrounded = false;
+            isJumping = true;
+            playerVelocity.y += 6.5;
+        }
+
     }
 }
-bool Player::isColliding(glm::vec3& newPosition, glm::vec3 front) //front can be x or z since they are checked separately
+bool Player::isColliding(glm::vec3& newPosition, glm::vec3 front) const //front can be x or z since they are checked separately
 {
     //by default false
-    return (checkNewPositionZ(front, newPosition) ||
-            checkNewPositionX(front, newPosition)) ||
-           checkNewPositionXZ(front, newPosition);
+    return (checkNewPositionZ(newPosition.z) ||
+            checkNewPositionX(newPosition.x)) ||
+           checkNewPositionXZ(newPosition);
 
 }
-bool Player::checkNewPositionZ(glm::vec3 front, glm::vec3 newPosition)
+bool Player::checkNewPositionZ(float newZ) const
 {
-    Chunk* currentChunk;
-    glm::vec3 newChunkPos;
+    Chunk* currentChunkMinus;
+    Chunk* currentChunkPlus;
     glm::ivec2 _chunkPosition;
-    float _width = (newPosition.z > position.z) ? width : -width;
-    _chunkPosition.x = static_cast<int>(glm::round(position.x) / Chunk::SIZE);
-    _chunkPosition.y = static_cast<int>(glm::round(newPosition.z + _width) / Chunk::SIZE);
+    float _width = (newZ > position.z) ? WIDTH + 0.01f : -WIDTH - 0.01f;
 
-    currentChunk = world->GetChunk(_chunkPosition.x, _chunkPosition.y);
+    _chunkPosition.x = (int)(glm::round(position.x - WIDTH) / Chunk::SIZE);
+    _chunkPosition.y = (int)(glm::round(newZ + _width) / Chunk::SIZE);
 
-    glm::vec3 localChunkPos; //position in chunk
-    localChunkPos.x = glm::round((position.x) - chunkPosition.x * Chunk::SIZE);
-    localChunkPos.y = glm::round(position.y);
-    localChunkPos.z = glm::round((position.z) - chunkPosition.y * Chunk::SIZE);
-    localChunkPos.x = (localChunkPos.x >= 16) ? 0 : localChunkPos.x;
-    localChunkPos.x = (localChunkPos.x < 0) ? 15 : localChunkPos.x;
-    int xPlus = (glm::round(position.x + width) - chunkPosition.x * Chunk::SIZE);
-    int xMinus = (glm::round(position.x - width) - chunkPosition.x * Chunk::SIZE);
-    if(localChunkPos.x > 15 || localChunkPos.x < 0)
-    {
-        return true;
-    }
+    currentChunkMinus = world->GetChunk(_chunkPosition.x, _chunkPosition.y);
 
-    newChunkPos.z = (newPosition.z - currentChunk->chunkPosition.y * Chunk::SIZE);
-    newChunkPos.z = glm::round(newChunkPos.z + _width);
+    _chunkPosition.x = (int)(glm::round(position.x + WIDTH) / Chunk::SIZE);
+    _chunkPosition.y = (int)(glm::round(newZ + _width) / Chunk::SIZE);
 
-    if(currentChunk->GetBlockID(glm::vec3(xPlus, localChunkPos.y, newChunkPos.z)) != 0 ||
-       currentChunk->GetBlockID(glm::vec3(xPlus, localChunkPos.y-1, newChunkPos.z)) != 0 ||
-       currentChunk->GetBlockID(glm::vec3(xMinus, localChunkPos.y, newChunkPos.z)) != 0 ||
-       currentChunk->GetBlockID(glm::vec3(xMinus, localChunkPos.y-1, newChunkPos.z)) != 0)
+    currentChunkPlus = world->GetChunk(_chunkPosition.x, _chunkPosition.y);
+
+    int y1 = (int)glm::round(position.y);
+    int y2 = (int)glm::round(position.y - 1.5);
+    int xPlus = (int)(glm::round(position.x + WIDTH) - (float)currentChunkPlus->chunkPosition.x * Chunk::SIZE);
+    int xMinus = (int)(glm::round(position.x - WIDTH) - (float)currentChunkMinus->chunkPosition.x * Chunk::SIZE);
+
+    int newChunkPosPlus = (int)glm::round((newZ - (float)currentChunkPlus->chunkPosition.y * Chunk::SIZE) + _width);
+    int newChunkPosMinus = (int)glm::round((newZ - (float)currentChunkMinus->chunkPosition.y * Chunk::SIZE) + _width);
+
+    if(currentChunkPlus->GetBlockID(glm::vec3(xPlus, y1, newChunkPosPlus)) != 0 ||
+       currentChunkPlus->GetBlockID(glm::vec3(xPlus, y2, newChunkPosPlus)) != 0 ||
+       currentChunkMinus->GetBlockID(glm::vec3(xMinus, y1, newChunkPosMinus)) != 0 ||
+       currentChunkMinus->GetBlockID(glm::vec3(xMinus, y2, newChunkPosMinus)) != 0)
     {
         return true;
     }
     return false;
 }
-bool Player::checkNewPositionX(glm::vec3 front, glm::vec3 newPosition)
+bool Player::checkNewPositionX(float newX) const
 {
-    Chunk* currentChunk;
+    Chunk* currentChunkMinus;
+    Chunk* currentChunkPlus;
     glm::vec3 newChunkPos;
     glm::ivec2 _chunkPosition;
-    float _width = (newPosition.x > position.x) ? width : -width;
-    _chunkPosition.x = static_cast<int>(glm::round(newPosition.x + _width) / Chunk::SIZE);
-    _chunkPosition.y = static_cast<int>(glm::round(position.z) / Chunk::SIZE);
+    float _width = (newX > position.x) ? WIDTH + 0.01f : -WIDTH - 0.01f;
 
-    currentChunk = world->GetChunk(_chunkPosition.x, _chunkPosition.y);
+    _chunkPosition.x = (int)(glm::round(newX + _width) / Chunk::SIZE);
+    _chunkPosition.y = (int)(glm::round(position.z - WIDTH) / Chunk::SIZE);
 
-    glm::vec3 localChunkPos; //position in chunk
-    localChunkPos.x = glm::round((position.x) - chunkPosition.x * Chunk::SIZE);
-    localChunkPos.y = glm::round(position.y);
-    int zPlus = (glm::round(position.z + width) - chunkPosition.y * Chunk::SIZE);
-    int zMinus = (glm::round(position.z - width) - chunkPosition.y * Chunk::SIZE);
-    localChunkPos.z = (glm::round(position.z) - chunkPosition.y * Chunk::SIZE);
-    localChunkPos.z = (localChunkPos.z >= 16) ? 0 : localChunkPos.z;
-    localChunkPos.z = (localChunkPos.z < 0) ? 15 : localChunkPos.z;
-    if(localChunkPos.z > 15 || localChunkPos.z < 0)
-    {
-        return true;
-    }
+    currentChunkMinus = world->GetChunk(_chunkPosition.x, _chunkPosition.y);
 
-    newChunkPos.x = (newPosition.x - currentChunk->chunkPosition.x * Chunk::SIZE);
-    newChunkPos.x = glm::round(newChunkPos.x + _width);
+    _chunkPosition.x = (int)(glm::round(newX + _width) / Chunk::SIZE);
+    _chunkPosition.y = (int)(glm::round(position.z + WIDTH) / Chunk::SIZE);
 
-    if(currentChunk->GetBlockID(glm::vec3(newChunkPos.x, localChunkPos.y, zPlus)) != 0 ||
-       currentChunk->GetBlockID(glm::vec3(newChunkPos.x, localChunkPos.y-1, zPlus)) != 0 ||
-       currentChunk->GetBlockID(glm::vec3(newChunkPos.x, localChunkPos.y, zMinus)) != 0 ||
-       currentChunk->GetBlockID(glm::vec3(newChunkPos.x, localChunkPos.y-1, zMinus)) != 0)
+    currentChunkPlus = world->GetChunk(_chunkPosition.x, _chunkPosition.y);
+
+    int y1 = (int)glm::round(position.y);
+    int y2 = (int)glm::round(position.y - 1.5);
+    int zPlus = (int)(glm::round(position.z + WIDTH) - (float)currentChunkPlus->chunkPosition.y * Chunk::SIZE);
+    int zMinus = (int)(glm::round(position.z - WIDTH) - (float)currentChunkMinus->chunkPosition.y * Chunk::SIZE);
+
+    int newChunkPosPlus = (int)glm::round((newX - (float)currentChunkPlus->chunkPosition.x * Chunk::SIZE) + _width);
+    int newChunkPosMinus = (int)glm::round((newX - (float)currentChunkMinus->chunkPosition.x * Chunk::SIZE) + _width);
+
+    if(currentChunkPlus->GetBlockID(glm::vec3(newChunkPosPlus, y1, zPlus)) != 0 ||
+       currentChunkPlus->GetBlockID(glm::vec3(newChunkPosPlus, y2, zPlus)) != 0 ||
+       currentChunkMinus->GetBlockID(glm::vec3(newChunkPosMinus, y1, zMinus)) != 0 ||
+       currentChunkMinus->GetBlockID(glm::vec3(newChunkPosMinus, y2, zMinus)) != 0)
     {
         return true;
     }
     return false;
 }
-bool Player::checkNewPositionXZ(glm::vec3 front, glm::vec3 newPosition)
+bool Player::checkNewPositionXZ(glm::vec3 newPosition) const
 {
     Chunk* currentChunk;
     glm::vec3 newChunkPos;
     glm::ivec2 _chunkPosition;
-    float _widthZ = (newPosition.z > position.z) ? width : -width;
-    float _widthX = (newPosition.x > position.x) ? width : -width;
+
+    float _widthZ = (newPosition.z > position.z) ? WIDTH + 0.01f : -WIDTH - 0.01f;
+    float _widthX = (newPosition.x > position.x) ? WIDTH + 0.01f : -WIDTH - 0.01f;
+
     _chunkPosition.x = static_cast<int>(glm::round(newPosition.x + _widthX) / Chunk::SIZE);
     _chunkPosition.y = static_cast<int>(glm::round(newPosition.z + _widthZ) / Chunk::SIZE);
     currentChunk = world->GetChunk(_chunkPosition.x, _chunkPosition.y);
 
-    glm::vec3 localChunkPos; //position in chunk
-    localChunkPos.x = glm::round((position.x) - chunkPosition.x * Chunk::SIZE);
-    localChunkPos.y = glm::round(position.y);
-    localChunkPos.z = glm::round((position.z) - chunkPosition.y * Chunk::SIZE);
-    localChunkPos.x = (localChunkPos.x >= 16) ? 0 : localChunkPos.x;
-    localChunkPos.x = (localChunkPos.x < 0) ? 15 : localChunkPos.x;
-    localChunkPos.z = (localChunkPos.z >= 16) ? 0 : localChunkPos.z;
-    localChunkPos.z = (localChunkPos.z < 0) ? 15 : localChunkPos.z;
-
-    newChunkPos.x = (newPosition.x - currentChunk->chunkPosition.x * Chunk::SIZE);
-    newChunkPos.y = glm::round(localChunkPos.y);
-    newChunkPos.z = (newPosition.z - currentChunk->chunkPosition.y * Chunk::SIZE);
-    newChunkPos.x = glm::round(newChunkPos.x + _widthX);
-    newChunkPos.z = glm::round(newChunkPos.z + _widthZ);
+    newChunkPos.x = ((newPosition.x - (float)currentChunk->chunkPosition.x * Chunk::SIZE) + _widthX);
+    newChunkPos.y = glm::round(position.y);
+    newChunkPos.z = ((newPosition.z - (float)currentChunk->chunkPosition.y * Chunk::SIZE)+ _widthZ);
 
     if(currentChunk->GetBlockID(glm::vec3(newChunkPos.x, newChunkPos.y, newChunkPos.z)))
     {

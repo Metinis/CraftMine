@@ -357,7 +357,7 @@ namespace glm
 
 		T const rad = fov;
 		T const h = glm::cos(static_cast<T>(0.5) * rad) / glm::sin(static_cast<T>(0.5) * rad);
-		T const w = h * height / width; ///todo max(width , Height) / min(width , Height)?
+		T const w = h * height / width; ///todo max(WIDTH , Height) / min(WIDTH , Height)?
 
 		mat<4, 4, T, defaultp> Result(static_cast<T>(0));
 		Result[0][0] = w;
@@ -377,7 +377,7 @@ namespace glm
 
 		T const rad = fov;
 		T const h = glm::cos(static_cast<T>(0.5) * rad) / glm::sin(static_cast<T>(0.5) * rad);
-		T const w = h * height / width; ///todo max(width , Height) / min(width , Height)?
+		T const w = h * height / width; ///todo max(WIDTH , Height) / min(WIDTH , Height)?
 
 		mat<4, 4, T, defaultp> Result(static_cast<T>(0));
 		Result[0][0] = w;
@@ -397,7 +397,7 @@ namespace glm
 
 		T const rad = fov;
 		T const h = glm::cos(static_cast<T>(0.5) * rad) / glm::sin(static_cast<T>(0.5) * rad);
-		T const w = h * height / width; ///todo max(width , Height) / min(width , Height)?
+		T const w = h * height / width; ///todo max(WIDTH , Height) / min(WIDTH , Height)?
 
 		mat<4, 4, T, defaultp> Result(static_cast<T>(0));
 		Result[0][0] = w;
@@ -417,7 +417,7 @@ namespace glm
 
 		T const rad = fov;
 		T const h = glm::cos(static_cast<T>(0.5) * rad) / glm::sin(static_cast<T>(0.5) * rad);
-		T const w = h * height / width; ///todo max(width , Height) / min(width , Height)?
+		T const w = h * height / width; ///todo max(WIDTH , Height) / min(WIDTH , Height)?
 
 		mat<4, 4, T, defaultp> Result(static_cast<T>(0));
 		Result[0][0] = w;
@@ -432,7 +432,7 @@ namespace glm
 	GLM_FUNC_QUALIFIER mat<4, 4, T, defaultp> perspectiveFovZO(T fov, T width, T height, T zNear, T zFar)
 	{
 #		if GLM_CONFIG_CLIP_CONTROL & GLM_CLIP_CONTROL_LH_BIT
-			return perspectiveFovLH_ZO(fov, width, height, zNear, zFar);
+			return perspectiveFovLH_ZO(fov, WIDTH, HEIGHT, zNear, zFar);
 #		else
 			return perspectiveFovRH_ZO(fov, width, height, zNear, zFar);
 #		endif
@@ -442,7 +442,7 @@ namespace glm
 	GLM_FUNC_QUALIFIER mat<4, 4, T, defaultp> perspectiveFovNO(T fov, T width, T height, T zNear, T zFar)
 	{
 #		if GLM_CONFIG_CLIP_CONTROL & GLM_CLIP_CONTROL_LH_BIT
-			return perspectiveFovLH_NO(fov, width, height, zNear, zFar);
+			return perspectiveFovLH_NO(fov, WIDTH, HEIGHT, zNear, zFar);
 #		else
 			return perspectiveFovRH_NO(fov, width, height, zNear, zFar);
 #		endif
@@ -452,7 +452,7 @@ namespace glm
 	GLM_FUNC_QUALIFIER mat<4, 4, T, defaultp> perspectiveFovLH(T fov, T width, T height, T zNear, T zFar)
 	{
 #		if GLM_CONFIG_CLIP_CONTROL & GLM_CLIP_CONTROL_ZO_BIT
-			return perspectiveFovLH_ZO(fov, width, height, zNear, zFar);
+			return perspectiveFovLH_ZO(fov, WIDTH, HEIGHT, zNear, zFar);
 #		else
 			return perspectiveFovLH_NO(fov, width, height, zNear, zFar);
 #		endif
@@ -462,7 +462,7 @@ namespace glm
 	GLM_FUNC_QUALIFIER mat<4, 4, T, defaultp> perspectiveFovRH(T fov, T width, T height, T zNear, T zFar)
 	{
 #		if GLM_CONFIG_CLIP_CONTROL & GLM_CLIP_CONTROL_ZO_BIT
-			return perspectiveFovRH_ZO(fov, width, height, zNear, zFar);
+			return perspectiveFovRH_ZO(fov, WIDTH, HEIGHT, zNear, zFar);
 #		else
 			return perspectiveFovRH_NO(fov, width, height, zNear, zFar);
 #		endif
@@ -472,11 +472,11 @@ namespace glm
 	GLM_FUNC_QUALIFIER mat<4, 4, T, defaultp> perspectiveFov(T fov, T width, T height, T zNear, T zFar)
 	{
 #		if GLM_CONFIG_CLIP_CONTROL == GLM_CLIP_CONTROL_LH_ZO
-			return perspectiveFovLH_ZO(fov, width, height, zNear, zFar);
+			return perspectiveFovLH_ZO(fov, WIDTH, HEIGHT, zNear, zFar);
 #		elif GLM_CONFIG_CLIP_CONTROL == GLM_CLIP_CONTROL_LH_NO
-			return perspectiveFovLH_NO(fov, width, height, zNear, zFar);
+			return perspectiveFovLH_NO(fov, WIDTH, HEIGHT, zNear, zFar);
 #		elif GLM_CONFIG_CLIP_CONTROL == GLM_CLIP_CONTROL_RH_ZO
-			return perspectiveFovRH_ZO(fov, width, height, zNear, zFar);
+			return perspectiveFovRH_ZO(fov, WIDTH, HEIGHT, zNear, zFar);
 #		elif GLM_CONFIG_CLIP_CONTROL == GLM_CLIP_CONTROL_RH_NO
 			return perspectiveFovRH_NO(fov, width, height, zNear, zFar);
 #		endif

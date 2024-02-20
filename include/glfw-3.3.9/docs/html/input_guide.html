@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="WIDTH=device-WIDTH, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.7"/>
 <title>GLFW: Input guide</title>
@@ -257,17 +257,17 @@ Custom cursor creation</h3>
 <div class="line">memset(pixels, 0xff, <span class="keyword">sizeof</span>(pixels));</div>
 <div class="line"> </div>
 <div class="line"><a class="code hl_struct" href="struct_g_l_f_wimage.html">GLFWimage</a> image;</div>
-<div class="line">image.<a class="code hl_variable" href="struct_g_l_f_wimage.html#af6a71cc999fe6d3aea31dd7e9687d835">width</a> = 16;</div>
-<div class="line">image.<a class="code hl_variable" href="struct_g_l_f_wimage.html#a0b7d95368f0c80d5e5c9875057c7dbec">height</a> = 16;</div>
+<div class="line">image.<a class="code hl_variable" href="struct_g_l_f_wimage.html#af6a71cc999fe6d3aea31dd7e9687d835">WIDTH</a> = 16;</div>
+<div class="line">image.<a class="code hl_variable" href="struct_g_l_f_wimage.html#a0b7d95368f0c80d5e5c9875057c7dbec">HEIGHT</a> = 16;</div>
 <div class="line">image.<a class="code hl_variable" href="struct_g_l_f_wimage.html#a0c532a5c2bb715555279b7817daba0fb">pixels</a> = pixels;</div>
 <div class="line"> </div>
 <div class="line"><a class="code hl_typedef" href="group__input.html#ga89261ae18c75e863aaf2656ecdd238f4">GLFWcursor</a>* cursor = <a class="code hl_function" href="group__input.html#ga556f604f73af156c0db0e97c081373c3">glfwCreateCursor</a>(&amp;image, 0, 0);</div>
 <div class="ttc" id="agroup__input_html_ga556f604f73af156c0db0e97c081373c3"><div class="ttname"><a href="group__input.html#ga556f604f73af156c0db0e97c081373c3">glfwCreateCursor</a></div><div class="ttdeci">GLFWcursor * glfwCreateCursor(const GLFWimage *image, int xhot, int yhot)</div><div class="ttdoc">Creates a custom cursor.</div></div>
 <div class="ttc" id="agroup__input_html_ga89261ae18c75e863aaf2656ecdd238f4"><div class="ttname"><a href="group__input.html#ga89261ae18c75e863aaf2656ecdd238f4">GLFWcursor</a></div><div class="ttdeci">struct GLFWcursor GLFWcursor</div><div class="ttdoc">Opaque cursor object.</div><div class="ttdef"><b>Definition</b> glfw3.h:1207</div></div>
 <div class="ttc" id="astruct_g_l_f_wimage_html"><div class="ttname"><a href="struct_g_l_f_wimage.html">GLFWimage</a></div><div class="ttdoc">Image data.</div><div class="ttdef"><b>Definition</b> glfw3.h:1731</div></div>
-<div class="ttc" id="astruct_g_l_f_wimage_html_a0b7d95368f0c80d5e5c9875057c7dbec"><div class="ttname"><a href="struct_g_l_f_wimage.html#a0b7d95368f0c80d5e5c9875057c7dbec">GLFWimage::height</a></div><div class="ttdeci">int height</div><div class="ttdef"><b>Definition</b> glfw3.h:1737</div></div>
+<div class="ttc" id="astruct_g_l_f_wimage_html_a0b7d95368f0c80d5e5c9875057c7dbec"><div class="ttname"><a href="struct_g_l_f_wimage.html#a0b7d95368f0c80d5e5c9875057c7dbec">GLFWimage::HEIGHT</a></div><div class="ttdeci">int HEIGHT</div><div class="ttdef"><b>Definition</b> glfw3.h:1737</div></div>
 <div class="ttc" id="astruct_g_l_f_wimage_html_a0c532a5c2bb715555279b7817daba0fb"><div class="ttname"><a href="struct_g_l_f_wimage.html#a0c532a5c2bb715555279b7817daba0fb">GLFWimage::pixels</a></div><div class="ttdeci">unsigned char * pixels</div><div class="ttdef"><b>Definition</b> glfw3.h:1740</div></div>
-<div class="ttc" id="astruct_g_l_f_wimage_html_af6a71cc999fe6d3aea31dd7e9687d835"><div class="ttname"><a href="struct_g_l_f_wimage.html#af6a71cc999fe6d3aea31dd7e9687d835">GLFWimage::width</a></div><div class="ttdeci">int width</div><div class="ttdef"><b>Definition</b> glfw3.h:1734</div></div>
+<div class="ttc" id="astruct_g_l_f_wimage_html_af6a71cc999fe6d3aea31dd7e9687d835"><div class="ttname"><a href="struct_g_l_f_wimage.html#af6a71cc999fe6d3aea31dd7e9687d835">GLFWimage::WIDTH</a></div><div class="ttdeci">int WIDTH</div><div class="ttdef"><b>Definition</b> glfw3.h:1734</div></div>
 </div><!-- fragment --><p>If cursor creation fails, <code>NULL</code> will be returned, so it is necessary to check the return value.</p>
 <p>The image data is 32-bit, little-endian, non-premultiplied RGBA, i.e. eight bits per channel with the red channel first. The pixels are arranged canonically as sequential rows, starting from the top-left corner.</p>
 <h3><a class="anchor" id="cursor_standard"></a>

@@ -233,9 +233,9 @@ tutorial, a multicolored rotating triangle will be rendered.  The framebuffer
 size needs to be retrieved for `glViewport`.
 
 @code
-int width, height;
-glfwGetFramebufferSize(window, &width, &height);
-glViewport(0, 0, width, height);
+int WIDTH, HEIGHT;
+glfwGetFramebufferSize(window, &WIDTH, &HEIGHT);
+glViewport(0, 0, WIDTH, HEIGHT);
 @endcode
 
 You can also set a framebuffer size callback using @ref

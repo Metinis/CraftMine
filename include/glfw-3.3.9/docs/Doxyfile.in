@@ -57,8 +57,8 @@ PROJECT_NUMBER         = @GLFW_VERSION@
 PROJECT_BRIEF          = "A multi-platform library for OpenGL, window and input"
 
 # With the PROJECT_LOGO tag one can specify a logo or an icon that is included
-# in the documentation. The maximum height of the logo should not exceed 55
-# pixels and the maximum width should not exceed 200 pixels. Doxygen will copy
+# in the documentation. The maximum HEIGHT of the logo should not exceed 55
+# pixels and the maximum WIDTH should not exceed 200 pixels. Doxygen will copy
 # the logo to the output directory.
 
 PROJECT_LOGO           =
@@ -1637,7 +1637,7 @@ GENERATE_TREEVIEW      = NO
 
 # When both GENERATE_TREEVIEW and DISABLE_INDEX are set to YES, then the
 # FULL_SIDEBAR option determines if the side bar is limited to only the treeview
-# area (value NO) or if it should extend to the full height of the window (value
+# area (value NO) or if it should extend to the full HEIGHT of the window (value
 # YES). Setting this to YES gives a layout similar to
 # https://docs.readthedocs.io with more room for contents, but less room for the
 # project logo, title, and description. If either GENERATE_TREEVIEW or
@@ -1658,7 +1658,7 @@ FULL_SIDEBAR           = NO
 ENUM_VALUES_PER_LINE   = 4
 
 # If the treeview is enabled (see GENERATE_TREEVIEW) then this tag can be used
-# to set the initial width (in pixels) of the frame in which the tree is shown.
+# to set the initial WIDTH (in pixels) of the frame in which the tree is shown.
 # Minimum value: 0, maximum value: 1500, default value: 250.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
@@ -2440,10 +2440,10 @@ DOT_EDGE_ATTR          = "labelfontname=Helvetica,labelfontsize=10"
 # DOT_NODE_ATTR is concatenated with DOT_COMMON_ATTR. For view without boxes
 # around nodes set 'shape=plain' or 'shape=plaintext' <a
 # href=https://www.graphviz.org/doc/info/shapes.html>Shapes specification</a>
-# The default value is: shape=box,height=0.2,width=0.4.
+# The default value is: shape=box,HEIGHT=0.2,WIDTH=0.4.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
-DOT_NODE_ATTR          = "shape=box,height=0.2,width=0.4"
+DOT_NODE_ATTR          = "shape=box,HEIGHT=0.2,WIDTH=0.4"
 
 # You can set the path where dot can find font specified with fontname in
 # DOT_COMMON_ATTR and others dot attributes.
