@@ -181,7 +181,7 @@ void Player::ProcessKeyboardMovement(cameraMovement dir, float deltaTime)
         {
             playerVelocity.y = 0;
             isJumping = true;
-            playerVelocity.y += 6.25f;
+            playerVelocity.y += 6.20f;
         }
 
     }
