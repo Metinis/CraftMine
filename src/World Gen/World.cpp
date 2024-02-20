@@ -249,7 +249,7 @@ bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDire
             if (tempCurrentChunk->GetBlockID(localPos) != 0) {
 
                 if(static_cast<int>(glm::abs((rayOrigin.x - (rayOrigin.x + rayDirection.x * step))) > 1) ||
-                static_cast<int>(glm::abs((rayOrigin.y - (rayOrigin.y + rayDirection.y * step))) > 1) ||
+                static_cast<int>(glm::abs((rayOrigin.y - (rayOrigin.y + rayDirection.y * step))) > 2) ||
                 static_cast<int>(glm::abs((rayOrigin.z - (rayOrigin.z + rayDirection.z * step))) > 1))
                 {
                     result = localPos;

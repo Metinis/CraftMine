@@ -171,6 +171,11 @@ void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed
         player.ProcessKeyboardMovement(cameraMovement::RIGHT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
         player.ProcessKeyboardMovement(cameraMovement::DOWN, deltaTime);
+    if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE){
+        player.isShifting = false;
+        //player.shiftChanged = false;
+    }
+
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
         player.ProcessKeyboardMovement(cameraMovement::UP, deltaTime);
 }

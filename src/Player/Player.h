@@ -10,8 +10,8 @@
 class Player {
 private:
     const float GRAVITY = 9.8f;
-    const float HEIGHT = 1.75f;
-    const float WIDTH = 0.35f;
+    float HEIGHT = 1.75f;
+    const float WIDTH = 0.3f;
     const float GRAVITY_MULTIPLIER = 2;
     const float MAX_VELOCITY = 40.0f;
     const float ACCELERATION = 50.0f;
@@ -20,6 +20,8 @@ private:
     bool isGrounded{};
     bool isJumping{};
 
+
+
     float movementSpeed;
 
     glm::vec3 playerVelocity{};
@@ -27,6 +29,9 @@ public:
     World* world{};
     Camera camera;
     glm::vec3 position{};
+
+    bool shiftChanged = true;
+    bool isShifting{};
 
     Player();
     void Update(float deltaTime);
@@ -38,7 +43,7 @@ public:
     bool checkNewPositionZ(float newZ) const;
     bool checkNewPositionX(float newZ) const;
     bool checkNewPositionXZ(glm::vec3 newPosition) const;
-    bool checkNewPositionY(float newY) const;
+    bool checkNewPositionY(glm::vec3& newPosition) const;
 };
 
 
