@@ -35,10 +35,8 @@ std::vector<glm::vec3> Block::AddTransformedVertices(std::vector<glm::vec3> vert
 	{
         if(type == CraftMine::BlockType::WATER)
         {
-            if(vert.y > 0)
-            {
-                vert.y -= 0.1f;
-            }
+            vert.y -= 0.1f;
+
         }
         newVerts.push_back(vert + Position);
 	}

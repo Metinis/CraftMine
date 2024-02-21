@@ -36,7 +36,7 @@ public:
     Player();
     void Update(float deltaTime);
     void UpdatePositionY(float& deltaTime, glm::vec3& newPosition);
-    void UpdatePositionXZ(float& deltaTime, glm::vec3& newPosition);
+    void UpdatePositionXZ(glm::vec3& newPosition);
     void UpdateDeceleration(float& deltaTime);
     void ProcessKeyboardMovement(cameraMovement dir, float deltaTime);
     bool isColliding(glm::vec3& newPosition, glm::vec3 front) const;

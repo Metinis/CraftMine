@@ -13,7 +13,7 @@ private:
     static bool CheckFace(int x, int y, int z, bool isSolid, Chunk& chunk);
     static void AddEdgeFaces(glm::ivec3 localBlockPos, int &numFaces, int &numTransparentFaces, int neighbourZ, int neighbourX, Chunk* tempChunk, Faces face, Chunk& chunk);
     static void AddFaces(int x, int y, int z, int &numFaces, bool isSolid, Chunk& chunk);
-    static void IntegrateFace(FaceData faceData, bool solid, Chunk& chunk);
+    static void IntegrateFace(FaceData faceData, bool isTransparent, Chunk& chunk);
     static void UpdateSide(CraftMine::Faces face, Chunk& chunk);
 public:
     static void AddIndices(int amtFaces, std::vector<GLuint> &indices, GLsizei &_indexCount);

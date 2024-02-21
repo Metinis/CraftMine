@@ -8,16 +8,18 @@ void Player::Update(float deltaTime){
 
     glm::vec3 newPosition = position + playerVelocity * deltaTime;
 
-    UpdatePositionY(deltaTime, newPosition);
-
-    UpdatePositionXZ(deltaTime, newPosition);
+    if(glm::length(playerVelocity) != 0 || !isGrounded){
+        UpdatePositionY(deltaTime, newPosition);
+        UpdatePositionXZ(newPosition);
+    }
 
     if(isJumping && playerVelocity.y <= 0)
     {
         isJumping = false;
     }
 
-    UpdateDeceleration(deltaTime);
+    if(glm::length(playerVelocity) > 0)
+        UpdateDeceleration(deltaTime);
 
     if(isShifting && !shiftChanged){
         position.y -= 0.2f;
@@ -56,7 +58,7 @@ void Player::UpdatePositionY(float& deltaTime, glm::vec3& newPosition) {
 
 
 }
-void Player::UpdatePositionXZ(float &deltaTime, glm::vec3& newPosition) {
+void Player::UpdatePositionXZ(glm::vec3& newPosition) {
 
     glm::vec3 newPosX = glm::vec3(newPosition.x, newPosition.y, position.z);
     glm::vec3 newPosZ = glm::vec3(position.x, newPosition.y, newPosition.z);

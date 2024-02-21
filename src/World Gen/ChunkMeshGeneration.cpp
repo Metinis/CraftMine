@@ -15,7 +15,12 @@ bool ChunkMeshGeneration::CheckFace(int x, int y, int z, bool isSolid, Chunk& ch
         {
             return true;
         }
+        /*else if(!Block::transparent(chunk.GetBlockID(glm::ivec3(x,y,z)) && !isSolid))
+        {
+            return true;
+        }*/
     }
+
     return false;
 }
 
@@ -34,10 +39,14 @@ void ChunkMeshGeneration::GenFaces(Chunk& chunk)
                 {
                     AddFaces(x,y,z, numFaces, true, chunk);
                 }
+                else if(chunk.GetBlockID(glm::ivec3(x,y,z)) == 5)
+                {
+                    AddFaces(x,y,z, numTransparentFaces, false, chunk);
+                }
                 else if(chunk.GetBlockID(glm::ivec3(x,y,z)) != 0) //if not empty
                 {
                     //add to transparent mesh, integrate face only if bordering empty
-                    AddFaces(x,y,z, numTransparentFaces, false, chunk);
+                    AddFaces(x,y,z, numTransparentFaces, true, chunk);
                 }
             }
         }
@@ -48,6 +57,8 @@ void ChunkMeshGeneration::GenFaces(Chunk& chunk)
 void ChunkMeshGeneration::AddFaces(int x, int y, int z, int &numFaces, bool isSolid, Chunk& chunk) //checks the isSolid faces and adds them
 {
     BlockType type = BlockIDMap[chunk.GetBlockID(glm::ivec3(x,y,z))];
+
+    bool isTransparent = type == CraftMine::WATER || type == CraftMine::OAK_LEAF;
 
     glm::vec3 blockWorldPos = glm::vec3(x + chunk.chunkPosition.x * Chunk::SIZE, y, z + chunk.chunkPosition.y * Chunk::SIZE);
 
@@ -65,32 +76,32 @@ void ChunkMeshGeneration::AddFaces(int x, int y, int z, int &numFaces, bool isSo
 
     if (CheckFace(leftXoffset, y, z, isSolid, chunk))
     {
-        IntegrateFace(Block::GetFace(CraftMine::Faces::LEFT, type, blockWorldPos), isSolid, chunk);
+        IntegrateFace(Block::GetFace(CraftMine::Faces::LEFT, type, blockWorldPos), isTransparent, chunk);
         numFaces++;
     }
     if (CheckFace(rightXoffset, y, z, isSolid, chunk))
     {
-        IntegrateFace(Block::GetFace(CraftMine::Faces::RIGHT, type, blockWorldPos), isSolid, chunk);
+        IntegrateFace(Block::GetFace(CraftMine::Faces::RIGHT, type, blockWorldPos), isTransparent, chunk);
         numFaces++;
     }
     if (CheckFace(x, y, frontZoffset, isSolid, chunk))
     {
-        IntegrateFace(Block::GetFace(CraftMine::Faces::FRONT, type, blockWorldPos), isSolid, chunk);
+        IntegrateFace(Block::GetFace(CraftMine::Faces::FRONT, type, blockWorldPos), isTransparent, chunk);
         numFaces++;
     }
     if (CheckFace(x, y, backZoffset, isSolid, chunk))
     {
-        IntegrateFace(Block::GetFace(CraftMine::Faces::BACK, type, blockWorldPos), isSolid, chunk);
+        IntegrateFace(Block::GetFace(CraftMine::Faces::BACK, type, blockWorldPos), isTransparent, chunk);
         numFaces++;
     }
     if (CheckFace(x, topYoffset, z, isSolid, chunk))
     {
-        IntegrateFace(Block::GetFace(CraftMine::Faces::TOP, type, blockWorldPos), isSolid, chunk);
+        IntegrateFace(Block::GetFace(CraftMine::Faces::TOP, type, blockWorldPos), isTransparent, chunk);
         numFaces++;
     }
     if (CheckFace(x, bottomYoffset, z, isSolid, chunk))
     {
-        IntegrateFace(Block::GetFace(CraftMine::Faces::BOTTOM, type, blockWorldPos), isSolid, chunk);
+        IntegrateFace(Block::GetFace(CraftMine::Faces::BOTTOM, type, blockWorldPos), isTransparent, chunk);
         numFaces++;
     }
 }
@@ -169,12 +180,17 @@ void ChunkMeshGeneration::AddEdgeFaces(glm::ivec3 localBlockPos, int &numFaces, 
 
     if (!Block::transparent(blockID) && Block::transparent(neighbourBlockID))
     {
-        IntegrateFace(Block::GetFace(face, type, blockWorldPos), true, chunk);
+        IntegrateFace(Block::GetFace(face, type, blockWorldPos), false, chunk);
         numFaces++;
     }
     else if(Block::transparent(blockID) && blockID != 0 && neighbourBlockID == 0)
     {
-        IntegrateFace(Block::GetFace(face, type, blockWorldPos), false, chunk);
+        IntegrateFace(Block::GetFace(face, type, blockWorldPos), true, chunk);
+        numTransparentFaces++;
+    }
+    else if(Block::transparent(blockID) && blockID != 5 && blockID != 0)
+    {
+        IntegrateFace(Block::GetFace(face, type, blockWorldPos), true, chunk);
         numTransparentFaces++;
     }
 }
@@ -260,10 +276,10 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk& chunk)
         }
     }
 }
-void ChunkMeshGeneration::IntegrateFace(FaceData faceData, bool solid, Chunk& chunk)
+void ChunkMeshGeneration::IntegrateFace(FaceData faceData, bool isTransparent, Chunk& chunk)
 {
     //FaceData faceData = block.GetFace(face);
-    if(solid) {
+    if(!isTransparent) {
         chunk.chunkData.chunkVerts.insert(chunk.chunkData.chunkVerts.end(), faceData.vertices.begin(), faceData.vertices.end());
         chunk.chunkData.chunkUVs.insert(chunk.chunkData.chunkUVs.end(), faceData.texCoords.begin(), faceData.texCoords.end());
         //each vert has 4 points so need to repeat 4 times, can be adjusted to make nicer lighting later
