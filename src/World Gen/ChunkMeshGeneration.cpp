@@ -290,6 +290,7 @@ void ChunkMeshGeneration::IntegrateFace(FaceData faceData, bool isTransparent, C
     }
     else
     {
+
         chunk.chunkData.transparentVerts.insert(chunk.chunkData.transparentVerts.end(), faceData.vertices.begin(), faceData.vertices.end());
         chunk.chunkData.transparentUVs.insert(chunk.chunkData.transparentUVs.end(), faceData.texCoords.begin(), faceData.texCoords.end());
         for(int i = 0; i < 4; i++)

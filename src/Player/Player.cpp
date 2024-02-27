@@ -175,7 +175,6 @@ void Player::ProcessKeyboardMovement(cameraMovement dir, float deltaTime)
     }
 
     if (dir == cameraMovement::DOWN) {
-        //TODO Implement shifting
         isShifting = true;
     }
     if (dir == cameraMovement::UP) {
@@ -306,6 +305,9 @@ bool Player::checkNewPositionY(glm::vec3& newPosition) const
 
     }
     return false;
+}
+float Player::distanceToPlayer(const glm::vec3& point) const {
+    return glm::length(point - position);
 }
 
 

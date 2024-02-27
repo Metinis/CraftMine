@@ -44,6 +44,7 @@ public:
     bool checkNewPositionX(float newZ) const;
     bool checkNewPositionXZ(glm::vec3 newPosition) const;
     bool checkNewPositionY(glm::vec3& newPosition) const;
+    float distanceToPlayer(const glm::vec3& point) const;
 };
 
 

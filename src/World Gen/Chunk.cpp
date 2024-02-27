@@ -2,6 +2,7 @@
 #include "World.h"
 #include "ChunkGeneration.h"
 #include "ChunkMeshGeneration.h"
+#include "Player/Player.h"
 
 
 Chunk::Chunk(glm::ivec2 Position, World& _world) : world(_world)
@@ -54,7 +55,51 @@ void Chunk::ClearVertexData()
 
     generatedBuffData = false;
 }
+bool Chunk::compareDistanceToPlayer(const glm::vec3& vertex1, const glm::vec3& vertex2) {
+    return world.player.distanceToPlayer(vertex1) > world.player.distanceToPlayer(vertex2);
+}
+struct ChunkDataPair{
+    glm::vec3 vertex;
+    glm::vec2 uv;
+    std::vector<GLuint> indices;
+    std::vector<float> brightnessFloats;
+};
+void Chunk::sortTransparentMeshData(ChunkData& chunkData, const Player& player) {
+    // Sort transparent mesh data based on distance to player
+    std::vector<ChunkDataPair> combinedData;
+    int k = 0;
+    for (size_t i = 0; i < chunkData.transparentVerts.size(); ++i) {
+        ChunkDataPair pair;
+        pair.vertex = chunkData.transparentVerts[i];
+        pair.uv = chunkData.transparentUVs[i];
+        //for(int j = k; j < k + 4; j++)
+        //{
+        //    pair.indices.push_back(chunkData.transparentIndices[j]);
+        //    pair.brightnessFloats.push_back(chunkData.transparentBrightnessFloats[j]);
+        //}
+        combinedData.push_back(pair);
+        //k+=4;
+    }
+    std::sort(combinedData.begin(), combinedData.end(),
+              [this](const ChunkDataPair& vertex1, const ChunkDataPair& vertex2) {
+                  return compareDistanceToPlayer(vertex1.vertex, vertex2.vertex);
+              });
+    k = 0;
+    for (size_t i = 0; i < combinedData.size(); ++i) {
+        //chunkData.transparentVerts[i] = combinedData[i].vertex;
+        //chunkData.transparentUVs[i] = combinedData[i].uv;
+        //for(int j = k; j < k + 4; j++)
+        //{
+        //    chunkData.transparentIndices = combinedData[i].indices;
+        //    chunkData.transparentBrightnessFloats = combinedData[i].brightnessFloats;
+        //}
+        //k+=4;
+    }
 
+
+    // Now, setData with the sorted data
+    transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);
+}
 void Chunk::LoadBufferData()
 {
     if(mesh != nullptr)
@@ -70,6 +115,8 @@ void Chunk::LoadBufferData()
         delete transparentMesh;
     }
     transparentMesh = new Mesh(*world.transparentShader);
+    //sort from back to front from player pos
+    //sortTransparentMeshData(chunkData, world.player);
     transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);
     transparentMesh->loadData();
     chunkHasMeshes = true;
@@ -79,7 +126,9 @@ void Chunk::RenderChunk()
 {
     if(mesh != nullptr && transparentMesh != nullptr) {
         mesh->render();
+        //glDepthMask(GL_FALSE);
         transparentMesh->render();
+        //glDepthMask(GL_TRUE);
     }
 }
 

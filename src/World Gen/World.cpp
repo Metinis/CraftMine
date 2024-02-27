@@ -5,7 +5,7 @@
 #include "Player/Player.h"
 
 
-World::World(Camera& _camera) : camera(_camera)
+World::World(Camera& _camera, Player& _player) : camera(_camera), player(_player)
 {
     shader = new Shader("../resources/shader/shader.vs", "../resources/shader/shader.fs");
 

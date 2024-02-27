@@ -15,6 +15,8 @@
 #include <random>
 #include "BlockData.h"
 
+class Player;
+
 class ChunkGeneration;
 
 class World;
@@ -24,6 +26,8 @@ class ChunkMeshGeneration;
 class Chunk
 {
 private:
+
+
     Mesh* mesh = nullptr;
     Mesh* transparentMesh = nullptr;
 
@@ -71,6 +75,8 @@ public:
     void SetBlock(glm::ivec3 pos, unsigned char id);
 	void GenBlocks();
 	void ClearVertexData();
+    bool compareDistanceToPlayer(const glm::vec3& vertex1, const glm::vec3& vertex2);
+    void sortTransparentMeshData(ChunkData& chunkData, const Player& player);
 	//OpenGL stuff
 	void LoadChunkData();
 	void LoadBufferData();

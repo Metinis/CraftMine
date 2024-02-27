@@ -24,6 +24,7 @@ class World
 private:
 
 
+
 	Texture* texture;
 
 	glm::mat4 model{};
@@ -68,6 +69,7 @@ private:
 
 
 public:
+    Player& player;
     Camera& camera;
     Shader* shader;
     Shader* transparentShader;
@@ -93,7 +95,7 @@ public:
 
     Chunk* chunks[SIZE*SIZE] = {nullptr};
 
-	explicit World(Camera& camera);
+	explicit World(Camera& _camera, Player& _player);
 
     [[noreturn]] void GenerateChunkThread();
 

@@ -44,7 +44,7 @@ Game::Game(){
 
     player = new Player();
     camera = &player->camera;
-    world = new World(*camera);
+    world = new World(*camera, *player);
     player->world = world;
 
     mouseInput = new MouseInput(SCR_WIDTH, SCR_HEIGHT, *camera, *world);
@@ -66,6 +66,9 @@ Game::Game(){
 
     updateingInt = 1; //world->viewDistance/2; //so it doesn't update every chunk
     world->UpdateViewDistance(newChunkPos);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
 }
 void Game::run(){
     //render loop
@@ -80,7 +83,7 @@ void Game::run(){
         lastFrame = currentFrame;
 
         processInput(window, &wireframe, &keyProcessed, &isFullscreen, *player, *world, deltaTime);
-        newChunkPos = glm::ivec2(player->position.x / Chunk::SIZE, player->position.z / Chunk::SIZE);
+        newChunkPos = (glm::vec2(glm::round(player->position.x) / Chunk::SIZE, glm::round(player->position.z) / Chunk::SIZE));
 
         if (std::abs(newChunkPos.x - lastChunkPos.x) >= updateingInt ||
             std::abs(newChunkPos.y - lastChunkPos.y) >= updateingInt) {
