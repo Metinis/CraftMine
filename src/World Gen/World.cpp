@@ -189,7 +189,12 @@ void World::GenerateChunkBuffers(std::vector<Chunk*>& addedChunks)
 		{
 			chunk->LoadBufferData();
 			chunk->generatedBuffData = true;
-			activeChunks.push_back(std::ref(chunk));
+            if(!chunk->chunkHasMeshes)
+            {
+                chunk->chunkHasMeshes = true;
+                activeChunks.push_back(std::ref(chunk));
+            }
+
 		}
 	}
 	addedChunks.clear();

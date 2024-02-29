@@ -119,7 +119,7 @@ void Chunk::LoadBufferData()
     //sortTransparentMeshData(chunkData, world.player);
     transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);
     transparentMesh->loadData();
-    chunkHasMeshes = true;
+
 }
 
 void Chunk::RenderChunk()
