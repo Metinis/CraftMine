@@ -50,6 +50,7 @@ World::World(Camera& _camera, Player& _player) : camera(_camera), player(_player
 
             CheckForBlocksToBeAdded(chunk);
             chunk->LoadChunkData();
+            //chunk->sortTransparentMeshData();
 
 			mutexChunksToLoadData.lock();
 			loadedChunks.push(std::ref(chunk));

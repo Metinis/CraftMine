@@ -85,7 +85,7 @@ public:
 	void GenBlocks();
 	void ClearVertexData();
     static bool compareDistanceToPlayer(const ChunkDataPair& pair1, const ChunkDataPair& pair2, glm::vec3 playerPos);
-    void sortTransparentMeshData(ChunkData& pair1, const Player& pair2);
+    void sortTransparentMeshData();
 	//OpenGL stuff
 	void LoadChunkData();
 	void LoadBufferData();

@@ -59,27 +59,42 @@ void Chunk::ClearVertexData()
 
 bool Chunk::compareDistanceToPlayer(const ChunkDataPair& pair1, const ChunkDataPair& pair2, glm::vec3 playerPos) {
     // Calculate the center of each quad and compare distances
-    glm::vec3 center1 = (glm::vec3((pair1.vertices[0] + pair1.vertices[1] + pair1.vertices[2] + pair1.vertices[3])/4.0f));
-    glm::vec3 center2 = (glm::vec3((pair2.vertices[0] + pair2.vertices[1] + pair2.vertices[2] + pair2.vertices[3])/4.0f));
+    glm::vec3 center1 = (glm::vec3(((pair1.vertices[0]) + (pair1.vertices[1]) + (pair1.vertices[2]) + (pair1.vertices[3]))));
+    glm::vec3 center2 = (glm::vec3(((pair2.vertices[0]) + (pair2.vertices[1]) + (pair2.vertices[2]) + (pair2.vertices[3]))));
 
 
-    return glm::distance(playerPos, center1) > glm::distance(playerPos, center2);
+    //if(glm::distance(playerPos, center1) < glm::distance((playerPos), center2))
+        //std::cout<<playerPos.x<<"x "<<playerPos.y<<"y "<<playerPos.z<<"z \n";
+        //std::cout<<glm::distance(playerPos, center1)<<"\n"<<glm::distance(playerPos, center2)<<"\n";
+
+    return glm::distance(playerPos, center1) > glm::distance((playerPos), center2);
 }
 struct Chunk::CompareFaces{
     glm::vec3 playerPos;
 
     bool operator()(ChunkDataPair pair1, ChunkDataPair pair2){
-        return compareDistanceToPlayer(pair1, pair2, playerPos);
+        //return compareDistanceToPlayer(pair1, pair2, playerPos);
+
+        glm::vec3 center1 = glm::vec3((pair1.vertices[0]) + (pair1.vertices[1]) + (pair1.vertices[2]) + (pair1.vertices[3]))/4.0f;
+        glm::vec3 center2 = glm::vec3((pair2.vertices[0]) + (pair2.vertices[1]) + (pair2.vertices[2]) + (pair2.vertices[3]))/4.0f;
+
+        //glm::vec3 normalized1 = glm::normalize(playerPos - center1);
+        //glm::vec3 normalized2 = glm::normalize(playerPos - center2);
+        double squaredDistance1 = glm::distance(glm::round(playerPos), glm::round(center1));
+        double squaredDistance2 = glm::distance(glm::round(playerPos), glm::round(center2));
+        return squaredDistance1 > squaredDistance2;
+
     }
 };
-void Chunk::sortTransparentMeshData(ChunkData& chunkData, const Player& player) {
+void Chunk::sortTransparentMeshData() {
     // Sort transparent mesh data based on distance to player
-    CompareFaces compareFaces;
-    compareFaces.playerPos = world.player.position;
+    CompareFaces compareFaces{};
+    glm::vec3 playerPos = *world.camera.position;
+    compareFaces.playerPos = playerPos;
     std::vector<ChunkDataPair> combinedData;
     int k = 0;
     for (int i = 0; i < chunkData.transparentVerts.size(); i += 4) {
-        ChunkDataPair pair;
+        ChunkDataPair pair{};
         for (int j = 0; j < 4; j++) {
             pair.vertices[j] = chunkData.transparentVerts[i + j];
             pair.brightnessFloats[j] = chunkData.transparentBrightnessFloats[i+j];
@@ -94,21 +109,32 @@ void Chunk::sortTransparentMeshData(ChunkData& chunkData, const Player& player) 
     }
     //std::cout<<combinedData.size()<<"\n"<<chunkData.transparentVerts.size() / 4<<"\n";
     std::sort(combinedData.begin(), combinedData.end(), compareFaces);
+
+    chunkData.transparentVerts.clear();
+    chunkData.transparentUVs.clear();
+    chunkData.transparentBrightnessFloats.clear();
+    chunkData.transparentIndices.clear();
+
+    //k = 0;
     for (int i = 0; i < combinedData.size(); i++) {
         for (int j = 0; j < 4; j++) {
 
-            chunkData.transparentVerts[(i * 4) + j] = combinedData[i].vertices[j];
-            chunkData.transparentUVs[(i * 4) + j] = combinedData[i].uvs[j];
-            chunkData.transparentBrightnessFloats[i * 4 + j] = combinedData[i].brightnessFloats[j];
+            chunkData.transparentVerts.push_back(combinedData[i].vertices[j]);
+            chunkData.transparentUVs.push_back(combinedData[i].uvs[j]);
+            chunkData.transparentBrightnessFloats.push_back(combinedData[i].brightnessFloats[j]);
         }
         for (int j = 0; j < 6; j++) {
-            chunkData.transparentIndices[(i * 6) + j] = combinedData[i].indices[j];
+            //need to change indices according to verts
+            //chunkData.transparentIndices.push_back(combinedData[i].indices[j]);
         }
+        //k+=4;
     }
-
+    //chunkData.transparentIndexCount = k;
+    chunkData.transparentIndexCount = 0;
+    ChunkMeshGeneration::AddIndices(combinedData.size(), chunkData.transparentIndices, chunkData.transparentIndexCount);
 
     // Now, setData with the sorted data
-    transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);
+    //transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);
 }
 void Chunk::LoadBufferData()
 {
@@ -126,8 +152,8 @@ void Chunk::LoadBufferData()
     }
     transparentMesh = new Mesh(*world.transparentShader);
     //sort from back to front from player pos
-    sortTransparentMeshData(chunkData, world.player);
-    //transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);
+    //sortTransparentMeshData();
+    transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);
     transparentMesh->loadData();
 
 }
@@ -139,6 +165,8 @@ void Chunk::RenderChunk()
         //glDepthMask(GL_FALSE);
         //glDisable(GL_CULL_FACE);
         //glCullFace(GL_BACK);
+        //sortTransparentMeshData(chunkData, world.player);
+        //transparentMesh->loadData();
         transparentMesh->render();
         //glCullFace(GL_FRONT);
         //glEnable(GL_CULL_FACE);

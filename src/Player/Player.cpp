@@ -11,6 +11,13 @@ void Player::Update(float deltaTime){
     UpdatePositionY(deltaTime, newPosition);
     if(glm::length(playerVelocity) != 0 || !isGrounded){
         UpdatePositionXZ(newPosition);
+
+        //update transparent mesh data when moving between blocks in the same chunk
+        Chunk* currentChunk = world->GetChunk(glm::round(position.x / Chunk::SIZE), glm::round(position.z / Chunk::SIZE));
+
+        //Update while moving inbetween chunks and in chunk
+        currentChunk->sortTransparentMeshData();
+        world->loadedChunks.push(currentChunk);
     }
 
     if(isJumping && playerVelocity.y <= 0)
