@@ -59,6 +59,7 @@ private:
         std::array<float, 4> brightnessFloats;
     };
 
+
 	
 public:
 	static const int SIZE = 16;
@@ -83,12 +84,13 @@ public:
     void SetBlock(glm::ivec3 pos, unsigned char id);
 	void GenBlocks();
 	void ClearVertexData();
-    bool compareDistanceToPlayer(const ChunkDataPair& pair1, const ChunkDataPair& pair2);
-    void sortTransparentMeshData(ChunkData& chunkData, const Player& player);
+    static bool compareDistanceToPlayer(const ChunkDataPair& pair1, const ChunkDataPair& pair2, glm::vec3 playerPos);
+    void sortTransparentMeshData(ChunkData& pair1, const Player& pair2);
 	//OpenGL stuff
 	void LoadChunkData();
 	void LoadBufferData();
 	void RenderChunk();
 	void Delete();
+    struct CompareFaces;
 };
 

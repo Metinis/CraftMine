@@ -36,6 +36,7 @@ Game::Game(){
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
     glEnable(GL_BLEND);
@@ -67,8 +68,8 @@ Game::Game(){
     updateingInt = 1; //world->viewDistance/2; //so it doesn't update every chunk
     world->UpdateViewDistance(newChunkPos);
 
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
+    //glEnable(GL_DEPTH_TEST);
+
 }
 void Game::run(){
     //render loop

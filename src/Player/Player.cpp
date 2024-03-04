@@ -308,7 +308,7 @@ bool Player::checkNewPositionY(glm::vec3& newPosition) const
 }
 float Player::distanceToPlayer(const glm::vec3& point) const {
     //return glm::length(point - position);
-    return glm::distance(point, position);
+    return glm::distance(position, point);
 }
 
 

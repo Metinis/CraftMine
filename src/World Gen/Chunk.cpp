@@ -57,19 +57,28 @@ void Chunk::ClearVertexData()
 }
 
 
-bool Chunk::compareDistanceToPlayer(const ChunkDataPair& pair1, const ChunkDataPair& pair2) {
+bool Chunk::compareDistanceToPlayer(const ChunkDataPair& pair1, const ChunkDataPair& pair2, glm::vec3 playerPos) {
     // Calculate the center of each quad and compare distances
-    glm::vec3 center1 = glm::vec3((pair1.vertices[0] + pair1.vertices[1] + pair1.vertices[2] + pair1.vertices[3])/4.0f);
-    glm::vec3 center2 = glm::vec3((pair2.vertices[0] + pair2.vertices[1] + pair2.vertices[2] + pair2.vertices[3])/4.0f);
+    glm::vec3 center1 = (glm::vec3((pair1.vertices[0] + pair1.vertices[1] + pair1.vertices[2] + pair1.vertices[3])/4.0f));
+    glm::vec3 center2 = (glm::vec3((pair2.vertices[0] + pair2.vertices[1] + pair2.vertices[2] + pair2.vertices[3])/4.0f));
 
-    return this->world.player.distanceToPlayer(center1) > this->world.player.distanceToPlayer(center2);
+
+    return glm::distance(playerPos, center1) > glm::distance(playerPos, center2);
 }
+struct Chunk::CompareFaces{
+    glm::vec3 playerPos;
 
+    bool operator()(ChunkDataPair pair1, ChunkDataPair pair2){
+        return compareDistanceToPlayer(pair1, pair2, playerPos);
+    }
+};
 void Chunk::sortTransparentMeshData(ChunkData& chunkData, const Player& player) {
     // Sort transparent mesh data based on distance to player
+    CompareFaces compareFaces;
+    compareFaces.playerPos = world.player.position;
     std::vector<ChunkDataPair> combinedData;
     int k = 0;
-    for (size_t i = 0; i < chunkData.transparentVerts.size(); i += 4) {
+    for (int i = 0; i < chunkData.transparentVerts.size(); i += 4) {
         ChunkDataPair pair;
         for (int j = 0; j < 4; j++) {
             pair.vertices[j] = chunkData.transparentVerts[i + j];
@@ -83,11 +92,9 @@ void Chunk::sortTransparentMeshData(ChunkData& chunkData, const Player& player) 
         combinedData.push_back(pair);
         k+=6;
     }
-    std::sort(combinedData.begin(), combinedData.end(),
-              [this](const ChunkDataPair& vertex1, const ChunkDataPair& vertex2) {
-                  return compareDistanceToPlayer(vertex1, vertex2);
-              });
-    for (size_t i = 0; i < combinedData.size(); i++) {
+    //std::cout<<combinedData.size()<<"\n"<<chunkData.transparentVerts.size() / 4<<"\n";
+    std::sort(combinedData.begin(), combinedData.end(), compareFaces);
+    for (int i = 0; i < combinedData.size(); i++) {
         for (int j = 0; j < 4; j++) {
 
             chunkData.transparentVerts[(i * 4) + j] = combinedData[i].vertices[j];
