@@ -187,6 +187,7 @@ void World::GenerateChunkBuffers(std::vector<Chunk*>& addedChunks)
 	{
 		if (!chunk->inThread)
 		{
+            //chunk->chunkHasMeshes = false;
 			chunk->LoadBufferData();
 			chunk->generatedBuffData = true;
             if(!chunk->chunkHasMeshes)
@@ -194,6 +195,7 @@ void World::GenerateChunkBuffers(std::vector<Chunk*>& addedChunks)
                 chunk->chunkHasMeshes = true;
                 activeChunks.push_back(std::ref(chunk));
             }
+
 
 		}
 	}
@@ -286,7 +288,7 @@ void World::PlaceBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
     if (RaycastBlockPos(rayOrigin, rayDirection, localPos, currentChunk, lastEmptyPos)) {
 
         if(currentChunk->generatedBlockData) {
-            currentChunk->SetBlock(lastEmptyPos, 3);
+            currentChunk->SetBlock(lastEmptyPos, 9);
             mutexChunksToLoadData.lock();
             chunksToLoadData.push_back(currentChunk);
             mutexChunksToLoadData.unlock();

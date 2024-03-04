@@ -41,12 +41,14 @@ namespace CraftMine {
 		{5, WATER},
         {6, SAND},
         {7, OAK_WOOD},
-        {8, OAK_LEAF}
+        {8, OAK_LEAF},
+        {9, GLASS}
 	};
     std::vector<int> transparentBlocks{
         0,
         5,
-        8
+        8,
+        9
     };
     std::map<Faces, float> brightnessMap{
             {LEFT, 0.80f},

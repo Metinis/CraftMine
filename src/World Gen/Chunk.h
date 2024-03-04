@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 #include <glm/vec3.hpp>
 #include <vector>
+#include <array>
 #include <map>
 #include "Block.h"
 #include "Shader.h"
@@ -51,6 +52,13 @@ private:
         bool frontUpdated = false;
         bool backUpdated = false;
     };
+    struct ChunkDataPair{
+        std::array<glm::vec3, 4> vertices;
+        std::array<glm::vec2, 4> uvs;
+        std::array<GLuint, 6> indices;
+        std::array<float, 4> brightnessFloats;
+    };
+
 	
 public:
 	static const int SIZE = 16;
@@ -75,7 +83,7 @@ public:
     void SetBlock(glm::ivec3 pos, unsigned char id);
 	void GenBlocks();
 	void ClearVertexData();
-    bool compareDistanceToPlayer(const glm::vec3& vertex1, const glm::vec3& vertex2);
+    bool compareDistanceToPlayer(const ChunkDataPair& pair1, const ChunkDataPair& pair2);
     void sortTransparentMeshData(ChunkData& chunkData, const Player& player);
 	//OpenGL stuff
 	void LoadChunkData();

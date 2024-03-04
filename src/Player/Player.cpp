@@ -1,15 +1,15 @@
 #include "Player.h"
 Player::Player(){
     movementSpeed = 5.0f;
-    position = glm::vec3(16.0f, 20.0f, 16.0f);
+    position = glm::vec3(World::SIZE*Chunk::SIZE / 2, Chunk::HEIGHT, World::SIZE*Chunk::SIZE / 2);
     camera.position = &position;
 }
 void Player::Update(float deltaTime){
 
     glm::vec3 newPosition = position + playerVelocity * deltaTime;
 
+    UpdatePositionY(deltaTime, newPosition);
     if(glm::length(playerVelocity) != 0 || !isGrounded){
-        UpdatePositionY(deltaTime, newPosition);
         UpdatePositionXZ(newPosition);
     }
 
@@ -307,7 +307,8 @@ bool Player::checkNewPositionY(glm::vec3& newPosition) const
     return false;
 }
 float Player::distanceToPlayer(const glm::vec3& point) const {
-    return glm::length(point - position);
+    //return glm::length(point - position);
+    return glm::distance(point, position);
 }
 
 

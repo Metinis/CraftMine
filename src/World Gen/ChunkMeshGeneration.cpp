@@ -3,10 +3,15 @@
 //
 
 #include "ChunkMeshGeneration.h"
-bool ChunkMeshGeneration::CheckFace(int x, int y, int z, bool isSolid, Chunk& chunk)
+bool ChunkMeshGeneration::CheckFace(int x, int y, int z, bool isSolid, unsigned char originalID, Chunk& chunk)
 {
     if (x >= 0 && x < Chunk::SIZE && y <= Chunk::HEIGHT && y >= 0 && z >= 0 && z < Chunk::SIZE)
     {
+        //TODO fix culled faces overlapping non culled ones
+        /*if(Block::transparent(originalID) && isSolid)
+        {
+            return true;
+        }*/
         if (Block::transparent(chunk.GetBlockID(glm::ivec3(x,y,z))) && isSolid)
         {
             return true;
@@ -56,9 +61,10 @@ void ChunkMeshGeneration::GenFaces(Chunk& chunk)
 }
 void ChunkMeshGeneration::AddFaces(int x, int y, int z, int &numFaces, bool isSolid, Chunk& chunk) //checks the isSolid faces and adds them
 {
-    BlockType type = BlockIDMap[chunk.GetBlockID(glm::ivec3(x,y,z))];
+    unsigned char id = chunk.GetBlockID(glm::ivec3(x,y,z));
+    BlockType type = BlockIDMap[id];
 
-    bool isTransparent = type == CraftMine::WATER || type == CraftMine::OAK_LEAF;
+    bool isTransparent = Block::transparent(id);
 
     glm::vec3 blockWorldPos = glm::vec3(x + chunk.chunkPosition.x * Chunk::SIZE, y, z + chunk.chunkPosition.y * Chunk::SIZE);
 
@@ -74,32 +80,32 @@ void ChunkMeshGeneration::AddFaces(int x, int y, int z, int &numFaces, bool isSo
 
     int bottomYoffset = y - 1;
 
-    if (CheckFace(leftXoffset, y, z, isSolid, chunk))
+    if (CheckFace(leftXoffset, y, z, isSolid, id, chunk))
     {
         IntegrateFace(Block::GetFace(CraftMine::Faces::LEFT, type, blockWorldPos), isTransparent, chunk);
         numFaces++;
     }
-    if (CheckFace(rightXoffset, y, z, isSolid, chunk))
+    if (CheckFace(rightXoffset, y, z, isSolid, id, chunk))
     {
         IntegrateFace(Block::GetFace(CraftMine::Faces::RIGHT, type, blockWorldPos), isTransparent, chunk);
         numFaces++;
     }
-    if (CheckFace(x, y, frontZoffset, isSolid, chunk))
+    if (CheckFace(x, y, frontZoffset, isSolid, id, chunk))
     {
         IntegrateFace(Block::GetFace(CraftMine::Faces::FRONT, type, blockWorldPos), isTransparent, chunk);
         numFaces++;
     }
-    if (CheckFace(x, y, backZoffset, isSolid, chunk))
+    if (CheckFace(x, y, backZoffset, isSolid, id, chunk))
     {
         IntegrateFace(Block::GetFace(CraftMine::Faces::BACK, type, blockWorldPos), isTransparent, chunk);
         numFaces++;
     }
-    if (CheckFace(x, topYoffset, z, isSolid, chunk))
+    if (CheckFace(x, topYoffset, z, isSolid, id, chunk))
     {
         IntegrateFace(Block::GetFace(CraftMine::Faces::TOP, type, blockWorldPos), isTransparent, chunk);
         numFaces++;
     }
-    if (CheckFace(x, bottomYoffset, z, isSolid, chunk))
+    if (CheckFace(x, bottomYoffset, z, isSolid, id, chunk))
     {
         IntegrateFace(Block::GetFace(CraftMine::Faces::BOTTOM, type, blockWorldPos), isTransparent, chunk);
         numFaces++;
@@ -183,16 +189,17 @@ void ChunkMeshGeneration::AddEdgeFaces(glm::ivec3 localBlockPos, int &numFaces, 
         IntegrateFace(Block::GetFace(face, type, blockWorldPos), false, chunk);
         numFaces++;
     }
-    else if(Block::transparent(blockID) && blockID != 0 && neighbourBlockID == 0)
-    {
-        IntegrateFace(Block::GetFace(face, type, blockWorldPos), true, chunk);
-        numTransparentFaces++;
-    }
     else if(Block::transparent(blockID) && blockID != 5 && blockID != 0)
     {
         IntegrateFace(Block::GetFace(face, type, blockWorldPos), true, chunk);
         numTransparentFaces++;
     }
+    else if(Block::transparent(blockID) && blockID != 0 && neighbourBlockID == 0)
+    {
+        IntegrateFace(Block::GetFace(face, type, blockWorldPos), true, chunk);
+        numTransparentFaces++;
+    }
+
 }
 
 void ChunkMeshGeneration::UpdateNeighbours(Chunk& chunk)
@@ -202,13 +209,16 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk& chunk)
     {
         Chunk* tempChunk = chunk.world.GetChunk(chunk.chunkPosition.x - 1, chunk.chunkPosition.y);
 
-        if (tempChunk != nullptr && tempChunk->generatedBlockData && tempChunk->generatedBuffData)
+        if (tempChunk != nullptr && tempChunk->generatedBlockData && tempChunk->generatedBuffData && !tempChunk->inThread)
         {
             UpdateSide(CraftMine::LEFT, chunk);
             if(!tempChunk->chunkBools.rightSideUpdated)
             {
-                UpdateSide(CraftMine::RIGHT, *tempChunk);
+                tempChunk->inThread = true;
                 tempChunk->generatedBuffData = false;
+                UpdateSide(CraftMine::RIGHT, *tempChunk);
+                tempChunk->inThread = false;
+
                 chunk.world.loadedChunks.push(tempChunk);
             }
         }
@@ -221,13 +231,16 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk& chunk)
     if (chunk.chunkPosition.x < World::SIZE - 1)
     {
         Chunk* tempChunk = chunk.world.GetChunk(chunk.chunkPosition.x + 1, chunk.chunkPosition.y);
-        if (tempChunk != nullptr && tempChunk->generatedBlockData && tempChunk->generatedBuffData)
+        if (tempChunk != nullptr && tempChunk->generatedBlockData && tempChunk->generatedBuffData && !tempChunk->inThread)
         {
             UpdateSide(CraftMine::RIGHT, chunk);
             if(!tempChunk->chunkBools.leftSideUpdated)
             {
-                UpdateSide(CraftMine::LEFT, *tempChunk);
+                tempChunk->inThread = true;
                 tempChunk->generatedBuffData = false;
+                UpdateSide(CraftMine::LEFT, *tempChunk);
+                tempChunk->inThread = false;
+
                 chunk.world.loadedChunks.push(tempChunk);
             }
         }
@@ -240,13 +253,15 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk& chunk)
     if (chunk.chunkPosition.y < World::SIZE - 1)
     {
         Chunk* tempChunk = chunk.world.GetChunk(chunk.chunkPosition.x, chunk.chunkPosition.y + 1);
-        if (tempChunk != nullptr && tempChunk->generatedBlockData && tempChunk->generatedBuffData)
+        if (tempChunk != nullptr && tempChunk->generatedBlockData && tempChunk->generatedBuffData && !tempChunk->inThread)
         {
             UpdateSide(CraftMine::FRONT, chunk);
             if(!tempChunk->chunkBools.backUpdated)
             {
-                UpdateSide(CraftMine::BACK, *tempChunk);
+                tempChunk->inThread = true;
                 tempChunk->generatedBuffData = false;
+                UpdateSide(CraftMine::BACK, *tempChunk);
+                tempChunk->inThread = false;
                 chunk.world.loadedChunks.push(tempChunk);
             }
         }
@@ -260,13 +275,15 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk& chunk)
     if (chunk.chunkPosition.y > 0)
     {
         Chunk* tempChunk = chunk.world.GetChunk(chunk.chunkPosition.x, chunk.chunkPosition.y - 1);
-        if (tempChunk != nullptr && tempChunk->generatedBlockData && tempChunk->generatedBuffData)
+        if (tempChunk != nullptr && tempChunk->generatedBlockData && tempChunk->generatedBuffData && !tempChunk->inThread)
         {
             UpdateSide(CraftMine::BACK, chunk);
             if(!tempChunk->chunkBools.frontUpdated)
             {
-                UpdateSide(CraftMine::FRONT, *tempChunk);
+                tempChunk->inThread = true;
                 tempChunk->generatedBuffData = false;
+                UpdateSide(CraftMine::FRONT, *tempChunk);
+                tempChunk->inThread = false;
                 chunk.world.loadedChunks.push(tempChunk);
             }
         }
