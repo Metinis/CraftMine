@@ -50,11 +50,11 @@ World::World(Camera& _camera, Player& _player) : camera(_camera), player(_player
 
             CheckForBlocksToBeAdded(chunk);
             chunk->LoadChunkData();
-            //chunk->sortTransparentMeshData();
+            chunk->sortTransparentMeshData();
 
 			mutexChunksToLoadData.lock();
-			loadedChunks.push(std::ref(chunk));
             chunk->inThread = false;
+			loadedChunks.push(std::ref(chunk));
 			mutexChunksToLoadData.unlock();
 		}
 	}
@@ -144,6 +144,7 @@ void World::UpdateViewDistance(glm::ivec2 cameraChunkPos)
             {
                 chunksLoading.push_back(std::ref(chunks[x + SIZE * z]));
             }
+
 		}
 	}
     //All chunks which are not in chunksLoading but in chunksToLoadData to be deleted
@@ -189,12 +190,15 @@ void World::GenerateChunkBuffers(std::vector<Chunk*>& addedChunks)
 		if (!chunk->inThread)
 		{
             //chunk->chunkHasMeshes = false;
+            chunk->generatedBuffData = false;
 			chunk->LoadBufferData();
 			chunk->generatedBuffData = true;
             if(!chunk->chunkHasMeshes)
             {
+                mutexChunksToLoadData.lock();
                 chunk->chunkHasMeshes = true;
                 activeChunks.push_back(std::ref(chunk));
+                mutexChunksToLoadData.unlock();
             }
 
 
@@ -472,7 +476,7 @@ void World::LoadThreadDataToMain()
         for (int i = 0; i < loadedChunks.size(); i++)
         {
             Chunk* chunk = loadedChunks.front();
-            addedChunks.push_back(chunk);
+            addedChunks.push_back(std::ref(chunk));
             loadedChunks.pop();
         }
         mutexChunksToLoadData.unlock();

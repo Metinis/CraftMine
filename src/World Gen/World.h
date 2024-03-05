@@ -41,7 +41,7 @@ private:
     glm::ivec3 lastOutlinePos;
 
 	std::mutex mutexChunksToGenerate;
-	std::mutex mutexChunksToLoadData;
+
 
     struct CompareChunks {
         glm::ivec2 _playerChunkPos = glm::ivec2(50,50);
@@ -92,6 +92,7 @@ public:
     std::vector<BlocksToBeAdded> blocksToBeAddedList;
 
     std::mutex mutexBlocksToBeAddedList;
+    std::mutex mutexChunksToLoadData;
 
     Chunk* chunks[SIZE*SIZE] = {nullptr};
 

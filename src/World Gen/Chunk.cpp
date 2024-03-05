@@ -80,8 +80,8 @@ struct Chunk::CompareFaces{
 
         //glm::vec3 normalized1 = glm::normalize(playerPos - center1);
         //glm::vec3 normalized2 = glm::normalize(playerPos - center2);
-        double squaredDistance1 = glm::distance(glm::round(playerPos), glm::round(center1));
-        double squaredDistance2 = glm::distance(glm::round(playerPos), glm::round(center2));
+        double squaredDistance1 = glm::distance((playerPos), (center1));
+        double squaredDistance2 = glm::distance((playerPos), (center2));
         return squaredDistance1 > squaredDistance2;
 
     }
@@ -150,12 +150,13 @@ void Chunk::LoadBufferData()
     {
         delete transparentMesh;
     }
+
     transparentMesh = new Mesh(*world.transparentShader);
     //sort from back to front from player pos
     //sortTransparentMeshData();
     transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);
     transparentMesh->loadData();
-
+    //chunkHasMeshes = true;
 }
 
 void Chunk::RenderChunk()
@@ -183,6 +184,7 @@ void Chunk::LoadChunkData() {
 void Chunk::Delete()
 {
     chunkHasMeshes = false;
+    //generatedBuffData = false;
     ClearVertexData();
     delete mesh;
     mesh = nullptr;

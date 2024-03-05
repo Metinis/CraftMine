@@ -26,7 +26,7 @@ private:
 
     glm::vec3 playerVelocity{};
 public:
-    World* world{};
+    World* world;
     Camera camera;
     glm::vec3 position{};
 

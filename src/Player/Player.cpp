@@ -13,11 +13,16 @@ void Player::Update(float deltaTime){
         UpdatePositionXZ(newPosition);
 
         //update transparent mesh data when moving between blocks in the same chunk
-        Chunk* currentChunk = world->GetChunk(glm::round(position.x / Chunk::SIZE), glm::round(position.z / Chunk::SIZE));
+        Chunk* currentChunk = world->GetChunk((glm::round(position.x) / Chunk::SIZE), (glm::round(position.z) / Chunk::SIZE));
 
         //Update while moving inbetween chunks and in chunk
-        currentChunk->sortTransparentMeshData();
-        world->loadedChunks.push(currentChunk);
+        if(!currentChunk->inThread){
+
+            world->mutexChunksToLoadData.lock();
+            currentChunk->sortTransparentMeshData();
+            world->loadedChunks.push(std::ref(currentChunk));
+            world->mutexChunksToLoadData.unlock();
+        }
     }
 
     if(isJumping && playerVelocity.y <= 0)
