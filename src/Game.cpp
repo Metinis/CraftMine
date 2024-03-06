@@ -142,6 +142,7 @@ void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed
 
             // Switch the window to fullscreen mode
             glfwSetWindowMonitor(window, primaryMonitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+            glfwSwapInterval(0);
             *keyProccessed = true;
             *_isFullscreen = true;
         //}

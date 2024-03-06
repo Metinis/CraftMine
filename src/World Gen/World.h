@@ -89,6 +89,7 @@ public:
 	std::queue<Chunk*> loadedChunks;	 //sent to main thread to be assigned buffers
 	std::vector<Chunk*> chunksToDelete;
 	std::vector<Chunk*> activeChunks;	 //chunks that are currently being rendered, any loaded chunks need to be sent from thread to here
+    std::vector<Chunk*> chunksToSortFaces;
     std::vector<BlocksToBeAdded> blocksToBeAddedList;
 
     std::mutex mutexBlocksToBeAddedList;
@@ -101,6 +102,7 @@ public:
     [[noreturn]] void GenerateChunkThread();
 
     [[noreturn]] void GenerateWorldThread();
+
 	void UpdateViewDistance(glm::ivec2 cameraPos);
 
 	Chunk* GetChunk(int x, int y);

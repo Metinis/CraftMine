@@ -3,26 +3,18 @@ Player::Player(){
     movementSpeed = 5.0f;
     position = glm::vec3(World::SIZE*Chunk::SIZE / 2, Chunk::HEIGHT, World::SIZE*Chunk::SIZE / 2);
     camera.position = &position;
+    chunkPosition = glm::vec2(position.x / Chunk::SIZE, position.z / Chunk::SIZE);
 }
 void Player::Update(float deltaTime){
 
+    lastPosition = position;
     glm::vec3 newPosition = position + playerVelocity * deltaTime;
 
     UpdatePositionY(deltaTime, newPosition);
     if(glm::length(playerVelocity) != 0 || !isGrounded){
         UpdatePositionXZ(newPosition);
-
-        //update transparent mesh data when moving between blocks in the same chunk
-        Chunk* currentChunk = world->GetChunk((glm::round(position.x) / Chunk::SIZE), (glm::round(position.z) / Chunk::SIZE));
-
-        //Update while moving inbetween chunks and in chunk
-        if(!currentChunk->inThread){
-
-            world->mutexChunksToLoadData.lock();
-            currentChunk->sortTransparentMeshData();
-            world->loadedChunks.push(std::ref(currentChunk));
-            world->mutexChunksToLoadData.unlock();
-        }
+        //Check for sorting every time you move
+        SortTransparentFaces();
     }
 
     if(isJumping && playerVelocity.y <= 0)
@@ -150,6 +142,35 @@ void Player::UpdateDeceleration(float &deltaTime){
         playerVelocity.x = 0.0f;
         playerVelocity.z = 0.0f;
     }
+}
+void Player::SortTransparentFaces() {
+    Chunk* currentChunk = world->GetChunk(int(glm::round(position.x) / Chunk::SIZE), int(glm::round(position.z) / Chunk::SIZE));
+
+    //when moving inbetween chunks, sort surrounding chunks
+    if(chunkPosition.x != currentChunk->chunkPosition.x || chunkPosition.y != currentChunk->chunkPosition.y)
+    {
+        for(int x = (int)chunkPosition.x - 2; x < (int)chunkPosition.x + 2; x++){
+            for(int z = (int)chunkPosition.y - 2; z < (int)chunkPosition.y + 2; z++){
+                Chunk* currentChunkToSort = world->GetChunk(x, z);
+                if(currentChunkToSort != nullptr && !currentChunkToSort->inThread)
+                {
+                    world->loadedChunks.push(currentChunkToSort); //loadedchunks sorts each chunk transparent face
+                }
+            }
+        }
+
+    }
+    //else sort the current chunk the player is in every time you move a block
+    else
+    {
+        if(currentChunk != nullptr && !currentChunk->inThread && glm::round(lastPosition) != glm::round(position))
+            //only sort if block pos has changes hence round
+        {
+            world->loadedChunks.push(currentChunk); //loadedchunks sorts each chunk transparent face
+        }
+    }
+    if (currentChunk != nullptr)
+        chunkPosition = currentChunk->chunkPosition;
 }
 void Player::ProcessKeyboardMovement(cameraMovement dir, float deltaTime)
 {

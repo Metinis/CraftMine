@@ -29,6 +29,8 @@ public:
     World* world;
     Camera camera;
     glm::vec3 position{};
+    glm::vec3 lastPosition{};
+    glm::ivec2 chunkPosition{};
 
     bool shiftChanged = true;
     bool isShifting{};
@@ -38,6 +40,7 @@ public:
     void UpdatePositionY(float& deltaTime, glm::vec3& newPosition);
     void UpdatePositionXZ(glm::vec3& newPosition);
     void UpdateDeceleration(float& deltaTime);
+    void SortTransparentFaces();
     void ProcessKeyboardMovement(cameraMovement dir, float deltaTime);
     bool isColliding(glm::vec3& newPosition, glm::vec3 front) const;
     bool checkNewPositionZ(float newZ) const;
