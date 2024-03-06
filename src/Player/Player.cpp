@@ -154,7 +154,9 @@ void Player::SortTransparentFaces() {
                 Chunk* currentChunkToSort = world->GetChunk(x, z);
                 if(currentChunkToSort != nullptr && !currentChunkToSort->inThread)
                 {
+                    //world->mutexChunksToLoadData.lock();
                     world->loadedChunks.push(currentChunkToSort); //loadedchunks sorts each chunk transparent face
+                    //world->mutexChunksToLoadData.unlock();
                 }
             }
         }
@@ -166,7 +168,9 @@ void Player::SortTransparentFaces() {
         if(currentChunk != nullptr && !currentChunk->inThread && glm::round(lastPosition) != glm::round(position))
             //only sort if block pos has changes hence round
         {
+            //world->mutexChunksToLoadData.lock();
             world->loadedChunks.push(currentChunk); //loadedchunks sorts each chunk transparent face
+            //world->mutexChunksToLoadData.unlock();
         }
     }
     if (currentChunk != nullptr)

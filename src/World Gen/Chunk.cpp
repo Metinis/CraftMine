@@ -163,7 +163,7 @@ void Chunk::RenderChunk()
 {
     if(mesh != nullptr && transparentMesh != nullptr) {
         mesh->render();
-        //glDepthMask(GL_FALSE);
+        glDepthMask(GL_FALSE);
         //glDisable(GL_CULL_FACE);
         //glCullFace(GL_BACK);
         //sortTransparentMeshData(chunkData, world.player);
@@ -171,7 +171,7 @@ void Chunk::RenderChunk()
         transparentMesh->render();
         //glCullFace(GL_FRONT);
         //glEnable(GL_CULL_FACE);
-        //glDepthMask(GL_TRUE);
+        glDepthMask(GL_TRUE);
     }
 }
 
