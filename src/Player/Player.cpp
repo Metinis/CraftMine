@@ -252,9 +252,9 @@ bool Player::checkNewPositionZ(float newZ) const
 
         int newChunkPosZ = (int)glm::round((newZ - (float)currentChunk->chunkPosition.y * Chunk::SIZE) + zWidth);
 
-        if(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y1, newChunkPosZ)) != 0 ||
-           currentChunk->GetBlockID(glm::vec3(newChunkPosX, y2, newChunkPosZ)) != 0 ||
-           currentChunk->GetBlockID(glm::vec3(newChunkPosX, y3, newChunkPosZ)) != 0)
+        if(Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y1, newChunkPosZ))) ||
+        Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y2, newChunkPosZ)))||
+        Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y3, newChunkPosZ))))
         {
             return true;
         }
@@ -281,9 +281,9 @@ bool Player::checkNewPositionX(float newX) const
 
         int newChunkPosZ = (int)glm::round((position.z - (float)currentChunk->chunkPosition.y * Chunk::SIZE) + zWidth);
 
-        if(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y1, newChunkPosZ)) != 0 ||
-        currentChunk->GetBlockID(glm::vec3(newChunkPosX, y2, newChunkPosZ)) != 0 ||
-        currentChunk->GetBlockID(glm::vec3(newChunkPosX, y3, newChunkPosZ)) != 0)
+        if(Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y1, newChunkPosZ)))||
+        Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y2, newChunkPosZ)))||
+        Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y3, newChunkPosZ))))
         {
             return true;
         }
@@ -307,8 +307,8 @@ bool Player::checkNewPositionXZ(glm::vec3 newPosition) const
     newChunkPos.y = glm::round(position.y);
     newChunkPos.z = ((newPosition.z - (float)currentChunk->chunkPosition.y * Chunk::SIZE)+ _widthZ);
 
-    if(currentChunk->GetBlockID(glm::vec3(newChunkPos.x, newChunkPos.y, newChunkPos.z)) ||
-            currentChunk->GetBlockID(glm::round(glm::vec3(newChunkPos.x, newChunkPos.y - 1.5f, newChunkPos.z))))
+    if(Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPos.x, newChunkPos.y, newChunkPos.z))) ||
+    Block::isSolid(currentChunk->GetBlockID(glm::round(glm::vec3(newChunkPos.x, newChunkPos.y - 1.5f, newChunkPos.z)))))
     {
         return true;
     }
@@ -333,7 +333,7 @@ bool Player::checkNewPositionY(glm::vec3& newPosition) const
             localChunkPos.x = ((newPosition.x - (float)currentChunk->chunkPosition.x * Chunk::SIZE) + xWidth);
             localChunkPos.z = ((newPosition.z - (float)currentChunk->chunkPosition.y * Chunk::SIZE) + zWidth);
 
-            if(currentChunk->GetBlockID(glm::round(glm::vec3(localChunkPos.x, newPosition.y - HEIGHT, localChunkPos.z))) != 0)
+            if(Block::isSolid(currentChunk->GetBlockID(glm::round(glm::vec3(localChunkPos.x, newPosition.y - HEIGHT, localChunkPos.z)))))
             {
                 return true;
             }

@@ -50,3 +50,10 @@ bool Block::transparent(int id)
     }
     return true;
 }
+bool Block::isSolid(int id){
+    if(std::find(nonSolidBlocks.begin(), nonSolidBlocks.end(), id) != nonSolidBlocks.end())
+    {
+        return false;
+    }
+    return true;
+}

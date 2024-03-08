@@ -13,6 +13,8 @@ World::World(Camera& _camera, Player& _player) : camera(_camera), player(_player
 
     transparentShader = new Shader("../resources/shader/transparent.vs", "../resources/shader/transparent.fs");
 
+    shadowMap = new Shader("../resources/shader/shadowMap.vs", "../resources/shader/shadowMap.fs");
+
     texture = new Texture("../resources/texture/terrain1.png");
 
 	model = glm::mat4(1.0f);
@@ -229,7 +231,7 @@ bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDire
             localPos.x = globalPos.x - currentChunk->chunkPosition.x * Chunk::SIZE;
             localPos.y = globalPos.y;
             localPos.z = globalPos.z - currentChunk->chunkPosition.y * Chunk::SIZE;
-            if (currentChunk->GetBlockID(localPos) != 0) {
+            if (Block::isSolid(currentChunk->GetBlockID(localPos))) {
                 result = localPos;
                 return true;
             }
@@ -258,7 +260,7 @@ bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDire
             localPos.x = globalPos.x - tempCurrentChunk->chunkPosition.x * Chunk::SIZE;
             localPos.y = globalPos.y;
             localPos.z = globalPos.z - tempCurrentChunk->chunkPosition.y * Chunk::SIZE;
-            if (tempCurrentChunk->GetBlockID(localPos) != 0) {
+            if (Block::isSolid(tempCurrentChunk->GetBlockID(localPos))) {
 
                 if(static_cast<int>(glm::abs((rayOrigin.x - (rayOrigin.x + rayDirection.x * step))) > 1) ||
                 static_cast<int>(((rayOrigin.y - (rayOrigin.y + rayDirection.y * step))) < -1) ||
@@ -465,7 +467,17 @@ void World::UpdateShaders()
     shader->setMat4("view", view);
     transparentShader->use();
     transparentShader->setMat4("view", view);
-
+    glm::mat4 orthogonalProjection = glm::ortho(-35.0f, 35.0f, -35.0f, 35.0f, 0.1f, 75.0f);
+    glm::mat4 lightView = glm::lookAt(
+            glm::vec3(8000.0f, 2000.0f, 8000.0f),   // Position of the light source (sun)
+            glm::vec3(8000.0f, 0.0f, 8000.0f),             // Position of the center of the world
+            glm::vec3(0.0f, 1.0f, 0.0f)              // Up vector (typically, positive Y axis)
+    );
+    glm::mat4 lightProjection = orthogonalProjection * lightView;
+    shadowMap->use();
+    shadowMap->setMat4("lightProjection", lightProjection);
+    shadowMap->setMat4("model", glm::mat4(1.0f));
+    //shader->use();
 }
 void World::LoadThreadDataToMain()
 {
@@ -497,6 +509,7 @@ void World::SortAndRenderChunks()
     for (Chunk* chunk : activeChunks)
     {
         if(chunk->chunkHasMeshes)
+            //shadowMap->setMat4("lightProjection", )
             chunk->RenderChunk();
     }
 }

@@ -30,6 +30,7 @@ namespace CraftMine {	//using namespace since it conflicts with some cameraMovem
         GLASS
 	};
     extern std::vector<int> transparentBlocks;
+    extern std::vector<int> nonSolidBlocks;
 	extern std::map<unsigned char, BlockType> BlockIDMap;
     extern std::map<Faces, float> brightnessMap;
 	struct FaceData

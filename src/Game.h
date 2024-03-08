@@ -48,7 +48,6 @@ private:
 
     static void processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, bool* _isFullscreen, Player& player, World& world, float& deltaTime);
 
-
 };
 
 

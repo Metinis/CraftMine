@@ -142,7 +142,7 @@ void Chunk::LoadBufferData()
     {
         delete mesh;
     }
-    mesh = new Mesh(*world.shader);
+    mesh = new Mesh(*world.shader, *world.shadowMap);
     mesh->setData(chunkData.chunkVerts, chunkData.chunkUVs, chunkData.chunkIndices, chunkData.chunkBrightnessFloats);
     mesh->loadData();
 
@@ -151,7 +151,7 @@ void Chunk::LoadBufferData()
         delete transparentMesh;
     }
 
-    transparentMesh = new Mesh(*world.transparentShader);
+    transparentMesh = new Mesh(*world.transparentShader, *world.shadowMap);
     //sort from back to front from player pos
     //sortTransparentMeshData();
     transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);

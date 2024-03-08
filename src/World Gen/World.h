@@ -74,6 +74,7 @@ public:
     Shader* shader;
     Shader* transparentShader;
     Shader* outlineShader;
+    Shader* shadowMap;
 
     VAO* outlineVAO = nullptr;
     VBO* outlineVBO = nullptr;

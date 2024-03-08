@@ -2,6 +2,7 @@
 #include "VBO.h"
 #include "VAO.h"
 #include "IBO.h"
+#include "FBO.h"
 #include "Texture.h"
 #include <glm/vec3.hpp>
 #include <utility>
@@ -10,12 +11,15 @@
 class Mesh {
 private:
     Shader& shader;
+    Shader& shadowMap;
 
     VAO *meshVAO = nullptr;
+    VAO* shadowMapVAO = nullptr;
     VBO *meshVBO = nullptr;
     VBO *meshUVVBO = nullptr;
     VBO *meshBrightnessVBO = nullptr;
     IBO *meshIBO = nullptr;
+    FBO *meshFBO = nullptr;
 
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec2> UVs;
@@ -25,9 +29,10 @@ public:
     void setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec2> _UVs, std::vector<GLuint> _indices, std::vector<float> _brightnessFloats);
     void clearData();
     void render();
+    void renderShadowMap();
     void loadData();
 
-    Mesh(Shader& _shader);
+    Mesh(Shader& _shader, Shader& _shadowMap);
 
     ~Mesh()
     {

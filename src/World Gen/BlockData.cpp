@@ -50,6 +50,10 @@ namespace CraftMine {
         8,
         9
     };
+    std::vector<int> nonSolidBlocks{
+            0,
+            5
+    };
     std::map<Faces, float> brightnessMap{
             {LEFT, 0.80f},
             {RIGHT, 0.80f},

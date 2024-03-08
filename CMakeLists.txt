@@ -489,7 +489,9 @@ add_executable(CraftMine
         src/Graphics/UI.cpp
         src/Graphics/UI.h
         src/Player/Player.cpp
-        src/Player/Player.h)
+        src/Player/Player.h
+        src/Graphics/FBO.cpp
+        src/Graphics/FBO.h)
 
 target_link_libraries(CraftMine PRIVATE glfw)
 target_compile_definitions(CraftMine PRIVATE SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")

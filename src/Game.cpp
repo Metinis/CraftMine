@@ -92,7 +92,9 @@ void Game::run(){
             std::cout << newChunkPos.x << "x " << newChunkPos.y << "z \n";
             world->UpdateViewDistance(newChunkPos);
         }
+        //glEnable(GL_DEPTH_TEST);
         glClearColor(0.55f, 0.75f, 1.0f, 1.0f);
+        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         world->RenderWorld();
