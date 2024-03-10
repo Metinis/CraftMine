@@ -29,7 +29,6 @@ public:
     void setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec2> _UVs, std::vector<GLuint> _indices, std::vector<float> _brightnessFloats);
     void clearData();
     void render();
-    void renderShadowMap();
     void loadData();
 
     Mesh(Shader& _shader, Shader& _shadowMap);

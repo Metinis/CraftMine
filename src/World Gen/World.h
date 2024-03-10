@@ -23,10 +23,6 @@ class World
 {
 private:
 
-
-
-	Texture* texture;
-
 	glm::mat4 model{};
 	glm::mat4 view{};
 	glm::mat4 proj{};
@@ -75,6 +71,8 @@ public:
     Shader* transparentShader;
     Shader* outlineShader;
     Shader* shadowMap;
+
+    Texture* texture;
 
     VAO* outlineVAO = nullptr;
     VBO* outlineVBO = nullptr;

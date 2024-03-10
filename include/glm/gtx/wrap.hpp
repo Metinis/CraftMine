@@ -8,7 +8,7 @@
 ///
 /// Include <glm/gtx/wrap.hpp> to use the features of this extension.
 ///
-/// Wrapping mode of texture coordinates.
+/// Wrapping mode of textureFBO coordinates.
 
 #pragma once
 

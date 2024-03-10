@@ -2,6 +2,7 @@
 
 Texture::Texture(const char* fileLocation)
 {
+
 	data = stbi_load(fileLocation, &width, &height, &nrChannels, 0);
 
 	glGenTextures(1, &ID);

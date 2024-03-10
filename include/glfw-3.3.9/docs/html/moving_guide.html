@@ -74,7 +74,7 @@ $(function() {
 <div class="toc"><h3>Table of Contents</h3>
 <ul><li class="level1"><a href="#moving_removed">Changed and removed features</a><ul><li class="level2"><a href="#moving_renamed_files">Renamed library and header file</a></li>
 <li class="level2"><a href="#moving_threads">Removal of threading functions</a></li>
-<li class="level2"><a href="#moving_image">Removal of image and texture loading</a></li>
+<li class="level2"><a href="#moving_image">Removal of image and textureFBO loading</a></li>
 <li class="level2"><a href="#moving_stdcall">Removal of GLFWCALL macro</a></li>
 <li class="level2"><a href="#moving_window_handles">Window handle parameters</a></li>
 <li class="level2"><a href="#moving_monitor">Explicit monitor selection</a></li>
@@ -123,8 +123,8 @@ Removal of threading functions</h2>
 <dl class="section user"><dt>Removed functions</dt><dd><code>glfwSleep</code>, <code>glfwCreateThread</code>, <code>glfwDestroyThread</code>, <code>glfwWaitThread</code>, <code>glfwGetThreadID</code>, <code>glfwCreateMutex</code>, <code>glfwDestroyMutex</code>, <code>glfwLockMutex</code>, <code>glfwUnlockMutex</code>, <code>glfwCreateCond</code>, <code>glfwDestroyCond</code>, <code>glfwWaitCond</code>, <code>glfwSignalCond</code>, <code>glfwBroadcastCond</code> and <code>glfwGetNumberOfProcessors</code>.</dd></dl>
 <dl class="section user"><dt>Removed types</dt><dd><code>GLFWthreadfun</code></dd></dl>
 <h2><a class="anchor" id="moving_image"></a>
-Removal of image and texture loading</h2>
-<p>The image and texture loading functions have been removed. They only supported the Targa image format, making them mostly useful for beginner level examples. To become of sufficiently high quality to warrant keeping them in GLFW 3, they would need not only to support other formats, but also modern extensions to OpenGL texturing. This would either add a number of external dependencies (libjpeg, libpng, etc.), or force GLFW to ship with inline versions of these libraries.</p>
+Removal of image and textureFBO loading</h2>
+<p>The image and textureFBO loading functions have been removed. They only supported the Targa image format, making them mostly useful for beginner level examples. To become of sufficiently high quality to warrant keeping them in GLFW 3, they would need not only to support other formats, but also modern extensions to OpenGL texturing. This would either add a number of external dependencies (libjpeg, libpng, etc.), or force GLFW to ship with inline versions of these libraries.</p>
 <p>As there already are libraries doing this, it is unnecessary both to duplicate the work and to tie the duplicate to GLFW. The resulting library would also be platform-independent, as both OpenGL and stdio are available wherever GLFW is.</p>
 <dl class="section user"><dt>Removed functions</dt><dd><code>glfwReadImage</code>, <code>glfwReadMemoryImage</code>, <code>glfwFreeImage</code>, <code>glfwLoadTexture2D</code>, <code>glfwLoadMemoryTexture2D</code> and <code>glfwLoadTextureImage2D</code>.</dd></dl>
 <h2><a class="anchor" id="moving_stdcall"></a>

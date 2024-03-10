@@ -1,14 +1,14 @@
 /// @ref gtx_texture
-/// @file glm/gtx/texture.hpp
+/// @file glm/gtx/textureFBO.hpp
 ///
 /// @see core (dependence)
 ///
 /// @defgroup gtx_texture GLM_GTX_texture
 /// @ingroup gtx
 ///
-/// Include <glm/gtx/texture.hpp> to use the features of this extension.
+/// Include <glm/gtx/textureFBO.hpp> to use the features of this extension.
 ///
-/// Wrapping mode of texture coordinates.
+/// Wrapping mode of textureFBO coordinates.
 
 #pragma once
 
@@ -30,9 +30,9 @@ namespace glm
 	/// @addtogroup gtx_texture
 	/// @{
 
-	/// Compute the number of mipmaps levels necessary to create a mipmap complete texture
+	/// Compute the number of mipmaps levels necessary to create a mipmap complete textureFBO
 	///
-	/// @param Extent Extent of the texture base level mipmap
+	/// @param Extent Extent of the textureFBO base level mipmap
 	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
 	/// @tparam T Floating-point or signed integer scalar types
 	/// @tparam Q Value from qualifier enum

@@ -34,6 +34,8 @@ private:
     Player* player;
     Camera* camera;
     World* world;
+    FBO* fbo;
+    Shader* frameShader;
     MouseInput* mouseInput;
     glm::ivec2 lastChunkPos{};
     glm::ivec2 newChunkPos{};
@@ -42,7 +44,9 @@ private:
     bool isFullscreen;
     float deltaTime;
     float lastFrame;
+    unsigned int rectVAO, rectVBO;
     int updateingInt;
+
 
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 

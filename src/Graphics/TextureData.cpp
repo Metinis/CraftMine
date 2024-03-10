@@ -1,6 +1,6 @@
 #include "TextureData.h"
 
-const std::map<CraftMine::BlockType, std::map<CraftMine::Faces, int>> TextureData::blockIDMap{	//maps each face in a blocktype to a texture
+const std::map<CraftMine::BlockType, std::map<CraftMine::Faces, int>> TextureData::blockIDMap{	//maps each face in a blocktype to a textureFBO
 
 		{CraftMine::BlockType::GRASS,
 			{{CraftMine::Faces::BACK, 3},

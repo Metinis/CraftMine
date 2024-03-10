@@ -70,6 +70,39 @@ Game::Game(){
 
     //glEnable(GL_DEPTH_TEST);
 
+    //TODO move to a screen quad/renderer class
+    fbo = new FBO(SCR_WIDTH, SCR_HEIGHT);
+
+    float rectangleVertices[] =
+            {
+                    // Coords    // texCoords
+                    1.0f, -1.0f,  1.0f, 0.0f,
+                    -1.0f, -1.0f,  0.0f, 0.0f,
+                    -1.0f,  1.0f,  0.0f, 1.0f,
+
+                    1.0f,  1.0f,  1.0f, 1.0f,
+                    1.0f, -1.0f,  1.0f, 0.0f,
+                    -1.0f,  1.0f,  0.0f, 1.0f
+            };
+
+
+    glGenVertexArrays(1, &rectVAO);
+    glGenBuffers(1, &rectVBO);
+    glBindVertexArray(rectVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, rectVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(rectangleVertices), &rectangleVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+    frameShader = new Shader("../resources/shader/framebuffer.vs", "../resources/shader/framebuffer.fs");
+
+    frameShader->use();
+
+    glUniform1i(glGetUniformLocation(frameShader->ID, "sampledTexture"), 0);
+
+
 }
 void Game::run(){
     //render loop
@@ -92,15 +125,32 @@ void Game::run(){
             std::cout << newChunkPos.x << "x " << newChunkPos.y << "z \n";
             world->UpdateViewDistance(newChunkPos);
         }
-        //glEnable(GL_DEPTH_TEST);
+        int width, height;
+        glfwGetFramebufferSize(window, &width, &height);
+        fbo->setDimension(width, height);
+        fbo->bindForRender();
+
         glClearColor(0.55f, 0.75f, 1.0f, 1.0f);
         //glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
 
+        world->texture->Bind();
         world->RenderWorld();
         glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_SRC_ALPHA);
         ui->renderCrosshair();
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        fbo->Unbind();
+        glBindVertexArray(rectVAO);
+        glDisable(GL_DEPTH_TEST);
+        fbo->bindForRead();
+
+        glViewport(0, 0, width, height);
+        frameShader->use();
+        //glDisable(GL_CULL_FACE);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
         player->Update(deltaTime);
 
         glfwSwapBuffers(window);
@@ -147,6 +197,9 @@ void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed
             glfwSwapInterval(0);
             *keyProccessed = true;
             *_isFullscreen = true;
+            int width, height;
+            glfwGetFramebufferSize(window, &width, &height);
+            glViewport(0, 0, width, height);
         //}
         /*else if(!*keyProccessed)
         {

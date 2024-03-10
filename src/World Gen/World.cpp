@@ -366,13 +366,13 @@ void World::ChangeGlobalTexture()
         else {
             lastTexture = 1;
         }
+        lastTime = currentTime;
         std::stringstream path;
         path << "../resources/texture/terrain" << lastTexture << ".png";
         std::string texturePath = path.str();
         texture->setTexture(texturePath.c_str());
-
-        lastTime = currentTime;
     }
+
 
 }
 void World::RenderBlockOutline()
