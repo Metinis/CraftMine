@@ -20,6 +20,8 @@ private:
 
     void initialiseTexture() const;
 
+    void initialiseDepthMap() const;
+
     void initialiseRBO() const;
 
 public:

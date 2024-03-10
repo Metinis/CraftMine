@@ -70,7 +70,6 @@ public:
     Shader* shader;
     Shader* transparentShader;
     Shader* outlineShader;
-    Shader* shadowMap;
 
     Texture* texture;
 

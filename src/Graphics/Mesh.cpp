@@ -1,5 +1,5 @@
 #include "Mesh.h"
-Mesh::Mesh(Shader& _shader, Shader& _shadowMap) : shader(_shader), shadowMap(_shadowMap)
+Mesh::Mesh(Shader& _shader) : shader(_shader)
 {
     //shader = _shader;
 }

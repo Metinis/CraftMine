@@ -13,8 +13,6 @@ World::World(Camera& _camera, Player& _player) : camera(_camera), player(_player
 
     transparentShader = new Shader("../resources/shader/transparent.vs", "../resources/shader/transparent.fs");
 
-    shadowMap = new Shader("../resources/shader/shadowMap.vs", "../resources/shader/shadowMap.fs");
-
     texture = new Texture("../resources/texture/terrain1.png");
 
 	model = glm::mat4(1.0f);
@@ -467,17 +465,6 @@ void World::UpdateShaders()
     shader->setMat4("view", view);
     transparentShader->use();
     transparentShader->setMat4("view", view);
-    glm::mat4 orthogonalProjection = glm::ortho(-35.0f, 35.0f, -35.0f, 35.0f, 0.1f, 75.0f);
-    glm::mat4 lightView = glm::lookAt(
-            glm::vec3(8000.0f, 2000.0f, 8000.0f),   // Position of the light source (sun)
-            glm::vec3(8000.0f, 0.0f, 8000.0f),             // Position of the center of the world
-            glm::vec3(0.0f, 1.0f, 0.0f)              // Up vector (typically, positive Y axis)
-    );
-    glm::mat4 lightProjection = orthogonalProjection * lightView;
-    shadowMap->use();
-    shadowMap->setMat4("lightProjection", lightProjection);
-    shadowMap->setMat4("model", glm::mat4(1.0f));
-    //shader->use();
 }
 void World::LoadThreadDataToMain()
 {

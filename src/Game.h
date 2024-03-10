@@ -36,6 +36,7 @@ private:
     World* world;
     FBO* fbo;
     Shader* frameShader;
+    Shader* shadowMapShader;
     MouseInput* mouseInput;
     glm::ivec2 lastChunkPos{};
     glm::ivec2 newChunkPos{};
@@ -45,6 +46,8 @@ private:
     float deltaTime;
     float lastFrame;
     unsigned int rectVAO, rectVBO;
+    unsigned int shadowMapFBO;
+    unsigned int shadowMap;
     int updateingInt;
 
 

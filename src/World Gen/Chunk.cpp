@@ -142,7 +142,7 @@ void Chunk::LoadBufferData()
     {
         delete mesh;
     }
-    mesh = new Mesh(*world.shader, *world.shadowMap);
+    mesh = new Mesh(*world.shader);
     mesh->setData(chunkData.chunkVerts, chunkData.chunkUVs, chunkData.chunkIndices, chunkData.chunkBrightnessFloats);
     mesh->loadData();
 
@@ -151,7 +151,7 @@ void Chunk::LoadBufferData()
         delete transparentMesh;
     }
 
-    transparentMesh = new Mesh(*world.transparentShader, *world.shadowMap);
+    transparentMesh = new Mesh(*world.transparentShader);
     //sort from back to front from player pos
     //sortTransparentMeshData();
     transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);
@@ -164,13 +164,7 @@ void Chunk::RenderChunk()
     if(mesh != nullptr && transparentMesh != nullptr) {
         mesh->render();
         glDepthMask(GL_FALSE);
-        //glDisable(GL_CULL_FACE);
-        //glCullFace(GL_BACK);
-        //sortTransparentMeshData(chunkData, world.player);
-        //transparentMesh->loadData();
         transparentMesh->render();
-        //glCullFace(GL_FRONT);
-        //glEnable(GL_CULL_FACE);
         glDepthMask(GL_TRUE);
     }
 }

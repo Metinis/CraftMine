@@ -33,6 +33,7 @@ void FBO::setDimension(int _width, int _height){
     width = _width;
     height = _height;
     initialiseTexture();
+    //initialiseDepthMap();
     initialiseRBO();
 }
 void FBO::initialiseTexture() const{
@@ -44,6 +45,16 @@ void FBO::initialiseTexture() const{
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // Prevents edge bleeding
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Prevents edge bleeding
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureFBO, 0);
+}
+void FBO::initialiseDepthMap() const{
+
+    glBindTexture(GL_TEXTURE_2D, textureFBO);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+                 width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
 void FBO::initialiseRBO() const{
     glBindRenderbuffer(GL_RENDERBUFFER, RBO);

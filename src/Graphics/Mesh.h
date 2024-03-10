@@ -11,7 +11,6 @@
 class Mesh {
 private:
     Shader& shader;
-    Shader& shadowMap;
 
     VAO *meshVAO = nullptr;
     VAO* shadowMapVAO = nullptr;
@@ -31,7 +30,7 @@ public:
     void render();
     void loadData();
 
-    Mesh(Shader& _shader, Shader& _shadowMap);
+    Mesh(Shader& _shader);
 
     ~Mesh()
     {
