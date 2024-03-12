@@ -49,12 +49,24 @@ void Mesh::clearData()
 }
 void Mesh::render()
 {
-    //glEnable(GL_DEPTH_TEST);
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    //shader.use();
-    //renderShadowMap();
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     shader.use();
+    if(meshVAO != nullptr && meshIBO != nullptr && indices.size() > 0 && &shader != nullptr && meshUVVBO != nullptr && meshVBO != nullptr && meshBrightnessVBO != nullptr) {
+        meshVAO->Bind();
+        meshIBO->Bind();
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, nullptr);
+        meshVAO->Unbind();
+        meshIBO->Unbind();
+    }
+
+}
+void Mesh::render(Shader* _shader)
+{
+    _shader->use();
+    meshVAO->Bind();
+    meshVBO->Bind();
+    meshVAO->LinkToVAO(_shader->getAttribLocation("aPos"), 3, *meshVBO);
+    meshVBO->Unbind();
+    meshVAO->Unbind();
     if(meshVAO != nullptr && meshIBO != nullptr && indices.size() > 0 && &shader != nullptr && meshUVVBO != nullptr && meshVBO != nullptr && meshBrightnessVBO != nullptr) {
         meshVAO->Bind();
         meshIBO->Bind();

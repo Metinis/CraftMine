@@ -73,6 +73,10 @@ Game::Game(){
     //TODO move to a screen quad/renderer class
     fbo = new FBO(SCR_WIDTH, SCR_HEIGHT);
 
+    frameShader = new Shader("../resources/shader/framebuffer.vs", "../resources/shader/framebuffer.fs");
+
+    frameShader->use();
+
     float rectangleVertices[] =
             {
                     // Coords    // texCoords
@@ -96,9 +100,7 @@ Game::Game(){
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
-    frameShader = new Shader("../resources/shader/framebuffer.vs", "../resources/shader/framebuffer.fs");
 
-    frameShader->use();
 
     glUniform1i(glGetUniformLocation(frameShader->ID, "sampledTexture"), 0);
 
@@ -107,7 +109,7 @@ Game::Game(){
     shadowMapShader->use();
 
     glGenFramebuffers(1, &shadowMapFBO);
-    unsigned int shadowMapWidth = 1024, shadowMapHeight = 1024;
+    unsigned int shadowMapWidth = 1280, shadowMapHeight = 720;
 
     glGenTextures(1, &shadowMap);
     glBindTexture(GL_TEXTURE_2D, shadowMap);
@@ -128,10 +130,9 @@ Game::Game(){
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glm::mat4 orthgonalProjection = glm::ortho(-35.0f, 35.0f, -35.0f, 35.0f, 0.1f, 2000.0f);
-    glm::mat4 lightView = glm::lookAt(glm::vec3(8000.0f, 400.0f, 8000.0f), glm::vec3(8000.0f, 0.0f, 8000.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 lightView = glm::lookAt(glm::vec3(8000.0f, 70.0f, 8000.0f), glm::vec3(8000.0f, 0.0f, 8000.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 lightProjection = orthgonalProjection * lightView;
 
-    shadowMapShader->use();
     glUniformMatrix4fv(glGetUniformLocation(shadowMapShader->ID, "lightProjection"), 1, GL_FALSE, glm::value_ptr(lightProjection));
 
 
@@ -163,7 +164,7 @@ void Game::run(){
 
         glEnable(GL_DEPTH_TEST);
 
-        glViewport(0,0, 1024, 1024);
+        glViewport(0,0, 1280, 720);
 
         glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
         glClear(GL_DEPTH_BUFFER_BIT);
@@ -173,7 +174,8 @@ void Game::run(){
         {
            std::cout<<"Framebuffer incomplete";
         }
-        world->RenderWorld();
+        world->RenderShadowWorld(shadowMapShader);
+        //world->RenderWorld();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 

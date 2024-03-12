@@ -512,4 +512,12 @@ void World::RenderWorld()
 
     RenderBlockOutline();
 }
+void World::RenderShadowWorld(Shader* _shader) {
+    for (Chunk* chunk : activeChunks)
+    {
+        if(chunk->chunkHasMeshes)
+            //shadowMap->setMat4("lightProjection", )
+            chunk->RenderShadowChunk(_shader);
+    }
+}
 

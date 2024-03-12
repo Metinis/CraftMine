@@ -90,6 +90,7 @@ public:
 	void LoadChunkData();
 	void LoadBufferData();
 	void RenderChunk();
+    void RenderShadowChunk(Shader* _shader);
 	void Delete();
     struct CompareFaces;
 };
