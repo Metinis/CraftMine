@@ -170,8 +170,8 @@ void Chunk::RenderChunk()
 }
 void Chunk::RenderShadowChunk(Shader* _shader) {
     if(mesh != nullptr && transparentMesh != nullptr) {
-        mesh->render(_shader);
-        transparentMesh->render(_shader);
+        mesh->renderShadow(_shader);
+        transparentMesh->renderShadow(_shader);
     }
 }
 void Chunk::LoadChunkData() {

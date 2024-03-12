@@ -53,7 +53,7 @@ Game::Game(){
 
     glfwSetWindowUserPointer(window, mouseInput);
 
-    player->position = glm::vec3(World::SIZE*Chunk::SIZE / 2, Chunk::HEIGHT, World::SIZE*Chunk::SIZE / 2);
+    //player->position = glm::vec3(World::SIZE*Chunk::SIZE / 2, Chunk::HEIGHT, World::SIZE*Chunk::SIZE / 2);
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(window, MouseInput::mouse_callback);
@@ -129,8 +129,8 @@ Game::Game(){
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glm::mat4 orthgonalProjection = glm::ortho(-35.0f, 35.0f, -35.0f, 35.0f, 0.1f, 2000.0f);
-    glm::mat4 lightView = glm::lookAt(glm::vec3(8000.0f, 70.0f, 8000.0f), glm::vec3(8000.0f, 0.0f, 8000.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 orthgonalProjection = glm::ortho(-35.0f, 35.0f, -35.0f, 35.0f, 0.1f, 200.0f);
+    glm::mat4 lightView = glm::lookAt(glm::vec3(0.0f, 200.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 lightProjection = orthgonalProjection * lightView;
 
     glUniformMatrix4fv(glGetUniformLocation(shadowMapShader->ID, "lightProjection"), 1, GL_FALSE, glm::value_ptr(lightProjection));

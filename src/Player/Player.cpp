@@ -1,7 +1,7 @@
 #include "Player.h"
 Player::Player(){
     movementSpeed = 5.0f;
-    position = glm::vec3(World::SIZE*Chunk::SIZE / 2, Chunk::HEIGHT, World::SIZE*Chunk::SIZE / 2);
+    position = glm::vec3(0, Chunk::HEIGHT, 0);
     camera.position = &position;
     chunkPosition = glm::vec2(position.x / Chunk::SIZE, position.z / Chunk::SIZE);
 }
@@ -149,8 +149,8 @@ void Player::SortTransparentFaces() {
     //when moving inbetween chunks, sort surrounding chunks
     if(chunkPosition.x != currentChunk->chunkPosition.x || chunkPosition.y != currentChunk->chunkPosition.y)
     {
-        for(int x = (int)chunkPosition.x - 2; x < (int)chunkPosition.x + 2; x++){
-            for(int z = (int)chunkPosition.y - 2; z < (int)chunkPosition.y + 2; z++){
+        for(int x = (int)chunkPosition.x - 2; x < (int)chunkPosition.x + 2 && x > 0 && x < World::SIZE; x++){
+            for(int z = (int)chunkPosition.y - 2; z < (int)chunkPosition.y + 2  && z > 0 && z < World::SIZE; z++){
                 Chunk* currentChunkToSort = world->GetChunk(x, z);
                 if(currentChunkToSort != nullptr && !currentChunkToSort->inThread)
                 {
