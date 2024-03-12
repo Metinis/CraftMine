@@ -1,7 +1,7 @@
 #include "Player.h"
 Player::Player(){
     movementSpeed = 5.0f;
-    position = glm::vec3(0, Chunk::HEIGHT, 0);
+    position = glm::vec3(8000, 70, 8000);//glm::vec3((World::SIZE / 2) * Chunk::SIZE, Chunk::HEIGHT, (World::SIZE / 2) * Chunk::SIZE);
     camera.position = &position;
     chunkPosition = glm::vec2(position.x / Chunk::SIZE, position.z / Chunk::SIZE);
 }

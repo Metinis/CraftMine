@@ -104,6 +104,11 @@ Game::Game(){
 
     glUniform1i(glGetUniformLocation(frameShader->ID, "sampledTexture"), 0);
 
+    float near_plane = 1.0f, far_plane = 7.5f;
+
+    //frameShader->setFloat("near_plane", near_plane);
+    //frameShader->setFloat("far_plane", far_plane);
+
     shadowMapShader = new Shader("../resources/shader/shadowMap.vs", "../resources/shader/shadowMap.fs");
 
     shadowMapShader->use();
@@ -129,9 +134,15 @@ Game::Game(){
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glm::mat4 orthgonalProjection = glm::ortho(-35.0f, 35.0f, -35.0f, 35.0f, 0.1f, 200.0f);
-    glm::mat4 lightView = glm::lookAt(glm::vec3(0.0f, 200.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 orthgonalProjection = glm::ortho(-200.0f, 200.0f, -200.0f, 200.0f, 0.1f, 200.0f);
+    glm::mat4 lightView = glm::lookAt(glm::vec3(player->position.x, 200.0f, player->position.z), glm::vec3(player->position.x, 0.0f, player->position.z), glm::vec3(0.0f,0.0f,-1.0f));
     glm::mat4 lightProjection = orthgonalProjection * lightView;
+
+    glm::mat4 model = glm::mat4(1.0f);
+
+
+
+    shadowMapShader->setMat4("model", model);
 
     glUniformMatrix4fv(glGetUniformLocation(shadowMapShader->ID, "lightProjection"), 1, GL_FALSE, glm::value_ptr(lightProjection));
 
@@ -158,6 +169,19 @@ void Game::run(){
             lastChunkPos = newChunkPos;
             std::cout << newChunkPos.x << "x " << newChunkPos.y << "z \n";
             world->UpdateViewDistance(newChunkPos);
+
+            shadowMapShader->use();
+
+
+            glm::mat4 orthgonalProjection = glm::ortho(-200.0f, 200.0f, -200.0f, 200.0f, 0.1f, 200.0f);
+            glm::mat4 lightView = glm::lookAt(glm::vec3(player->position.x, 200.0f, player->position.z), glm::vec3(player->position.x, 0.0f, player->position.z - 100), glm::vec3(0.0f,0.0f,-1.0f));
+            glm::mat4 lightProjection = orthgonalProjection * lightView;
+
+            glm::mat4 model = glm::mat4(1.0f);
+
+            shadowMapShader->setMat4("model", model);
+
+            glUniformMatrix4fv(glGetUniformLocation(shadowMapShader->ID, "lightProjection"), 1, GL_FALSE, glm::value_ptr(lightProjection));
         }
 
 
@@ -174,7 +198,7 @@ void Game::run(){
         {
            std::cout<<"Framebuffer incomplete";
         }
-        world->RenderShadowWorld(shadowMapShader);
+        world->RenderShadowWorld(*shadowMapShader);
         //world->RenderWorld();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 

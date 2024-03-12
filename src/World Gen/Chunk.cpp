@@ -168,7 +168,7 @@ void Chunk::RenderChunk()
         glDepthMask(GL_TRUE);
     }
 }
-void Chunk::RenderShadowChunk(Shader* _shader) {
+void Chunk::RenderShadowChunk(Shader& _shader) {
     if(mesh != nullptr && transparentMesh != nullptr) {
         mesh->renderShadow(_shader);
         transparentMesh->renderShadow(_shader);
