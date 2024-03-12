@@ -179,8 +179,8 @@ void Game::run(){
            std::cout<<"Framebuffer incomplete";
         }
         world->texture->Bind();
-        world->RenderShadowWorld(shadowMapShader);
-        //world->RenderWorld();
+        //world->RenderShadowWorld(shadowMapShader);
+        world->RenderWorld();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
@@ -203,12 +203,12 @@ void Game::run(){
         fbo->Unbind();
         glBindVertexArray(rectVAO);
         glDisable(GL_DEPTH_TEST);
-        fbo->bindForRead();
+        //fbo->bindForRead();
 
         glViewport(0, 0, width, height);
         frameShader->use();
         //shadowMapShader->use();
-        //glBindTexture(GL_TEXTURE_2D, shadowMap);
+        glBindTexture(GL_TEXTURE_2D, shadowMap);
         //glDisable(GL_CULL_FACE);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
