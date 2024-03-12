@@ -57,6 +57,22 @@ void Mesh::render()
         meshVAO->Unbind();
         meshIBO->Unbind();
     }
+}
+void Mesh::renderShadow(Shader *_shader)
+{
+    _shader->use();
+    meshVAO->Bind();
+    meshVBO->Bind();
+    meshVAO->LinkToVAO(_shader->getAttribLocation("aPos"), 3, *meshVBO);
+    meshVBO->Unbind();
+    meshVAO->Unbind();
+    if(meshVAO != nullptr && meshIBO != nullptr && indices.size() > 0 && &shader != nullptr && meshUVVBO != nullptr && meshVBO != nullptr && meshBrightnessVBO != nullptr) {
+        meshVAO->Bind();
+        meshIBO->Bind();
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, nullptr);
+        meshVAO->Unbind();
+        meshIBO->Unbind();
+    }
 
 }
 void Mesh::render(Shader* _shader)

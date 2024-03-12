@@ -8,5 +8,6 @@ uniform sampler2D sampledTexture;
 
 void main()
 {             
-    FragColor = texture(sampledTexture, texCoords);
+    FragColor =  texture(sampledTexture, texCoords);
+    //FragColor = vec4(depthValue);
 }
