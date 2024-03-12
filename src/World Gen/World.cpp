@@ -496,7 +496,6 @@ void World::SortAndRenderChunks()
     for (Chunk* chunk : activeChunks)
     {
         if(chunk->chunkHasMeshes)
-            //shadowMap->setMat4("lightProjection", )
             chunk->RenderChunk();
     }
 }
@@ -510,6 +509,21 @@ void World::RenderWorld()
 
     SortAndRenderChunks();
 
+    RenderBlockOutline();
+}
+void World::RenderShadowWorld(Shader* _shader){
+    UpdateShaders();
+    ChangeGlobalTexture();
+    LoadThreadDataToMain();
+    CompareChunks compareChunks;
+    compareChunks._playerChunkPos = playerChunkPos;
+    std::sort(activeChunks.begin(), activeChunks.end(), compareChunks);
+    for (Chunk* chunk : activeChunks)
+    {
+        if(chunk->chunkHasMeshes)
+            chunk->RenderShadowChunk(_shader);
+    }
+    //SortAndRenderChunks();
     RenderBlockOutline();
 }
 

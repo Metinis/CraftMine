@@ -18,12 +18,15 @@ Game::Game(){
 
     window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "CraftMine", nullptr, nullptr);
 
+
     if (window == nullptr)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
     }
     glfwMakeContextCurrent(window);
+
+    //glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, SCR_WIDTH, SCR_HEIGHT);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -121,14 +124,16 @@ Game::Game(){
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, clampColor);
     glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMap, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
     // Needed since we don't touch the color buffer
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glm::mat4 orthgonalProjection = glm::ortho(-35.0f, 35.0f, -35.0f, 35.0f, 0.1f, 2000.0f);
-    glm::mat4 lightView = glm::lookAt(glm::vec3(8000.0f, 400.0f, 8000.0f), glm::vec3(8000.0f, 0.0f, 8000.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 orthgonalProjection = glm::ortho(-35.0f, 35.0f, -35.0f, 35.0f, 0.1f, 75.0f);
+    glm::mat4 lightView = glm::lookAt(glm::vec3(0.0f, 80.0f, 0.0f), glm::vec3(8000.0f, 0.0f, 8000.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 lightProjection = orthgonalProjection * lightView;
 
     shadowMapShader->use();
@@ -173,7 +178,9 @@ void Game::run(){
         {
            std::cout<<"Framebuffer incomplete";
         }
-        world->RenderWorld();
+        world->texture->Bind();
+        world->RenderShadowWorld(shadowMapShader);
+        //world->RenderWorld();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
@@ -196,12 +203,12 @@ void Game::run(){
         fbo->Unbind();
         glBindVertexArray(rectVAO);
         glDisable(GL_DEPTH_TEST);
-        //fbo->bindForRead();
+        fbo->bindForRead();
 
         glViewport(0, 0, width, height);
         frameShader->use();
         //shadowMapShader->use();
-        glBindTexture(GL_TEXTURE_2D, shadowMap);
+        //glBindTexture(GL_TEXTURE_2D, shadowMap);
         //glDisable(GL_CULL_FACE);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 

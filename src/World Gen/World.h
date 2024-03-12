@@ -117,6 +117,7 @@ public:
 
 	void RenderWorld();
 
+    void RenderShadowWorld(Shader* _shader);
 };
 
 

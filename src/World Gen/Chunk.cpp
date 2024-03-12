@@ -168,6 +168,14 @@ void Chunk::RenderChunk()
         glDepthMask(GL_TRUE);
     }
 }
+void Chunk::RenderShadowChunk(Shader* _shader){
+    if(mesh != nullptr && transparentMesh != nullptr) {
+        mesh->renderShadow(_shader);
+        glDepthMask(GL_FALSE);
+        transparentMesh->renderShadow(_shader);
+        glDepthMask(GL_TRUE);
+    }
+}
 
 void Chunk::LoadChunkData() {
     ClearVertexData();
