@@ -114,7 +114,7 @@ Game::Game(){
     shadowMapShader->use();
 
     glGenFramebuffers(1, &shadowMapFBO);
-    unsigned int shadowMapWidth = 1280, shadowMapHeight = 720;
+    unsigned int shadowMapWidth = 2048, shadowMapHeight = 2048;
 
     glGenTextures(1, &shadowMap);
     glBindTexture(GL_TEXTURE_2D, shadowMap);
@@ -177,8 +177,8 @@ void Game::run(){
             shadowMapShader->use();
 
 
-            glm::mat4 orthgonalProjection = glm::ortho(-(float)(SCR_WIDTH/2), (float)(SCR_WIDTH/2), -(float)(SCR_HEIGHT/2), (float)(SCR_HEIGHT/2), 0.1f, 400.0f);
-            glm::mat4 lightView = glm::lookAt(glm::vec3(player->position.x, 200.0f, player->position.z), glm::vec3(player->position.x, 0.0f, player->position.z - 200), glm::vec3(0.0f,0.0f,-1.0f));
+            glm::mat4 orthgonalProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 0.1f, 400.0f);
+            glm::mat4 lightView = glm::lookAt(glm::vec3(8000, 200.0f, 8200), glm::vec3(8000, 50.0f, 8000), glm::vec3(0.0f,0.0f,-1.0f));
             glm::mat4 lightProjection = orthgonalProjection * lightView;
 
             glm::mat4 model = glm::mat4(1.0f);
@@ -207,7 +207,7 @@ void Game::run(){
 
         glEnable(GL_DEPTH_TEST);
 
-        glViewport(0,0, 1280, 720);
+        glViewport(0,0, 2048, 2048);
 
         glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
         glClear(GL_DEPTH_BUFFER_BIT);

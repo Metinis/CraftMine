@@ -18,7 +18,7 @@ uniform float fogEnd;
 uniform vec3 fogColor;
 uniform vec3 lightPos;
 
-bool inShadow(vec4 fragPosLightSpace){
+float inShadow(vec4 fragPosLightSpace){
     // perform perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     // transform to [0,1] range
@@ -30,8 +30,28 @@ bool inShadow(vec4 fragPosLightSpace){
     // check whether current frag pos is in shadow
     //vec3 normal = normalize(Normal);
     //vec3 lightDir = normalize(lightPos - FragPos);
-    //float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-    return currentDepth - 0.0015 > closestDepth;
+    float bias = 0.001;
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(depthMap, 0);
+
+    int numSamples = 1;
+
+    for(int x = -numSamples; x <= numSamples; ++x)
+    {
+        for(int y = -numSamples; y <= numSamples; ++y)
+        {
+            float pcfDepth = texture(depthMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
+        }    
+    }
+    shadow /= float((2 * numSamples + 1) * (2 * numSamples + 1));
+
+    if(projCoords.z > 1.0)
+        shadow = 0.0;
+        
+    shadow = clamp(shadow, 0.0, 1.0);
+
+    return shadow;
 }
 
 void main()
@@ -40,14 +60,23 @@ void main()
 
     // Adjust brightness
     vec3 adjustedColor;
-    if(brightness < minBrightness || inShadow(fragPosLightSpace))
+    if(brightness < minBrightness)
     {
         adjustedColor = sampledColor.rgb * minBrightness;
     }
     else
     {
         adjustedColor = sampledColor.rgb * brightness;
+        if((1.0 - inShadow(fragPosLightSpace)) >= minBrightness){
+            adjustedColor.rgb *= 1.0 - inShadow(fragPosLightSpace);
+        }
+        else{
+            adjustedColor.rgb *= minBrightness;
+        }
+        
     }
+
+    
 
     float distance = length(FragPos.xyz - cameraPos);
 
