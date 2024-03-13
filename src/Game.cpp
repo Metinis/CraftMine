@@ -134,7 +134,7 @@ Game::Game(){
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glm::mat4 orthgonalProjection = glm::ortho(-200.0f, 200.0f, -200.0f, 200.0f, 0.1f, 200.0f);
+    glm::mat4 orthgonalProjection = glm::ortho(-35.0f, 35.0f, -35.0f, 35.0f, 0.1f, 200.0f);
     glm::mat4 lightView = glm::lookAt(glm::vec3(player->position.x, 200.0f, player->position.z), glm::vec3(player->position.x, 0.0f, player->position.z), glm::vec3(0.0f,0.0f,-1.0f));
     glm::mat4 lightProjection = orthgonalProjection * lightView;
 
@@ -146,6 +146,10 @@ Game::Game(){
 
     glUniformMatrix4fv(glGetUniformLocation(shadowMapShader->ID, "lightProjection"), 1, GL_FALSE, glm::value_ptr(lightProjection));
 
+    world->shader->use();
+    world->shader->setMat4("lightSpaceMatrix", lightProjection);
+    glBindTexture(GL_TEXTURE_2D, shadowMap);
+    glUniform1i(glGetUniformLocation(world->shader->ID, "depthMap"), 0);
 
 
 }
@@ -173,8 +177,8 @@ void Game::run(){
             shadowMapShader->use();
 
 
-            glm::mat4 orthgonalProjection = glm::ortho(-200.0f, 200.0f, -200.0f, 200.0f, 0.1f, 200.0f);
-            glm::mat4 lightView = glm::lookAt(glm::vec3(player->position.x, 200.0f, player->position.z), glm::vec3(player->position.x, 0.0f, player->position.z - 100), glm::vec3(0.0f,0.0f,-1.0f));
+            glm::mat4 orthgonalProjection = glm::ortho(-(float)(SCR_WIDTH/2), (float)(SCR_WIDTH/2), -(float)(SCR_HEIGHT/2), (float)(SCR_HEIGHT/2), 0.1f, 400.0f);
+            glm::mat4 lightView = glm::lookAt(glm::vec3(player->position.x, 200.0f, player->position.z), glm::vec3(player->position.x, 0.0f, player->position.z - 200), glm::vec3(0.0f,0.0f,-1.0f));
             glm::mat4 lightProjection = orthgonalProjection * lightView;
 
             glm::mat4 model = glm::mat4(1.0f);
@@ -182,6 +186,21 @@ void Game::run(){
             shadowMapShader->setMat4("model", model);
 
             glUniformMatrix4fv(glGetUniformLocation(shadowMapShader->ID, "lightProjection"), 1, GL_FALSE, glm::value_ptr(lightProjection));
+
+
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, shadowMap);
+
+            world->shader->use();
+            world->shader->setMat4("lightSpaceMatrix", lightProjection);
+
+            glUniform1i(glGetUniformLocation(world->shader->ID, "depthMap"), 1);
+
+            world->transparentShader->use();
+            world->transparentShader->setMat4("lightSpaceMatrix", lightProjection);
+
+            glUniform1i(glGetUniformLocation(world->transparentShader->ID, "depthMap"), 1);
+            glActiveTexture(GL_TEXTURE0);
         }
 
 
@@ -222,12 +241,12 @@ void Game::run(){
         fbo->Unbind();
         glBindVertexArray(rectVAO);
         glDisable(GL_DEPTH_TEST);
-        //fbo->bindForRead();
+        fbo->bindForRead();
 
         glViewport(0, 0, width, height);
         frameShader->use();
         //shadowMapShader->use();
-        glBindTexture(GL_TEXTURE_2D, shadowMap);
+        //glBindTexture(GL_TEXTURE_2D, shadowMap);
         //glDisable(GL_CULL_FACE);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 

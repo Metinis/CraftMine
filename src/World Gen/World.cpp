@@ -11,7 +11,7 @@ World::World(Camera& _camera, Player& _player) : camera(_camera), player(_player
 
     outlineShader = new Shader("../resources/shader/OutlineShader.vs", "../resources/shader/OutlineShader.fs");
 
-    transparentShader = new Shader("../resources/shader/transparent.vs", "../resources/shader/transparent.fs");
+    transparentShader = new Shader("../resources/shader/shader.vs", "../resources/shader/shader.fs"); //change when transparent is different
 
     texture = new Texture("../resources/texture/terrain1.png");
 
