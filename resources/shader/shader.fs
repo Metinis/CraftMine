@@ -30,7 +30,7 @@ float inShadow(vec4 fragPosLightSpace){
     // check whether current frag pos is in shadow
     //vec3 normal = normalize(Normal);
     //vec3 lightDir = normalize(lightPos - FragPos);
-    float bias = 0.001;
+    float bias = 0.0002;
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(depthMap, 0);
 

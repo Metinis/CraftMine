@@ -43,6 +43,7 @@ Game::Game(){
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_LINE_SMOOTH);
 
+
     player = new Player();
     camera = &player->camera;
     world = new World(*camera, *player);
@@ -52,8 +53,6 @@ Game::Game(){
     ui = new UI();
 
     glfwSetWindowUserPointer(window, mouseInput);
-
-    //player->position = glm::vec3(World::SIZE*Chunk::SIZE / 2, Chunk::HEIGHT, World::SIZE*Chunk::SIZE / 2);
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(window, MouseInput::mouse_callback);
@@ -65,74 +64,28 @@ Game::Game(){
     lastChunkPos = glm::ivec2(player->position.x / Chunk::SIZE, player->position.z / Chunk::SIZE);
     newChunkPos = glm::ivec2(player->position.x / Chunk::SIZE, player->position.z / Chunk::SIZE);
 
-    updateingInt = 1; //world->viewDistance/2; //so it doesn't update every chunk
+    updateingInt = 1;
     world->UpdateViewDistance(newChunkPos);
 
     //glEnable(GL_DEPTH_TEST);
 
-    //TODO move to a screen quad/renderer class
+    screenQuad = new ScreenQuad();
+
     fbo = new FBO(SCR_WIDTH, SCR_HEIGHT);
+    fbo->initialiseTextureFBO();
 
     frameShader = new Shader("../resources/shader/framebuffer.vs", "../resources/shader/framebuffer.fs");
 
     frameShader->use();
 
-    float rectangleVertices[] =
-            {
-                    // Coords    // texCoords
-                    1.0f, -1.0f,  1.0f, 0.0f,
-                    -1.0f, -1.0f,  0.0f, 0.0f,
-                    -1.0f,  1.0f,  0.0f, 1.0f,
-
-                    1.0f,  1.0f,  1.0f, 1.0f,
-                    1.0f, -1.0f,  1.0f, 0.0f,
-                    -1.0f,  1.0f,  0.0f, 1.0f
-            };
-
-
-    glGenVertexArrays(1, &rectVAO);
-    glGenBuffers(1, &rectVBO);
-    glBindVertexArray(rectVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, rectVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(rectangleVertices), &rectangleVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-
-
-
     glUniform1i(glGetUniformLocation(frameShader->ID, "sampledTexture"), 0);
-
-    float near_plane = 1.0f, far_plane = 7.5f;
-
-    //frameShader->setFloat("near_plane", near_plane);
-    //frameShader->setFloat("far_plane", far_plane);
 
     shadowMapShader = new Shader("../resources/shader/shadowMap.vs", "../resources/shader/shadowMap.fs");
 
     shadowMapShader->use();
 
-    glGenFramebuffers(1, &shadowMapFBO);
-    unsigned int shadowMapWidth = 2048, shadowMapHeight = 2048;
-
-    glGenTextures(1, &shadowMap);
-    glBindTexture(GL_TEXTURE_2D, shadowMap);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowMapWidth, shadowMapHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    // Prevents darkness outside the frustrum
-    float clampColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, clampColor);
-    glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMap, 0);
-
-    // Needed since we don't touch the color buffer
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    depthFBO = new FBO(16384, 16384);
+    depthFBO->initialiseDepthFBO();
 
     glm::mat4 orthgonalProjection = glm::ortho(-35.0f, 35.0f, -35.0f, 35.0f, 0.1f, 200.0f);
     glm::mat4 lightView = glm::lookAt(glm::vec3(player->position.x, 200.0f, player->position.z), glm::vec3(player->position.x, 0.0f, player->position.z), glm::vec3(0.0f,0.0f,-1.0f));
@@ -148,7 +101,7 @@ Game::Game(){
 
     world->shader->use();
     world->shader->setMat4("lightSpaceMatrix", lightProjection);
-    glBindTexture(GL_TEXTURE_2D, shadowMap);
+    depthFBO->bindForRead();
     glUniform1i(glGetUniformLocation(world->shader->ID, "depthMap"), 0);
 
 
@@ -177,8 +130,8 @@ void Game::run(){
             shadowMapShader->use();
 
 
-            glm::mat4 orthgonalProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 0.1f, 400.0f);
-            glm::mat4 lightView = glm::lookAt(glm::vec3(8000, 200.0f, 8200), glm::vec3(8000, 50.0f, 8000), glm::vec3(0.0f,0.0f,-1.0f));
+            glm::mat4 orthgonalProjection = glm::ortho(-200.0f, 200.0f, -200.0f, 200.0f, 0.1f, 400.0f);
+            glm::mat4 lightView = glm::lookAt(glm::vec3(player->position.x, 200.0f, player->position.z + 200), glm::vec3(player->position.x, 50.0f, player->position.z), glm::vec3(0.0f,0.0f,-1.0f));
             glm::mat4 lightProjection = orthgonalProjection * lightView;
 
             glm::mat4 model = glm::mat4(1.0f);
@@ -189,7 +142,7 @@ void Game::run(){
 
 
             glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, shadowMap);
+            depthFBO->bindForRead();
 
             world->shader->use();
             world->shader->setMat4("lightSpaceMatrix", lightProjection);
@@ -207,9 +160,7 @@ void Game::run(){
 
         glEnable(GL_DEPTH_TEST);
 
-        glViewport(0,0, 2048, 2048);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
+        depthFBO->bindForRender();
         glClear(GL_DEPTH_BUFFER_BIT);
         shadowMapShader->use();
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -239,16 +190,13 @@ void Game::run(){
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         fbo->Unbind();
-        glBindVertexArray(rectVAO);
         glDisable(GL_DEPTH_TEST);
         fbo->bindForRead();
 
         glViewport(0, 0, width, height);
         frameShader->use();
-        //shadowMapShader->use();
         //glBindTexture(GL_TEXTURE_2D, shadowMap);
-        //glDisable(GL_CULL_FACE);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        screenQuad->renderQuad(*frameShader);
 
         player->Update(deltaTime);
 
@@ -330,12 +278,27 @@ void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed
         player.ProcessKeyboardMovement(cameraMovement::RIGHT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
         player.ProcessKeyboardMovement(cameraMovement::DOWN, deltaTime);
-    if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE){
+    else if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE){
         player.isShifting = false;
         //player.shiftChanged = false;
     }
 
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !*keyProccessed && !*wireframe){
         player.ProcessKeyboardMovement(cameraMovement::UP, deltaTime);
+        *wireframe = true;
+        *keyProccessed = true;
+    }
+    else if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !*keyProccessed && *wireframe) {
+        *wireframe = false;
+        *keyProccessed = true;
+
+    }
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE)
+    {
+        *keyProccessed = false;
+    }
+
+
+
 }
 

@@ -14,18 +14,22 @@
 class FBO {
 private:
     unsigned int ID;
-    unsigned int textureFBO;
+    unsigned int texture;
     unsigned int RBO;
     unsigned int width, height;
 
-    void initialiseTexture() const;
+    void initialiseTexture();
 
-    void initialiseDepthMap() const;
+    void initialiseDepthMap();
 
-    void initialiseRBO() const;
+    void initialiseRBO();
 
 public:
     FBO(int _width, int _height);
+    //initialises the standard FBO
+    void initialiseTextureFBO();
+
+    void initialiseDepthFBO();
 
     void setDimension(int _width, int _height);
 

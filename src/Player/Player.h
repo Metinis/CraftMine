@@ -19,6 +19,7 @@ private:
 
     bool isGrounded{};
     bool isJumping{};
+    bool isFlying{};
 
 
 

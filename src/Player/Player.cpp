@@ -51,10 +51,12 @@ void Player::UpdatePositionY(float& deltaTime, glm::vec3& newPosition) {
     }
 
     isGrounded = checkNewPositionY(position);
-    if(!isJumping && isGrounded){
+
+
+    if((!isJumping && isGrounded) || isFlying){
         playerVelocity.y = 0;
     }
-    if (!isGrounded)
+    if (!isGrounded && !isFlying)
     {
         if(playerVelocity.y > -MAX_VELOCITY)
             playerVelocity.y -= GRAVITY * deltaTime * GRAVITY_MULTIPLIER;
@@ -213,13 +215,24 @@ void Player::ProcessKeyboardMovement(cameraMovement dir, float deltaTime)
 
     if (dir == cameraMovement::DOWN) {
         isShifting = true;
+        if(isFlying){
+            playerVelocity.y = 0;
+            playerVelocity.y -= 6.20f;
+            isFlying = !isGrounded;
+        }
     }
     if (dir == cameraMovement::UP) {
-        if(isGrounded && !isJumping)
+        if((isGrounded && !isJumping))
         {
             playerVelocity.y = 0;
             isJumping = true;
             playerVelocity.y += 6.20f;
+        }
+        else if(playerVelocity.y > 8 || isFlying){ //TODO, implement a press system instead of holding key
+            isFlying = !isFlying;
+            playerVelocity.y = 0;
+            playerVelocity.y += 6.20f;
+            //playerVelocity.y = 0;
         }
 
     }

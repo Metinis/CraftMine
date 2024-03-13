@@ -65,9 +65,9 @@ used from any thread and which must only be used from the main thread.
 `GLFWthreadfun`
 
 
-@subsection moving_image Removal of image and textureFBO loading
+@subsection moving_image Removal of image and texture loading
 
-The image and textureFBO loading functions have been removed.  They only supported
+The image and texture loading functions have been removed.  They only supported
 the Targa image format, making them mostly useful for beginner level examples.
 To become of sufficiently high quality to warrant keeping them in GLFW 3, they
 would need not only to support other formats, but also modern extensions to

@@ -78,7 +78,7 @@ public:
     IBO* outlineIBO = nullptr;
 
 	static const int SIZE = 1000;
-	int viewDistance = 12;
+	int viewDistance = 10;
 	std::thread chunkThread;
 	std::thread worldGenThread;
 

@@ -293,7 +293,7 @@ void World::PlaceBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
     if (RaycastBlockPos(rayOrigin, rayDirection, localPos, currentChunk, lastEmptyPos)) {
 
         if(currentChunk->generatedBlockData) {
-            currentChunk->SetBlock(lastEmptyPos, 2 );
+            currentChunk->SetBlock(lastEmptyPos, 3);
             mutexChunksToLoadData.lock();
             chunksToLoadData.push_back(currentChunk);
             mutexChunksToLoadData.unlock();

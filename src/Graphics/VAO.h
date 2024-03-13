@@ -14,6 +14,7 @@ class VAO
 		unsigned int ID;
 		VAO();
 		void LinkToVAO(int location, int size, VBO vbo);
+        void LinkToVAO(int location, int size, float stride, void* pointer, VBO vbo);
 		void Bind();
 		void Unbind();
 		void Delete();

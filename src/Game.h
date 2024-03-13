@@ -16,6 +16,7 @@
 #include "UI.h"
 #include "Input/MouseInput.h"
 #include "Player/Player.h"
+#include "ScreenQuad.h"
 
 #define SCR_WIDTH 1280
 #define SCR_HEIGHT 720
@@ -35,9 +36,11 @@ private:
     Camera* camera;
     World* world;
     FBO* fbo;
+    FBO* depthFBO;
     Shader* frameShader;
     Shader* shadowMapShader;
     MouseInput* mouseInput;
+    ScreenQuad* screenQuad;
     glm::ivec2 lastChunkPos{};
     glm::ivec2 newChunkPos{};
     bool wireframe;
@@ -45,9 +48,6 @@ private:
     bool isFullscreen;
     float deltaTime;
     float lastFrame;
-    unsigned int rectVAO, rectVBO;
-    unsigned int shadowMapFBO;
-    unsigned int shadowMap;
     int updateingInt;
 
 

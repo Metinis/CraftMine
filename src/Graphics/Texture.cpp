@@ -34,6 +34,7 @@ void Texture::setTexture(const char* fileLocation)
 }
 void Texture::Bind()
 {
+    //glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, ID);
 }
 void Texture::Unbind()

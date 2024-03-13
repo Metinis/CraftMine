@@ -9,9 +9,17 @@ void VAO::LinkToVAO(int location, int size, VBO vbo)
 {
 	Bind();
 	vbo.Bind();
+    glEnableVertexAttribArray(location);
 	glVertexAttribPointer(location, size, GL_FLOAT, GL_FALSE, 0, nullptr);
-	glEnableVertexAttribArray(location);
 	Unbind();
+}
+void VAO::LinkToVAO(int location, int size, float stride, void* pointer, VBO vbo)
+{
+    Bind();
+    vbo.Bind();
+    glEnableVertexAttribArray(location);
+    glVertexAttribPointer(location, size, GL_FLOAT, GL_FALSE, stride, pointer);
+    Unbind();
 }
 void VAO::Bind()
 {
