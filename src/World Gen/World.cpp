@@ -180,6 +180,7 @@ void World::UpdateViewDistance(glm::ivec2 cameraChunkPos)
 	activeChunks.clear();
 	activeChunks = newActiveChunks;
 
+
 }
 
 
@@ -475,9 +476,11 @@ void World::LoadThreadDataToMain()
         for (int i = 0; i < loadedChunks.size(); i++)
         {
             Chunk* chunk = loadedChunks.front();
-            chunk->sortTransparentMeshData(); //sort transparent faces before rendering
-            addedChunks.push_back(std::ref(chunk));
-            loadedChunks.pop();
+            if(!chunk->inThread) {
+                chunk->sortTransparentMeshData(); //sort transparent faces before rendering
+                addedChunks.push_back(std::ref(chunk));
+                loadedChunks.pop();
+            }
         }
         mutexChunksToLoadData.unlock();
         if (!addedChunks.empty()){

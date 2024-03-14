@@ -154,7 +154,7 @@ void Player::SortTransparentFaces() {
         for(int x = (int)chunkPosition.x - 2; x < (int)chunkPosition.x + 2 && x > 0 && x < World::SIZE; x++){
             for(int z = (int)chunkPosition.y - 2; z < (int)chunkPosition.y + 2  && z > 0 && z < World::SIZE; z++){
                 Chunk* currentChunkToSort = world->GetChunk(x, z);
-                if(currentChunkToSort != nullptr && !currentChunkToSort->inThread)
+                if(currentChunkToSort != nullptr && !currentChunkToSort->inThread && currentChunkToSort->generatedBuffData)
                 {
                     //world->mutexChunksToLoadData.lock();
                     world->loadedChunks.push(currentChunkToSort); //loadedchunks sorts each chunk transparent face
@@ -167,7 +167,7 @@ void Player::SortTransparentFaces() {
     //else sort the current chunk the player is in every time you move a block
     else
     {
-        if(currentChunk != nullptr && !currentChunk->inThread && glm::round(lastPosition) != glm::round(position))
+        if(currentChunk != nullptr && !currentChunk->inThread && glm::round(lastPosition) != glm::round(position) && currentChunk->generatedBuffData)
             //only sort if block pos has changes hence round
         {
             //world->mutexChunksToLoadData.lock();
