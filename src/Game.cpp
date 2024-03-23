@@ -106,6 +106,7 @@ void Game::run(){
 
         glViewport(0, 0, width, height);
 
+        //finally output FBO to quad
         scene->renderQuad();
 
         player->Update(deltaTime);
