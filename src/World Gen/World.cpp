@@ -5,7 +5,7 @@
 #include "Player/Player.h"
 
 
-World::World(Camera& _camera, Scene& _scene) : camera(_camera), scene(_scene)
+World::World(Camera& _camera, Scene& _scene, Player& _player) : camera(_camera), scene(_scene), player(_player)
 {
 
     playerChunkPos = glm::ivec2((*camera.position).x / Chunk::SIZE, (*camera.position).z / Chunk::SIZE); //used for priority queues, chunks closest have priority
@@ -355,6 +355,39 @@ void World::sortChunks(){
     compareChunks._playerChunkPos = playerChunkPos;
     std::sort(activeChunks.begin(), activeChunks.end(), compareChunks);
 }
+void World::sortTransparentFaces() {
+    Chunk* currentChunk = GetChunk(playerChunkPos.x, playerChunkPos.y);
+
+    //when moving inbetween chunks, sort surrounding chunks
+    if(player.chunkPosition.x != currentChunk->chunkPosition.x || player.chunkPosition.y != currentChunk->chunkPosition.y)
+    {
+        for(int x = (int)player.chunkPosition.x - 2; x < (int)player.chunkPosition.x + 2 && x > 0 && x < World::SIZE; x++){
+            for(int z = (int)player.chunkPosition.y - 2; z < (int)player.chunkPosition.y + 2  && z > 0 && z < World::SIZE; z++){
+                Chunk* currentChunkToSort = GetChunk(x, z);
+                if(currentChunkToSort != nullptr && !currentChunkToSort->inThread && currentChunkToSort->generatedBuffData)
+                {
+                    //world->mutexChunksToLoadData.lock();
+                    loadedChunks.push(currentChunkToSort); //loadedchunks sorts each chunk transparent face
+                    //world->mutexChunksToLoadData.unlock();
+                }
+            }
+        }
+
+    }
+        //else sort the current chunk the player is in every time you move a block
+    else
+    {
+        if(currentChunk != nullptr && !currentChunk->inThread && glm::round(player.lastPosition) != glm::round(player.position) && currentChunk->generatedBuffData)
+            //only sort if block pos has changes hence round
+        {
+            //world->mutexChunksToLoadData.lock();
+            loadedChunks.push(currentChunk); //loadedchunks sorts each chunk transparent face
+            //world->mutexChunksToLoadData.unlock();
+        }
+    }
+    if (currentChunk != nullptr)
+        player.chunkPosition = currentChunk->chunkPosition;
+}
 //default way to render
 void World::renderChunks()
 {
@@ -379,6 +412,8 @@ void World::renderChunks(Shader& shader)
 }
 void World::update()
 {
+    sortTransparentFaces();
+
     scene.updateShaders();
     //changes global texture every second that passes
     scene.changeGlobalTexture();

@@ -47,7 +47,7 @@ Game::Game(){
     player = new Player();
     camera = &player->camera;
     scene = new Scene(*camera);
-    world = new World(*camera, *scene);
+    world = new World(*camera, *scene, *player);
     player->world = world;
 
 

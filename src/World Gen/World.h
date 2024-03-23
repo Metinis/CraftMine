@@ -49,6 +49,7 @@ private:
 
 
 public:
+    Player& player;
     Camera& camera;
     Scene& scene;
 
@@ -70,7 +71,7 @@ public:
 
     Chunk* chunks[SIZE*SIZE] = {nullptr};
 
-	explicit World(Camera& _camera, Scene& scene);
+	explicit World(Camera& _camera, Scene& scene, Player& player);
 
     [[noreturn]] void GenerateChunkThread();
 
@@ -95,6 +96,8 @@ public:
     void sortChunks();
 
     void renderChunks(Shader& shader);
+
+    void sortTransparentFaces();
 };
 
 

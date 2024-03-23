@@ -14,7 +14,6 @@ void Player::Update(float deltaTime){
     if(glm::length(playerVelocity) != 0 || !isGrounded){
         UpdatePositionXZ(newPosition);
         //Check for sorting every time you move
-        SortTransparentFaces();
     }
 
     if(isJumping && playerVelocity.y <= 0)
@@ -144,39 +143,6 @@ void Player::UpdateDeceleration(float &deltaTime){
         playerVelocity.x = 0.0f;
         playerVelocity.z = 0.0f;
     }
-}
-void Player::SortTransparentFaces() {
-    Chunk* currentChunk = world->GetChunk(int(glm::round(position.x) / Chunk::SIZE), int(glm::round(position.z) / Chunk::SIZE));
-
-    //when moving inbetween chunks, sort surrounding chunks
-    if(chunkPosition.x != currentChunk->chunkPosition.x || chunkPosition.y != currentChunk->chunkPosition.y)
-    {
-        for(int x = (int)chunkPosition.x - 2; x < (int)chunkPosition.x + 2 && x > 0 && x < World::SIZE; x++){
-            for(int z = (int)chunkPosition.y - 2; z < (int)chunkPosition.y + 2  && z > 0 && z < World::SIZE; z++){
-                Chunk* currentChunkToSort = world->GetChunk(x, z);
-                if(currentChunkToSort != nullptr && !currentChunkToSort->inThread && currentChunkToSort->generatedBuffData)
-                {
-                    //world->mutexChunksToLoadData.lock();
-                    world->loadedChunks.push(currentChunkToSort); //loadedchunks sorts each chunk transparent face
-                    //world->mutexChunksToLoadData.unlock();
-                }
-            }
-        }
-
-    }
-    //else sort the current chunk the player is in every time you move a block
-    else
-    {
-        if(currentChunk != nullptr && !currentChunk->inThread && glm::round(lastPosition) != glm::round(position) && currentChunk->generatedBuffData)
-            //only sort if block pos has changes hence round
-        {
-            //world->mutexChunksToLoadData.lock();
-            world->loadedChunks.push(currentChunk); //loadedchunks sorts each chunk transparent face
-            //world->mutexChunksToLoadData.unlock();
-        }
-    }
-    if (currentChunk != nullptr)
-        chunkPosition = currentChunk->chunkPosition;
 }
 void Player::ProcessKeyboardMovement(cameraMovement dir, float deltaTime)
 {
