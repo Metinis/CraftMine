@@ -4,7 +4,7 @@
 
 #include "MouseInput.h"
 
-MouseInput::MouseInput(int SCR_WIDTH, int SCR_HEIGHT, Camera& _camera, World& _world) : lastX(SCR_WIDTH / 2.0f), lastY(SCR_HEIGHT / 2.0f), camera(_camera), world(_world), firstMouse(true) {}
+MouseInput::MouseInput(Camera& _camera, World& _world) : lastX(1280 / 2.0f), lastY(720/ 2.0f), camera(_camera), world(_world), firstMouse(true) {}
 
 void MouseInput::processMouse(GLFWwindow *window, double xposIn, double yposIn) {
     auto xPos = static_cast<float>(xposIn);

@@ -10,28 +10,24 @@
 
 class Mesh {
 private:
-    Shader& shader;
-
     VAO *meshVAO = nullptr;
-    VAO* shadowMapVAO = nullptr;
     VBO *meshVBO = nullptr;
     VBO *meshUVVBO = nullptr;
     VBO *meshBrightnessVBO = nullptr;
     IBO *meshIBO = nullptr;
-    FBO *meshFBO = nullptr;
 
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec2> UVs;
     std::vector<GLuint> indices;
     std::vector<float> brightnessFloats;
+
+    //bool loadedData = false;
 public:
     void setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec2> _UVs, std::vector<GLuint> _indices, std::vector<float> _brightnessFloats);
     void clearData();
-    void render();
-    void renderShadow(Shader& _shader);
-    void loadData();
-
-    Mesh(Shader& _shader);
+    void render(Shader& _shader);
+    //void renderShadow(Shader& _shader);
+    void loadData(Shader& _shader);
 
     ~Mesh()
     {

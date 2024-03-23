@@ -23,7 +23,7 @@ private:
 
 public:
 
-    MouseInput(int SCR_WIDTH, int SCR_HEIGHT, Camera& _camera, World& _world);
+    MouseInput(Camera& _camera, World& _world);
 
     void processMouse(GLFWwindow* window, double xPosIn, double yPosIn);
 

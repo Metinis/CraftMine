@@ -152,7 +152,7 @@ void ChunkGeneration::generateLeaves(int startX, int endX, int startZ, int endZ,
                             tempChunk.SetBlock(glm::ivec3(tempChunkLocalX,y,tempChunkLocalZ), 8);
                         }
                     }
-                    else if(&tempChunk == nullptr || (&tempChunk != nullptr && (!tempChunk.inThread || (tempChunk.inThread && tempChunk.generatedBlockData))))
+                    else// if(&tempChunk == nullptr || (&tempChunk != nullptr && (!tempChunk.inThread || (tempChunk.inThread && tempChunk.generatedBlockData))))
                     {
                         chunk.world.mutexBlocksToBeAddedList.lock();
                         chunk.world.blocksToBeAddedList.push_back(BlocksToBeAdded{glm::ivec2(tempChunkX,tempChunkZ), glm::ivec3(tempChunkLocalX, y, tempChunkLocalZ), 8});

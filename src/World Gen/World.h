@@ -3,6 +3,7 @@
 #include"Shader.h"
 #include<glm/vec3.hpp>
 #include"Input/Camera.h"
+#include "Scene.h"
 #include <thread>
 #include <future>
 #include <queue>
@@ -19,25 +20,14 @@ class Chunk;
 
 class ChunkMeshGeneration;
 
+class Scene;
+
 class World
 {
 private:
-
-	glm::mat4 model{};
-	glm::mat4 view{};
-	glm::mat4 proj{};
-
     glm::vec2 playerChunkPos{};
 
-	bool threadFinished = true;
-
-    int lastTexture = 1;
-    int lastTime = 0;
-
-    glm::ivec3 lastOutlinePos;
-
 	std::mutex mutexChunksToGenerate;
-
 
     struct CompareChunks {
         glm::ivec2 _playerChunkPos = glm::ivec2(50,50);
@@ -55,30 +45,15 @@ private:
 
     void CheckForBlocksToBeAdded(Chunk* chunk);
 	void GenerateChunkBuffers(std::vector<Chunk*>& addedChunks);
-	void LoadShader(Shader* shader);
-    void ChangeGlobalTexture();
-    void UpdateOutlineBuffers(glm::ivec3& globalPos);
-    void DrawOutline() const;
-    void UpdateShaders();
     void LoadThreadDataToMain();
-    void SortAndRenderChunks();
 
 
 public:
-    Player& player;
     Camera& camera;
-    Shader* shader;
-    Shader* transparentShader;
-    Shader* outlineShader;
-
-    Texture* texture;
-
-    VAO* outlineVAO = nullptr;
-    VBO* outlineVBO = nullptr;
-    IBO* outlineIBO = nullptr;
+    Scene& scene;
 
 	static const int SIZE = 1000;
-	int viewDistance = 10;
+	static const int viewDistance = 10;
 	std::thread chunkThread;
 	std::thread worldGenThread;
 
@@ -95,7 +70,7 @@ public:
 
     Chunk* chunks[SIZE*SIZE] = {nullptr};
 
-	explicit World(Camera& _camera, Player& _player);
+	explicit World(Camera& _camera, Scene& scene);
 
     [[noreturn]] void GenerateChunkThread();
 
@@ -113,12 +88,13 @@ public:
 
     void BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirection);
 
-    void RenderBlockOutline();
+    void renderChunks();
 
-	void RenderWorld();
+	void update();
 
-    void RenderShadowWorld(Shader& _shader);
+    void sortChunks();
 
+    void renderChunks(Shader& shader);
 };
 
 

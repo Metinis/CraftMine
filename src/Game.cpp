@@ -16,7 +16,7 @@ Game::Game(){
     keyProcessed = false;
     isFullscreen = false;
 
-    window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "CraftMine", nullptr, nullptr);
+    window = glfwCreateWindow(1280, 720, "CraftMine", nullptr, nullptr);
 
     if (window == nullptr)
     {
@@ -31,7 +31,7 @@ Game::Game(){
         glfwTerminate();
     }
 
-    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+    glViewport(0, 0, 1280, 720);
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
@@ -46,11 +46,13 @@ Game::Game(){
 
     player = new Player();
     camera = &player->camera;
-    world = new World(*camera, *player);
+    scene = new Scene(*camera);
+    world = new World(*camera, *scene);
     player->world = world;
 
-    mouseInput = new MouseInput(SCR_WIDTH, SCR_HEIGHT, *camera, *world);
-    ui = new UI();
+
+    mouseInput = new MouseInput(*camera, *world);
+
 
     glfwSetWindowUserPointer(window, mouseInput);
 
@@ -66,45 +68,6 @@ Game::Game(){
 
     updateingInt = 1;
     world->UpdateViewDistance(newChunkPos);
-
-    //glEnable(GL_DEPTH_TEST);
-
-    screenQuad = new ScreenQuad();
-
-    fbo = new FBO(SCR_WIDTH, SCR_HEIGHT);
-    fbo->initialiseTextureFBO();
-
-    frameShader = new Shader("../resources/shader/framebuffer.vs", "../resources/shader/framebuffer.fs");
-
-    frameShader->use();
-
-    glUniform1i(glGetUniformLocation(frameShader->ID, "sampledTexture"), 0);
-
-    shadowMapShader = new Shader("../resources/shader/shadowMap.vs", "../resources/shader/shadowMap.fs");
-
-    shadowMapShader->use();
-
-    depthFBO = new FBO(16384, 16384);
-    depthFBO->initialiseDepthFBO();
-
-    glm::mat4 orthgonalProjection = glm::ortho(-35.0f, 35.0f, -35.0f, 35.0f, 0.1f, 200.0f);
-    glm::mat4 lightView = glm::lookAt(glm::vec3(player->position.x, 200.0f, player->position.z), glm::vec3(player->position.x, 0.0f, player->position.z), glm::vec3(0.0f,0.0f,-1.0f));
-    glm::mat4 lightProjection = orthgonalProjection * lightView;
-
-    glm::mat4 model = glm::mat4(1.0f);
-
-
-
-    shadowMapShader->setMat4("model", model);
-
-    glUniformMatrix4fv(glGetUniformLocation(shadowMapShader->ID, "lightProjection"), 1, GL_FALSE, glm::value_ptr(lightProjection));
-
-    world->shader->use();
-    world->shader->setMat4("lightSpaceMatrix", lightProjection);
-    depthFBO->bindForRead();
-    glUniform1i(glGetUniformLocation(world->shader->ID, "depthMap"), 0);
-
-
 }
 void Game::run(){
     //render loop
@@ -127,76 +90,23 @@ void Game::run(){
             std::cout << newChunkPos.x << "x " << newChunkPos.y << "z \n";
             world->UpdateViewDistance(newChunkPos);
 
-            shadowMapShader->use();
-
-
-            glm::mat4 orthgonalProjection = glm::ortho(-200.0f, 200.0f, -200.0f, 200.0f, 0.1f, 400.0f);
-            glm::mat4 lightView = glm::lookAt(glm::vec3(player->position.x, 200.0f, player->position.z + 200), glm::vec3(player->position.x, 50.0f, player->position.z), glm::vec3(0.0f,0.0f,-1.0f));
-            glm::mat4 lightProjection = orthgonalProjection * lightView;
-
-            glm::mat4 model = glm::mat4(1.0f);
-
-            shadowMapShader->setMat4("model", model);
-
-            glUniformMatrix4fv(glGetUniformLocation(shadowMapShader->ID, "lightProjection"), 1, GL_FALSE, glm::value_ptr(lightProjection));
-
-
-            glActiveTexture(GL_TEXTURE1);
-            depthFBO->bindForRead();
-
-            world->shader->use();
-            world->shader->setMat4("lightSpaceMatrix", lightProjection);
-
-            glUniform1i(glGetUniformLocation(world->shader->ID, "depthMap"), 1);
-
-            world->transparentShader->use();
-            world->transparentShader->setMat4("lightSpaceMatrix", lightProjection);
-
-            glUniform1i(glGetUniformLocation(world->transparentShader->ID, "depthMap"), 1);
-            glActiveTexture(GL_TEXTURE0);
+            scene->updateShadowProjection();
         }
+        world->update();
+        //render shadow map
 
+        scene->renderToShadowMap(*world);
 
-
-        glEnable(GL_DEPTH_TEST);
-
-        depthFBO->bindForRender();
-        glClear(GL_DEPTH_BUFFER_BIT);
-        shadowMapShader->use();
-        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-        if (status != GL_FRAMEBUFFER_COMPLETE)
-        {
-           std::cout<<"Framebuffer incomplete";
-        }
-        world->RenderShadowWorld(*shadowMapShader);
-        //world->RenderWorld();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
+        //render normal world
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
-        fbo->setDimension(width, height);
-        fbo->bindForRender();
-        //glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
+        scene->setFBODimensions(width, height);
 
-        glClearColor(0.55f, 0.75f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
-
-        world->texture->Bind();
-        world->RenderWorld();
-        glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_SRC_ALPHA);
-        ui->renderCrosshair();
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        fbo->Unbind();
-        glDisable(GL_DEPTH_TEST);
-        fbo->bindForRead();
+        scene->renderWorld(*world);
 
         glViewport(0, 0, width, height);
-        frameShader->use();
-        //glBindTexture(GL_TEXTURE_2D, shadowMap);
-        screenQuad->renderQuad(*frameShader);
+
+        scene->renderQuad();
 
         player->Update(deltaTime);
 

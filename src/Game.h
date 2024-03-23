@@ -17,11 +17,11 @@
 #include "Input/MouseInput.h"
 #include "Player/Player.h"
 #include "ScreenQuad.h"
+#include "Scene.h"
 
-#define SCR_WIDTH 1280
-#define SCR_HEIGHT 720
+class Scene;
 
-
+class MouseInput;
 
 class Game {
 public:
@@ -30,17 +30,12 @@ public:
     void run();
 
 private:
-    UI* ui;
     GLFWwindow* window;
     Player* player;
     Camera* camera;
     World* world;
-    FBO* fbo;
-    FBO* depthFBO;
-    Shader* frameShader;
-    Shader* shadowMapShader;
     MouseInput* mouseInput;
-    ScreenQuad* screenQuad;
+    Scene* scene;
     glm::ivec2 lastChunkPos{};
     glm::ivec2 newChunkPos{};
     bool wireframe;

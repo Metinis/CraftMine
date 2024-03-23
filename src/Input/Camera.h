@@ -28,7 +28,7 @@ public:
     glm::vec3 Front;
 	float Yaw;
 	float Pitch;
-    glm::vec3 *position;
+    glm::vec3 *position = nullptr;
 	Camera();
 
 	glm::mat4 GetViewMatrix();

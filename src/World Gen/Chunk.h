@@ -29,8 +29,7 @@ class Chunk
 private:
 
 
-    Mesh* mesh = nullptr;
-    Mesh* transparentMesh = nullptr;
+
 
     struct ChunkData{
         std::vector<glm::vec3> chunkVerts;
@@ -68,6 +67,9 @@ public:
     ChunkData chunkData;
     ChunkBools chunkBools;
 
+    Mesh* mesh = nullptr;
+    Mesh* transparentMesh = nullptr;
+
     bool generatedBlockData = false;
 	bool generatedBuffData = false;
     bool chunkHasMeshes = false;
@@ -89,8 +91,8 @@ public:
 	//OpenGL stuff
 	void LoadChunkData();
 	void LoadBufferData();
-	void RenderChunk();
-    void RenderShadowChunk(Shader& _shader);
+	//void RenderChunk();
+    //void RenderShadowChunk(Shader& _shader);
 	void Delete();
     struct CompareFaces;
 };

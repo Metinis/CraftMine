@@ -1,8 +1,4 @@
 #include "Mesh.h"
-Mesh::Mesh(Shader& _shader) : shader(_shader)
-{
-    //shader = _shader;
-}
 void Mesh::setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec2> _UVs, std::vector<GLuint> _indices, std::vector<float> _brightnessFloats)
 {
     vertices = _vertices;
@@ -12,7 +8,6 @@ void Mesh::setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec2> _UVs
 }
 void Mesh::clearData()
 {
-    shader.use();
     if (meshVAO != nullptr) {
         meshVAO->Delete();
         delete meshVAO;
@@ -41,44 +36,20 @@ void Mesh::clearData()
         delete meshBrightnessVBO;
         meshBrightnessVBO = nullptr;
     }
-    /*if (meshFBO != nullptr) {
-        meshFBO->Delete();
-        delete meshFBO;
-        meshFBO = nullptr;
-    }*/
 }
-void Mesh::render()
-{
-    shader.use();
-    if(meshVAO != nullptr && meshIBO != nullptr && indices.size() > 0 && &shader != nullptr && meshUVVBO != nullptr && meshVBO != nullptr && meshBrightnessVBO != nullptr) {
-        meshVAO->Bind();
-        meshIBO->Bind();
-        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, nullptr);
-        meshVAO->Unbind();
-        meshIBO->Unbind();
-    }
-}
-void Mesh::renderShadow(Shader& _shader)
+void Mesh::render(Shader& _shader)
 {
     _shader.use();
-    meshVAO->Bind();
-    meshVBO->Bind();
-    meshVAO->LinkToVAO(_shader.getAttribLocation("aPos"), 3, *meshVBO);
-    meshVBO->Unbind();
-    meshVAO->Unbind();
-    if(meshVAO != nullptr && meshIBO != nullptr && indices.size() > 0 && &shader != nullptr && meshUVVBO != nullptr && meshVBO != nullptr && meshBrightnessVBO != nullptr) {
+    if(meshVAO != nullptr && meshIBO != nullptr && indices.size() > 0 && meshUVVBO != nullptr && meshVBO != nullptr && meshBrightnessVBO != nullptr) {
         meshVAO->Bind();
         meshIBO->Bind();
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, nullptr);
         meshVAO->Unbind();
         meshIBO->Unbind();
     }
-
 }
-void Mesh::loadData()
-{
-    // Load data for the main shader
-    shader.use();
+void Mesh::loadData(Shader& _shader){
+    _shader.use();
     clearData();
 
     meshVAO = new VAO();
@@ -86,21 +57,19 @@ void Mesh::loadData()
 
     meshVBO = new VBO(vertices);
     meshVBO->Bind();
-    meshVAO->LinkToVAO(shader.getAttribLocation("aPos"), 3, *meshVBO);
+    meshVAO->LinkToVAO(_shader.getAttribLocation("aPos"), 3, *meshVBO);
     meshVBO->Unbind();
 
     meshUVVBO = new VBO(UVs);
     meshUVVBO->Bind();
-    meshVAO->LinkToVAO(shader.getAttribLocation("aTexCoord"), 2, *meshUVVBO);
+    meshVAO->LinkToVAO(_shader.getAttribLocation("aTexCoord"), 2, *meshUVVBO);
     meshUVVBO->Unbind();
 
     meshBrightnessVBO = new VBO(brightnessFloats);
     meshBrightnessVBO->Bind();
-    meshVAO->LinkToVAO(shader.getAttribLocation("aBrightness"), 1, *meshBrightnessVBO);
+    meshVAO->LinkToVAO(_shader.getAttribLocation("aBrightness"), 1, *meshBrightnessVBO);
     meshBrightnessVBO->Unbind();
-
     meshIBO = new IBO(indices);
-
     // Unbind the VAO after setting up the main shader
     meshVAO->Unbind();
 

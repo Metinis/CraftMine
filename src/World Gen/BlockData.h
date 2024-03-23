@@ -44,7 +44,6 @@ namespace CraftMine {	//using namespace since it conflicts with some cameraMovem
 	{
 	public:
 		static const std::map<Faces, std::vector<glm::vec3>> rawVertexData;
-
 	};
     struct BlocksToBeAdded{
         glm::ivec2 chunkPosition;

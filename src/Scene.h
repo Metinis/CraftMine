@@ -4,51 +4,79 @@
 #include "Input/Camera.h"
 #include "FBO.h"
 #include "Mesh.h"
+#include "Chunk.h"
+#include "World.h"
+#include "Game.h"
+#include "ScreenQuad.h"
+#include "UI.h"
+
+
 
 class Scene {
 private:
+    static const int SHADOW_RESOLUTION = 16384;
+
+    glm::mat4 model{};
+    glm::mat4 view{};
+    glm::mat4 proj{};
+
+    int lastTexture = 1;
+    int lastTime = 0;
+
+    int sunXOffset = 100;
+    int sunZOffset = -200;
+
+    glm::ivec3 lastOutlinePos;
+
+    VAO* outlineVAO = nullptr;
+    VBO* outlineVBO = nullptr;
+    IBO* outlineIBO = nullptr;
+
+    Camera& camera;
+    FBO* fbo;
+    FBO* depthFBO;
+    ScreenQuad* screenQuad;
+    UI* ui;
+
+public:
     Shader* shader;
     Shader* transparentShader;
     Shader* outlineShader;
     Shader* frameShader;
     Shader* shadowMapShader;
-
     Texture* worldTexture;
 
-    Camera* camera;
-    FBO* fbo;
-    FBO* depthFBO;
+    Scene(Camera& _camera);
 
-    std::vector<Mesh> solidMeshes;
-    std::vector<Mesh> transparentMeshes;
+    void initialiseWorldShaders();
 
-public:
-    Scene();
+    void initialiseShadowMap();
 
-    void setSolidMeshes(const std::vector<Mesh>& meshes) {
-        solidMeshes.clear();
-        for(Mesh mesh : meshes){
-            solidMeshes.push_back(mesh);
-        }
-    }
+    void updateShadowProjection();
 
-    void setTransparentMeshes(const std::vector<Mesh>& meshes) {
-        transparentMeshes.clear();
-        for(Mesh mesh : meshes){
-            transparentMeshes.push_back(mesh);
-        }
-    }
+    void loadShader(Shader& shader, int viewDistance);
 
-    void renderSolidScene(Shader& _shader){
-        for(Mesh mesh : solidMeshes){
-            _shader.use();
-            mesh.render();
-        }
-    }
-    void renderTransparentScene(Shader& _shader){
-        for(Mesh mesh : transparentMeshes){
-            _shader.use();
-            mesh.render();
-        }
-    }
+    void changeGlobalTexture();
+
+    void updateShaders();
+
+    void renderBlockOutline(World& world);
+
+    void updateOutlineBuffers(glm::ivec3& globalPos);
+
+    void drawOutline();
+
+    static void renderMesh(Mesh& mesh, Shader& _shader);
+
+    void render(Shader& _shader, World& world);
+
+    void render(World& world);
+
+    void renderToShadowMap(World& world);
+
+    void renderWorld(World& world);
+
+    void setFBODimensions(int width, int height);
+
+    void renderQuad();
 };

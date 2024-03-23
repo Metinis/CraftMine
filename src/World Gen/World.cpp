@@ -5,23 +5,8 @@
 #include "Player/Player.h"
 
 
-World::World(Camera& _camera, Player& _player) : camera(_camera), player(_player)
+World::World(Camera& _camera, Scene& _scene) : camera(_camera), scene(_scene)
 {
-    shader = new Shader("../resources/shader/shader.vs", "../resources/shader/shader.fs");
-
-    outlineShader = new Shader("../resources/shader/OutlineShader.vs", "../resources/shader/OutlineShader.fs");
-
-    transparentShader = new Shader("../resources/shader/shader.vs", "../resources/shader/shader.fs"); //change when transparent is different
-
-    texture = new Texture("../resources/texture/terrain1.png");
-
-	model = glm::mat4(1.0f);
-	view = glm::mat4(1.0f);
-	proj = glm::perspective(glm::radians(65.0f), 16.0f / 9.0f, 0.2f, 10000.0f);
-
-    outlineShader->use();
-    outlineShader->setMat4("model", model);
-    outlineShader->setMat4("projection", proj);
 
     playerChunkPos = glm::ivec2((*camera.position).x / Chunk::SIZE, (*camera.position).z / Chunk::SIZE); //used for priority queues, chunks closest have priority
 
@@ -31,8 +16,6 @@ World::World(Camera& _camera, Player& _player) : camera(_camera), player(_player
 	worldGenThread = std::thread(&World::GenerateWorldThread, this);
 	worldGenThread.detach();
 
-	LoadShader(shader);
-    LoadShader(transparentShader);
 }
 
 [[noreturn]] void World::GenerateChunkThread()
@@ -93,6 +76,7 @@ void World::CheckForBlocksToBeAdded(Chunk* chunk)
 
         if(_blocksToBeAdded.chunkPosition == chunk->chunkPosition)
         {
+            //TODO, make id more clear
             chunk->SetBlock(glm::ivec3(_blocksToBeAdded.localPosition.x, _blocksToBeAdded.localPosition.y, _blocksToBeAdded.localPosition.z), 8);
         }
         else
@@ -342,131 +326,7 @@ void World::BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
     }
 
 }
-void World::LoadShader(Shader* shader)
-{
-    shader->use();
-    shader->setMat4("model", model);
-    shader->setMat4("projection", proj);
-    shader->setVec3("cameraPos", *camera.position);
-    shader->setFloat("fogStart", ((viewDistance - (viewDistance/3)) < viewDistance - 1 ? (viewDistance - (viewDistance/3)) : 0) * Chunk::SIZE);
-    shader->setFloat("fogEnd", (viewDistance-1) * Chunk::SIZE);
-    shader->setVec3("fogColor", glm::vec3(0.55f, 0.75f, 1.0f));
-    texture->Bind();
-}
-void World::ChangeGlobalTexture()
-{
-    //Updates every second
-    int currentTime = (int)glfwGetTime();
-    if(currentTime != lastTime)
-    {
-        if(lastTexture < 5) {
-            lastTexture++;
-        }
-        else {
-            lastTexture = 1;
-        }
-        lastTime = currentTime;
-        std::stringstream path;
-        path << "../resources/texture/terrain" << lastTexture << ".png";
-        std::string texturePath = path.str();
-        texture->setTexture(texturePath.c_str());
-    }
 
-
-}
-void World::RenderBlockOutline()
-{
-    glm::ivec3 result;
-    Chunk* currentChunk;
-    if(RaycastBlockPos(*camera.position, camera.Front, result, currentChunk)){
-        glm::ivec3 globalPos = glm::vec3(result.x + currentChunk->chunkPosition.x * Chunk::SIZE, result.y, result.z + currentChunk->chunkPosition.y * Chunk::SIZE);
-        if(globalPos != lastOutlinePos)
-        {
-            UpdateOutlineBuffers(globalPos);
-            DrawOutline();
-        }
-        else
-        {
-            DrawOutline();
-        }
-        lastOutlinePos = globalPos;
-    }
-}
-void World::UpdateOutlineBuffers(glm::ivec3& globalPos){
-    std::vector<glm::vec3> vertices = Block::GetOutline(globalPos);
-    std::vector<GLuint> indices;
-
-    if(outlineVAO != nullptr)
-    {
-        outlineVAO->Delete();
-        delete outlineVAO;
-        outlineVAO = nullptr;
-    }
-    if(outlineVBO != nullptr)
-    {
-        outlineVBO->Delete();
-        delete outlineVBO;
-        outlineVBO = nullptr;
-    }
-    if(outlineIBO != nullptr)
-    {
-        outlineIBO->Delete();
-        delete outlineIBO;
-        outlineIBO = nullptr;
-    }
-    //Calculates the indices for the vertices, reusing a method for chunks
-    int _indexCount = 0;
-    for (int i = 0; i < 6; i++)
-    {
-        indices.push_back(3 + _indexCount);
-        indices.push_back(0 + _indexCount);
-        indices.push_back(0 + _indexCount);
-        indices.push_back(1 + _indexCount);
-        indices.push_back(1 + _indexCount);
-        indices.push_back(2 + _indexCount);
-        indices.push_back(2 + _indexCount);
-        indices.push_back(3 + _indexCount);
-
-        _indexCount += 4;	//uses element index, since each face only has 4 indices, we increment this everytime any block face is added
-    }
-
-    outlineVAO = new VAO();
-
-    outlineVBO = new VBO(vertices);
-    outlineVBO->Bind();
-
-    outlineVAO->LinkToVAO(outlineShader->getAttribLocation("aPos"), 3, *outlineVBO);
-
-    outlineVBO->Unbind();
-    outlineVAO->Unbind();
-
-    outlineIBO = new IBO(indices);
-}
-
-void World::DrawOutline() const
-{
-    int indexCount = 48;
-    outlineShader->use();
-    outlineVAO->Bind();
-    outlineIBO->Bind();
-    glDrawElements(GL_LINES, static_cast<GLsizei>(indexCount), GL_UNSIGNED_INT, nullptr);
-    outlineVAO->Unbind();
-    outlineIBO->Unbind();
-}
-void World::UpdateShaders()
-{
-    shader->use();
-    shader->setVec3("cameraPos", *camera.position);
-    transparentShader->use();
-    transparentShader->setVec3("cameraPos", *camera.position);
-    view = camera.GetViewMatrix();
-    outlineShader->use();
-    outlineShader->setMat4("view", view);
-    shader->use();
-    shader->setMat4("view", view);
-    transparentShader->use();
-    transparentShader->setMat4("view", view);
-}
 void World::LoadThreadDataToMain()
 {
     if (!loadedChunks.empty())
@@ -489,38 +349,42 @@ void World::LoadThreadDataToMain()
 
     }
 }
-void World::SortAndRenderChunks()
-{
+void World::sortChunks(){
     //sort active chunks by farthest from the player in front -> for transparency
     CompareChunks compareChunks;
     compareChunks._playerChunkPos = playerChunkPos;
     std::sort(activeChunks.begin(), activeChunks.end(), compareChunks);
-
+}
+//default way to render
+void World::renderChunks()
+{
     for (Chunk* chunk : activeChunks)
     {
-        if(chunk->chunkHasMeshes)
-            //shadowMap->setMat4("lightProjection", )
-            chunk->RenderChunk();
+        if(chunk->chunkHasMeshes){
+            scene.renderMesh(*chunk->mesh, *scene.shader);
+            scene.renderMesh(*chunk->transparentMesh, *scene.transparentShader);
+        }
     }
 }
-void World::RenderWorld()
+//optional way to render with dedicated shader (used for shadow map depth)
+void World::renderChunks(Shader& shader)
 {
-    UpdateShaders();
+    for (Chunk* chunk : activeChunks)
+    {
+        if(chunk->chunkHasMeshes){
+            scene.renderMesh(*chunk->mesh, shader);
+            scene.renderMesh(*chunk->transparentMesh, shader);
+        }
+    }
+}
+void World::update()
+{
+    scene.updateShaders();
     //changes global texture every second that passes
-    ChangeGlobalTexture();
+    scene.changeGlobalTexture();
 
     LoadThreadDataToMain();
 
-    SortAndRenderChunks();
-
-    RenderBlockOutline();
-}
-void World::RenderShadowWorld(Shader& _shader) {
-    for (Chunk* chunk : activeChunks)
-    {
-        if(chunk->chunkHasMeshes)
-            //shadowMap->setMat4("lightProjection", )
-            chunk->RenderShadowChunk(_shader);
-    }
+    sortChunks();
 }
 
