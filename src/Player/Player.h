@@ -10,7 +10,7 @@
 class Player {
 private:
     const float GRAVITY = 9.8f;
-    float HEIGHT = 1.75f;
+    float HEIGHT = 1.65f;
     const float WIDTH = 0.3f;
     const float GRAVITY_MULTIPLIER = 2;
     const float MAX_VELOCITY = 40.0f;
