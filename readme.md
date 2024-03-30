@@ -4,7 +4,7 @@ OpenGL skills.
 
 Feel free to comment on what you don't like or like, and I'll try to improve.
 
-Currently, been working on it in and out for ~4 months when I find free time/
+Currently, been working on it in and out for ~4 months when I find free time.
 
 ## The Game
 The game is basically a clone of Minecraft classic but with infinite worlds and
@@ -64,9 +64,9 @@ Feel free to leave more suggestions (please be reasonable)
 
 ## Building
 
-## Linux/Unix
-
 git clone --recurse-submodules https://github.com/Vodkasas/CraftMine.git
+
+## Linux/Unix
 
 Using CMake:
 
@@ -85,5 +85,20 @@ Easiest way to build is if you have CLion which should do it automatically for y
 
 Issue with Visual Studio is that it uses the MSVC compiler by default which makes the threads
 slower compared to MinGW.
+
+To do it manually:
+
+You can download MinGW from here: https://nuwen.net/mingw.html
+
+Once properly installed and added to PATH, create a build folder in the CraftMine folder
+Open cmd and cd to the folder
+Type the following commands:
+
+    cmake -G "MinGW Makefiles" ..
+    make
+
+This should build the project in build with the exe file.
+Make sure you use the newest MinGW available
+
 
 
