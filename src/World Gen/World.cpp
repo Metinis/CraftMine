@@ -280,7 +280,7 @@ void World::PlaceBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
         if(currentChunk->generatedBlockData) {
             currentChunk->SetBlock(lastEmptyPos, 3);
             mutexChunksToLoadData.lock();
-            chunksToLoadData.push_back(currentChunk);
+            chunksToLoadData.push_back(std::ref(currentChunk));
             mutexChunksToLoadData.unlock();
         }
     }
@@ -314,13 +314,13 @@ void World::BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
         if(tempChunk1 != nullptr && tempChunk1->generatedBlockData)
         {
             mutexChunksToLoadData.lock();
-            chunksToLoadData.push_back(tempChunk1);
+            chunksToLoadData.push_back(std::ref(tempChunk1));
             mutexChunksToLoadData.unlock();
         }
         if(tempChunk2 != nullptr && tempChunk2->generatedBlockData)
         {
             mutexChunksToLoadData.lock();
-            chunksToLoadData.push_back(tempChunk2);
+            chunksToLoadData.push_back(std::ref(tempChunk2));
             mutexChunksToLoadData.unlock();
         }
     }

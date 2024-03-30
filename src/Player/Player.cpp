@@ -52,8 +52,6 @@ void Player::UpdatePositionY(float& deltaTime, glm::vec3& newPosition) {
 
     isGrounded = checkNewPositionY(position);
 
-
-
     if((!isJumping && isGrounded) || isFlying){
         playerVelocity.y = 0;
     }
