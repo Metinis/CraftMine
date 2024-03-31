@@ -5,7 +5,7 @@
 #include "Camera.h"
 #include "Chunk.h"
 #include "World.h"
-#include"glfw-3.3.9/include/GLFW/glfw3.h"
+#include"glfw/include/GLFW/glfw3.h"
 
 #ifndef CRAFTMINE_MOUSEINPUT_H
 #define CRAFTMINE_MOUSEINPUT_H

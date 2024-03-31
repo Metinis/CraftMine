@@ -10,7 +10,7 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 set(CMAKE_BUILD_PARALLEL_LEVEL 4)
 
-add_subdirectory(include/glfw-3.3.9)
+add_subdirectory(include/glfw)
 
 include_directories(include)
 include_directories(include/glad)

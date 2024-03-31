@@ -18,9 +18,10 @@ World::World(Camera& _camera, Scene& _scene, Player& _player) : camera(_camera),
 
 }
 
-[[noreturn]] void World::GenerateChunkThread()
+void World::GenerateChunkThread()
 {
-	while (true)
+    volatile bool keepRunning = true;
+	while (keepRunning)
 	{
 		if (!chunksToLoadData.empty())
 		{
@@ -38,14 +39,16 @@ World::World(Camera& _camera, Scene& _scene, Player& _player) : camera(_camera),
             chunk->inThread = false;
 			loadedChunks.push(std::ref(chunk));
 			mutexChunksToLoadData.unlock();
+
 		}
 
 	}
 }
 
-[[noreturn]] void World::GenerateWorldThread()
+void World::GenerateWorldThread()
 {
-	while (true)
+    volatile bool keepRunning = true;
+	while (keepRunning)
 	{
 		if (!chunksToGenerate.empty())
 		{
@@ -62,6 +65,7 @@ World::World(Camera& _camera, Scene& _scene, Player& _player) : camera(_camera),
 			chunksToLoadData.insert(chunksToLoadData.begin(), chunk);
             //chunk->inThread = false;
 			mutexChunksToLoadData.unlock();
+
 		}
 	}
 }
