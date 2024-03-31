@@ -14,16 +14,18 @@ private:
     VBO *meshVBO = nullptr;
     VBO *meshUVVBO = nullptr;
     VBO *meshBrightnessVBO = nullptr;
+    VBO *meshNormalVBO = nullptr;
     IBO *meshIBO = nullptr;
 
     std::vector<glm::vec3> vertices;
+    std::vector<glm::vec3> normals;
     std::vector<glm::vec2> UVs;
     std::vector<GLuint> indices;
     std::vector<float> brightnessFloats;
 
     //bool loadedData = false;
 public:
-    void setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec2> _UVs, std::vector<GLuint> _indices, std::vector<float> _brightnessFloats);
+    void setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec3> _normals, std::vector<glm::vec2> _UVs, std::vector<GLuint> _indices, std::vector<float> _brightnessFloats);
     void clearData();
     void render(Shader& _shader);
     //void renderShadow(Shader& _shader);
@@ -35,6 +37,7 @@ public:
         UVs.clear();
         indices.clear();
         brightnessFloats.clear();
+        normals.clear();
         clearData();
     }
 };

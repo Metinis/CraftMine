@@ -3,7 +3,8 @@
 
 FaceData Block::GetFace(Faces face, BlockType type, glm::vec3 position)
 {
-	return FaceData{ AddTransformedVertices(FaceDataRaw::rawVertexData.at(face), position, type), TextureData::GetBlockTypeUV(type, face), CraftMine::brightnessMap.at(face) };
+	return FaceData{ AddTransformedVertices(FaceDataRaw::rawVertexData.at(face), position, type), TextureData::GetBlockTypeUV(type, face),
+                     CraftMine::brightnessMap.at(face), CraftMine::normalsMap.at(face) };
 }
 std::vector<glm::vec3> Block::GetOutline(glm::vec3 position)
 {

@@ -1,7 +1,8 @@
 #include "Mesh.h"
-void Mesh::setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec2> _UVs, std::vector<GLuint> _indices, std::vector<float> _brightnessFloats)
+void Mesh::setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec3> _normals, std::vector<glm::vec2> _UVs, std::vector<GLuint> _indices, std::vector<float> _brightnessFloats)
 {
     vertices = _vertices;
+    normals = _normals;
     UVs = _UVs;
     indices = _indices;
     brightnessFloats = _brightnessFloats;
@@ -36,11 +37,16 @@ void Mesh::clearData()
         delete meshBrightnessVBO;
         meshBrightnessVBO = nullptr;
     }
+    if (meshNormalVBO != nullptr) {
+        meshNormalVBO->Delete();
+        delete meshNormalVBO;
+        meshNormalVBO = nullptr;
+    }
 }
 void Mesh::render(Shader& _shader)
 {
     _shader.use();
-    if(meshVAO != nullptr && meshIBO != nullptr && indices.size() > 0 && meshUVVBO != nullptr && meshVBO != nullptr && meshBrightnessVBO != nullptr) {
+    if(meshVAO != nullptr && meshIBO != nullptr && indices.size() > 0 && meshUVVBO != nullptr && meshVBO != nullptr && meshBrightnessVBO != nullptr && meshNormalVBO != nullptr) {
         meshVAO->Bind();
         meshIBO->Bind();
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, nullptr);
@@ -64,6 +70,11 @@ void Mesh::loadData(Shader& _shader){
     meshUVVBO->Bind();
     meshVAO->LinkToVAO(_shader.getAttribLocation("aTexCoord"), 2, *meshUVVBO);
     meshUVVBO->Unbind();
+
+    meshNormalVBO = new VBO(normals);
+    meshNormalVBO->Bind();
+    meshVAO->LinkToVAO(_shader.getAttribLocation("aNormal"), 3, *meshNormalVBO);
+    meshNormalVBO->Unbind();
 
     meshBrightnessVBO = new VBO(brightnessFloats);
     meshBrightnessVBO->Bind();

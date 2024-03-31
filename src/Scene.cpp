@@ -67,11 +67,13 @@ void Scene::updateShadowProjection(){
 
     shader->use();
     shader->setMat4("lightSpaceMatrix", lightProjection);
+    shader->setVec3("lightPos", lightPos);
 
     glUniform1i(glGetUniformLocation(shader->ID, "depthMap"), 1);
 
     transparentShader->use();
     transparentShader->setMat4("lightSpaceMatrix", lightProjection);
+    transparentShader->setVec3("lightPos", lightPos);
 
     glUniform1i(glGetUniformLocation(transparentShader->ID, "depthMap"), 1);
     glActiveTexture(GL_TEXTURE0);

@@ -46,12 +46,14 @@ void Chunk::ClearVertexData()
     chunkData.chunkUVs.clear();
     chunkData.chunkIndices.clear();
     chunkData.chunkBrightnessFloats.clear();
+    chunkData.chunkNormals.clear();
 
     chunkData.transparentVerts.clear();
     chunkData.transparentUVs.clear();
     chunkData.transparentIndices.clear();
     chunkData.transparentIndexCount = 0;
     chunkData.transparentBrightnessFloats.clear();
+    chunkData.transparentNormals.clear();
 
     generatedBuffData = false;
 }
@@ -97,6 +99,7 @@ void Chunk::sortTransparentMeshData() {
         ChunkDataPair pair{};
         for (int j = 0; j < 4; j++) {
             pair.vertices[j] = chunkData.transparentVerts[i + j];
+            pair.normals[j] = chunkData.transparentNormals[i + j];
             pair.brightnessFloats[j] = chunkData.transparentBrightnessFloats[i+j];
             pair.uvs[j] = chunkData.transparentUVs[i + j];
         }
@@ -114,12 +117,14 @@ void Chunk::sortTransparentMeshData() {
     chunkData.transparentUVs.clear();
     chunkData.transparentBrightnessFloats.clear();
     chunkData.transparentIndices.clear();
+    chunkData.transparentNormals.clear();
 
     //k = 0;
     for (int i = 0; i < combinedData.size(); i++) {
         for (int j = 0; j < 4; j++) {
 
             chunkData.transparentVerts.push_back(combinedData[i].vertices[j]);
+            chunkData.transparentNormals.push_back(combinedData[i].normals[j]);
             chunkData.transparentUVs.push_back(combinedData[i].uvs[j]);
             chunkData.transparentBrightnessFloats.push_back(combinedData[i].brightnessFloats[j]);
         }
@@ -143,7 +148,7 @@ void Chunk::LoadBufferData()
         delete mesh;
     }
     mesh = new Mesh();
-    mesh->setData(chunkData.chunkVerts, chunkData.chunkUVs, chunkData.chunkIndices, chunkData.chunkBrightnessFloats);
+    mesh->setData(chunkData.chunkVerts, chunkData.chunkNormals, chunkData.chunkUVs, chunkData.chunkIndices, chunkData.chunkBrightnessFloats);
     mesh->loadData(*world.scene.shader);
 
     if(transparentMesh != nullptr)
@@ -152,28 +157,12 @@ void Chunk::LoadBufferData()
     }
 
     transparentMesh = new Mesh();
-    //sort from back to front from player pos
-    //sortTransparentMeshData();
-    transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);
+
+    transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentNormals, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);
     transparentMesh->loadData(*world.scene.transparentShader);
-    //chunkHasMeshes = true;
+
 }
 
-/*void Chunk::RenderChunk()
-{
-    if(mesh != nullptr && transparentMesh != nullptr) {
-        mesh->render();
-        glDepthMask(GL_FALSE);
-        transparentMesh->render();
-        glDepthMask(GL_TRUE);
-    }
-}*/
-/*void Chunk::RenderShadowChunk(Shader& _shader) {
-    if(mesh != nullptr && transparentMesh != nullptr) {
-        mesh->renderShadow(_shader);
-        transparentMesh->renderShadow(_shader);
-    }
-}*/
 void Chunk::LoadChunkData() {
     ClearVertexData();
     ChunkMeshGeneration::GenFaces(*this);

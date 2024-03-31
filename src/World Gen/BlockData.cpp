@@ -62,6 +62,37 @@ namespace CraftMine {
             {FRONT, 0.86f},
             {BACK, 0.86f}
     };
+    std::map<Faces, std::vector<glm::vec3>> normalsMap{
+            {FRONT, {glm::vec3(0.0f, 0.0f, 1.0f), // topleft vert
+                            glm::vec3(0.0f, 0.0f, 1.0f),  // topright vert
+                            glm::vec3(0.0f, 0.0f, 1.0f), // bottomright vert
+                            glm::vec3(0.0f, 0.0f, 1.0f)}},// bottomleft vert
+
+            {RIGHT, {glm::vec3(1.0f, 0.0f, 0.0f), // topleft vert
+                            glm::vec3(1.0f, 0.0f, 0.0f),  // topright vert
+                            glm::vec3(1.0f, 0.0f, 0.0f), // bottomright vert
+                            glm::vec3(1.0f, 0.0f, 0.0f)}},// bottomleft vert
+
+            {BACK,  {glm::vec3(0.0f, 0.0f, -1.0f), // topleft vert
+                            glm::vec3(0.0f, 0.0f, -1.0f),  // topright vert
+                            glm::vec3(0.0f, 0.0f, -1.0f), // bottomright vert
+                            glm::vec3(0.0f, 0.0f, -1.0f)}},// bottomleft vert
+
+            {LEFT,  {glm::vec3(-1.0f, 0.0f, 0.0f), // topleft vert
+                            glm::vec3(-1.0f, 0.0f, 0.0f),  // topright vert
+                            glm::vec3(-1.0f, 0.0f, 0.0f), // bottomright vert
+                            glm::vec3(-1.0f, 0.0f, 0.0f)}},// bottomleft vert
+
+            {TOP,   {glm::vec3(0.0f, 1.0f, 0.0f), // topleft vert
+                            glm::vec3(0.0f, 1.0f, 0.0f),  // topright vert
+                            glm::vec3(0.0f, 1.0f, 0.0f), // bottomright vert
+                            glm::vec3(0.0f, 1.0f, 0.0f)}},// bottomleft vert
+
+            {BOTTOM,{glm::vec3(0.0f, -1.0f, 0.0f), // topleft vert
+                            glm::vec3(0.0f, -1.0f, 0.0f),  // topright vert
+                            glm::vec3(0.0f, -1.0f, 0.0f), // bottomright vert
+                            glm::vec3(0.0f, -1.0f, 0.0f)}},// bottomleft vert
+    };
     BlocksToBeAdded::BlocksToBeAdded(const glm::ivec2& chunkPos, const glm::ivec3& localPos, unsigned char id)
             : chunkPosition(chunkPos), localPosition(localPos), blockID(id) {
         // Implementation

@@ -14,7 +14,7 @@
 
 class Scene {
 private:
-    static const int SHADOW_RESOLUTION = 16384;
+    static const int SHADOW_RESOLUTION = 1024*10;
 
     glm::mat4 model{};
     glm::mat4 view{};
@@ -23,8 +23,8 @@ private:
     int lastTexture = 1;
     int lastTime = 0;
 
-    int sunXOffset = 100;
-    int sunZOffset = -200;
+    int sunXOffset = 50;
+    int sunZOffset = 100;
 
     glm::ivec3 lastOutlinePos;
 

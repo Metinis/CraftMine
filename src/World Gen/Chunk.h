@@ -36,11 +36,13 @@ private:
         std::vector<glm::vec2> chunkUVs;
         std::vector<GLuint> chunkIndices;
         std::vector<float> chunkBrightnessFloats;
+        std::vector<glm::vec3> chunkNormals;
 
         std::vector<glm::vec3> transparentVerts;
         std::vector<glm::vec2> transparentUVs;
         std::vector<GLuint> transparentIndices;
         std::vector<float> transparentBrightnessFloats;
+        std::vector<glm::vec3> transparentNormals;
 
         GLsizei indexCount = 0;
         GLsizei transparentIndexCount = 0;
@@ -56,6 +58,7 @@ private:
         std::array<glm::vec2, 4> uvs;
         std::array<GLuint, 6> indices;
         std::array<float, 4> brightnessFloats;
+        std::array<glm::vec3, 4> normals;
     };
 
 

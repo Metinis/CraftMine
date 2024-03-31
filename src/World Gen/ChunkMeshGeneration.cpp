@@ -299,6 +299,7 @@ void ChunkMeshGeneration::IntegrateFace(FaceData faceData, bool isTransparent, C
     if(!isTransparent) {
         chunk.chunkData.chunkVerts.insert(chunk.chunkData.chunkVerts.end(), faceData.vertices.begin(), faceData.vertices.end());
         chunk.chunkData.chunkUVs.insert(chunk.chunkData.chunkUVs.end(), faceData.texCoords.begin(), faceData.texCoords.end());
+        chunk.chunkData.chunkNormals.insert(chunk.chunkData.chunkNormals.end(), faceData.normals.begin(), faceData.normals.end());
         //each vert has 4 points so need to repeat 4 times, can be adjusted to make nicer lighting later
         for(int i = 0; i < 4; i++)
         {
@@ -310,6 +311,7 @@ void ChunkMeshGeneration::IntegrateFace(FaceData faceData, bool isTransparent, C
 
         chunk.chunkData.transparentVerts.insert(chunk.chunkData.transparentVerts.end(), faceData.vertices.begin(), faceData.vertices.end());
         chunk.chunkData.transparentUVs.insert(chunk.chunkData.transparentUVs.end(), faceData.texCoords.begin(), faceData.texCoords.end());
+        chunk.chunkData.transparentNormals.insert(chunk.chunkData.transparentNormals.end(), faceData.normals.begin(), faceData.normals.end());
         for(int i = 0; i < 4; i++)
         {
             chunk.chunkData.transparentBrightnessFloats.push_back(faceData.brightness);

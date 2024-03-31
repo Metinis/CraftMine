@@ -35,7 +35,7 @@ an inventory system, day/night cycle and the sun.
 - Sometimes the tree leaves don't get added until chunk is updated
 - Rare crash due to threading (possibly a race condition)
 - Chunks not displaying their mesh when updated too many times (just like in the very early versions of Minecraft)
-- Shadows on block sides sometimes do look out of place, need to use normals for bias calculations
+- Shadows on block sides sometimes do look out of place, need to use normalsMap for bias calculations
 - Rare collision issues if framerate is low
 - Sneaking on chunk edges may not work properly all the time
 
