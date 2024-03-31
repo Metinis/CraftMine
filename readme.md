@@ -80,25 +80,15 @@ Now your executable should be in the build folder
 
 ## Windows
 
-I would recommend building using MinGW as it has the best performance for the game.
-Easiest way to build is if you have CLion which should do it automatically for you.
+Using Cmake:
 
-Issue with Visual Studio is that it uses the MSVC compiler by default which makes the threads
-slower compared to MinGW.
+Open up cmd and cd to the CraftMine folder location.
+Type in:
 
-To do it manually:
+    cmake .
+    cmake --build . --config Release
 
-You can download MinGW from here: https://nuwen.net/mingw.html
-
-Once properly installed and added to PATH, create a build folder in the CraftMine folder
-Open cmd and cd to the folder
-Type the following commands:
-
-    cmake -G "MinGW Makefiles" ..
-    make
-
-This should build the project in build with the exe file.
-Make sure you use the newest MinGW available
+This should build the project in CraftMine/Release and you should see an exe file to run the game.
 
 
 
