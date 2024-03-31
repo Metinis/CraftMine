@@ -41,7 +41,6 @@ an inventory system, day/night cycle and the sun.
 
 ## Features to implement
 
-- Normal calculation for block faces to make shadow maps look better
 - Water shader
 - UI for block selection
 - Inventory system (basically a creative menu)
