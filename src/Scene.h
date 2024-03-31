@@ -24,7 +24,7 @@ private:
     int lastTime = 0;
 
     int sunXOffset = -100;
-    int sunZOffset = 100;
+    int sunZOffset = 25;
 
     glm::ivec3 lastOutlinePos;
 
