@@ -73,9 +73,9 @@ public:
 
 	explicit World(Camera& _camera, Scene& scene, Player& player);
 
-    [[noreturn]] void GenerateChunkThread();
+    void GenerateChunkThread();
 
-    [[noreturn]] void GenerateWorldThread();
+    void GenerateWorldThread();
 
 	void UpdateViewDistance(glm::ivec2 cameraPos);
 

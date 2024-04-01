@@ -20,7 +20,7 @@ out vec3 Normal;
 void main()
 {
     gl_Position = projection * view * model * vec4(aPos, 1.0);
-    Normal = transpose(inverse(mat3(model))) * aNormal;
+    Normal = aNormal;//transpose(inverse(mat3(model))) * aNormal;
     ourColor = vec3(0.5, 0.0, 0.0);
     TexCoord = aTexCoord;
     brightness = aBrightness;

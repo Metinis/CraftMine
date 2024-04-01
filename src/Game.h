@@ -44,6 +44,9 @@ private:
     float deltaTime;
     float lastFrame;
     int updateingInt;
+    float tickSpeed = 0.002f;
+    float currentTime = 0.0f; // Current time in seconds
+    float dayDuration = 60.0f; // Total duration of a day in seconds
 
 
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);

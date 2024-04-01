@@ -5,6 +5,7 @@ Scene::Scene(Camera& _camera) : camera(_camera){
     initialiseShadowMap();
     ui = new UI();
 }
+
 void Scene::initialiseWorldShaders(){
     shader = new Shader("../resources/shader/shader.vs", "../resources/shader/shader.fs");
 
@@ -49,11 +50,27 @@ void Scene::initialiseShadowMap(){
 void Scene::updateShadowProjection(){
     shadowMapShader->use();
 
-    glm::vec3 lightPos = glm::vec3(camera.position->x + sunXOffset, 200.0f, camera.position->z + sunZOffset);
+    glm::vec3 lightPos = glm::vec3(glm::round(camera.position->x + sunXOffset), 200, glm::round(camera.position->z + sunZOffset));
 
-    float zFar = float(200 + std::abs(sunXOffset) + std::abs(sunZOffset));
+    if(std::abs(sunXOffset) > 400 && minBrightness > 0.3f){
+        minBrightness -= 0.001;
+    }
+    else if(std::abs(sunXOffset) < 400 && minBrightness < 0.5f){
+        minBrightness += 0.001;
+    }
+    if(std::abs(sunXOffset) > 400 && maxBrightnessFactor > 0.3f){
+        maxBrightnessFactor -= 0.004;
+    }
+    else if(std::abs(sunXOffset) < 400 && maxBrightnessFactor < 1.0f){
+        maxBrightnessFactor += 0.004;
+    }
+
+    //glm::vec3 lightPos = glm::vec3(8000 + sunXOffset, 200.0f, 8000 + sunZOffset);
+    //float zFar = glm::round(float(200 + std::abs(sunXOffset) + std::abs(sunZOffset)));
+    float zFar = glm::round(float(200 + 400 + std::abs(sunZOffset)));
     glm::mat4 orthgonalProjection = glm::ortho(-200.0f, 200.0f, -200.0f, 200.0f, 0.1f, zFar);
-    glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(camera.position->x, 50.0f, camera.position->z), glm::vec3(0.0f,0.0f,-1.0f));
+    glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(glm::round(camera.position->x), 50.0f, glm::round(camera.position->z)), glm::vec3(0.0f,0.0f,-1.0f));
+    //glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(8000.0f, 50.0f, 8000.0f), glm::vec3(0.0f,0.0f,-1.0f));
     glm::mat4 lightProjection = orthgonalProjection * lightView;
 
     glm::mat4 model = glm::mat4(1.0f);
@@ -68,12 +85,16 @@ void Scene::updateShadowProjection(){
     shader->use();
     shader->setMat4("lightSpaceMatrix", lightProjection);
     shader->setVec3("lightPos", lightPos);
+    shader->setFloat("minBrightness", minBrightness);
+    shader->setFloat("maxBrightnessFactor", maxBrightnessFactor);
 
     glUniform1i(glGetUniformLocation(shader->ID, "depthMap"), 1);
 
     transparentShader->use();
     transparentShader->setMat4("lightSpaceMatrix", lightProjection);
     transparentShader->setVec3("lightPos", lightPos);
+    transparentShader->setFloat("minBrightness", minBrightness);
+    shader->setFloat("maxBrightnessFactor", maxBrightnessFactor);
 
     glUniform1i(glGetUniformLocation(transparentShader->ID, "depthMap"), 1);
     glActiveTexture(GL_TEXTURE0);

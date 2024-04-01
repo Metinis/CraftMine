@@ -6,7 +6,8 @@ in vec2 TexCoord;
 in float brightness;
 in vec3 Normal;
 
-float minBrightness = 0.5f;
+uniform float minBrightness;
+uniform float maxBrightnessFactor;
 
 in vec3 FragPos;
 in vec4 fragPosLightSpace;
@@ -30,8 +31,9 @@ float inShadow(vec4 fragPosLightSpace){
     // check whether current frag pos is in shadow
     vec3 normal = normalize(Normal);
     vec3 lightDir = normalize(lightPos - FragPos);
-    float bias = max(0.00005 * (1.0 - dot(normal, lightDir)), 0.00035);
+    float bias = max(0.00025 * (1.0 - dot(normal, lightDir)), 0.00015 );
     //float bias = 0.0002;
+    //float bias = 0.0001;
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(depthMap, 0);
 
@@ -48,9 +50,9 @@ float inShadow(vec4 fragPosLightSpace){
     shadow /= float((2 * numSamples + 1) * (2 * numSamples + 1));
 
     if(projCoords.z > 1.0)
-        shadow = 0.0;
+        shadow = 1.0;
         
-    shadow = clamp(shadow, 0.0, 1.0);
+    shadow = clamp(shadow, 0, 1.0);
 
     return shadow;
 }
@@ -67,14 +69,13 @@ void main()
     }
     else
     {
-        adjustedColor = sampledColor.rgb * brightness;
+        adjustedColor = sampledColor.rgb * brightness * maxBrightnessFactor;
         if((1.0 - inShadow(fragPosLightSpace)) >= minBrightness){
             adjustedColor.rgb *= 1.0 - inShadow(fragPosLightSpace);
         }
         else{
             adjustedColor.rgb *= minBrightness;
         }
-        
     }
 
     

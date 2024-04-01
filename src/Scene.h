@@ -22,8 +22,11 @@ private:
 
     int lastTexture = 1;
     int lastTime = 0;
+    float minBrightness = 0.5f; //minimum brightness of the scene
+    float maxBrightnessFactor = 1.0f; //max brightness mutliplier of the scene
+    bool day = true;
 
-    int sunXOffset = -100;
+
     int sunZOffset = 25;
 
     glm::ivec3 lastOutlinePos;
@@ -45,6 +48,9 @@ public:
     Shader* frameShader;
     Shader* shadowMapShader;
     Texture* worldTexture;
+
+    float sunXOffset = 300;
+    float sunYOffset = 50;
 
     Scene(Camera& _camera);
 

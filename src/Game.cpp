@@ -90,8 +90,21 @@ void Game::run(){
             std::cout << newChunkPos.x << "x " << newChunkPos.y << "z \n";
             world->UpdateViewDistance(newChunkPos);
 
+
+        }
+        if(deltaTime >= tickSpeed){
+
+            scene->sunXOffset -= 1 * deltaTime;
+
+            if(scene->sunXOffset < -800)
+            {
+                scene->sunXOffset = 800;
+            }
+
             scene->updateShadowProjection();
         }
+
+
         world->update();
         //render shadow map
 
@@ -108,6 +121,7 @@ void Game::run(){
 
         //finally output FBO to quad
         scene->renderQuad();
+
 
         player->Update(deltaTime);
 
