@@ -37,7 +37,7 @@ float inShadow(vec4 fragPosLightSpace){
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(depthMap, 0);
 
-    int numSamples = 2;
+    int numSamples = 3;
 
     for(int x = -numSamples; x <= numSamples; ++x)
     {
