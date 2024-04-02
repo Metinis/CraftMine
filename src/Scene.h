@@ -10,11 +10,9 @@
 #include "ScreenQuad.h"
 #include "UI.h"
 
-
-
 class Scene {
 private:
-    static const int SHADOW_RESOLUTION = 1024*16;
+    static const int SHADOW_RESOLUTION;
 
     glm::mat4 model{};
     glm::mat4 view{};
@@ -49,7 +47,7 @@ public:
     Shader* shadowMapShader;
     Texture* worldTexture;
 
-    float sunXOffset = 300;
+    float sunXOffset = 100;
     float sunYOffset = 50;
 
     Scene(Camera& _camera);

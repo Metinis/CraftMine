@@ -198,7 +198,10 @@ void World::GenerateChunkBuffers(std::vector<Chunk*>& addedChunks)
 }
 Chunk* World::GetChunk(int x, int y)
 {
-	return chunks[x + SIZE * y];
+    if(x > 0 && x < SIZE && y > 0 && y < SIZE)
+	    return chunks[x + SIZE * y];
+    else
+        return nullptr;
 }
 //used for breaking blocks
 bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, glm::ivec3& result, Chunk*& currentChunk) {
@@ -211,18 +214,23 @@ bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDire
         globalPos.y = static_cast<int>(std::round(rayOrigin.y + rayDirection.y * step));
         globalPos.z = static_cast<int>(std::round(rayOrigin.z + rayDirection.z * step));
 
-        currentChunk = GetChunk(globalPos.x / Chunk::SIZE, globalPos.z / Chunk::SIZE);
-        if (currentChunk != nullptr && currentChunk->generatedBlockData) {
+        glm::ivec2 posInChunks = glm::ivec2(globalPos.x / Chunk::SIZE, globalPos.z / Chunk::SIZE);
 
-            glm::ivec3 localPos;
-            localPos.x = globalPos.x - currentChunk->chunkPosition.x * Chunk::SIZE;
-            localPos.y = globalPos.y;
-            localPos.z = globalPos.z - currentChunk->chunkPosition.y * Chunk::SIZE;
-            if (Block::isSolid(currentChunk->GetBlockID(localPos))) {
-                result = localPos;
-                return true;
+        if(posInChunks.x > 0 && posInChunks.x < World::SIZE && posInChunks.y > 0 && posInChunks.y < World::SIZE){
+            currentChunk = GetChunk(posInChunks.x, posInChunks.y);
+            if (currentChunk != nullptr && currentChunk->generatedBlockData) {
+
+                glm::ivec3 localPos;
+                localPos.x = globalPos.x - currentChunk->chunkPosition.x * Chunk::SIZE;
+                localPos.y = globalPos.y;
+                localPos.z = globalPos.z - currentChunk->chunkPosition.y * Chunk::SIZE;
+                if (Block::isSolid(currentChunk->GetBlockID(localPos))) {
+                    result = localPos;
+                    return true;
+                }
             }
         }
+
         step+=0.01f;
     }
 
@@ -360,37 +368,42 @@ void World::sortChunks(){
     std::sort(activeChunks.begin(), activeChunks.end(), compareChunks);
 }
 void World::sortTransparentFaces() {
-    Chunk* currentChunk = GetChunk(playerChunkPos.x, playerChunkPos.y);
+    if(player.chunkPosition.x > 0 && player.chunkPosition.x < World::SIZE && player.chunkPosition.y > 0 && player.chunkPosition.y < World::SIZE) {
+        Chunk *currentChunk = GetChunk(playerChunkPos.x, playerChunkPos.y);
+        if(currentChunk != nullptr) {
 
-    //when moving inbetween chunks, sort surrounding chunks
-    if(player.chunkPosition.x != currentChunk->chunkPosition.x || player.chunkPosition.y != currentChunk->chunkPosition.y)
-    {
-        for(int x = (int)player.chunkPosition.x - 2; x < (int)player.chunkPosition.x + 2 && x > 0 && x < World::SIZE; x++){
-            for(int z = (int)player.chunkPosition.y - 2; z < (int)player.chunkPosition.y + 2  && z > 0 && z < World::SIZE; z++){
-                Chunk* currentChunkToSort = GetChunk(x, z);
-                if(currentChunkToSort != nullptr && !currentChunkToSort->inThread && currentChunkToSort->generatedBuffData)
+            //when moving inbetween chunks, sort surrounding chunks
+            if (player.chunkPosition.x != currentChunk->chunkPosition.x ||
+                player.chunkPosition.y != currentChunk->chunkPosition.y) {
+                for (int x = (int) player.chunkPosition.x - 2;
+                     x < (int) player.chunkPosition.x + 2 && x > 0 && x < World::SIZE; x++) {
+                    for (int z = (int) player.chunkPosition.y - 2;
+                         z < (int) player.chunkPosition.y + 2 && z > 0 && z < World::SIZE; z++) {
+                        Chunk *currentChunkToSort = GetChunk(x, z);
+                        if (currentChunkToSort != nullptr && !currentChunkToSort->inThread &&
+                            currentChunkToSort->generatedBuffData) {
+                            //world->mutexChunksToLoadData.lock();
+                            loadedChunks.push(currentChunkToSort); //loadedchunks sorts each chunk transparent face
+                            //world->mutexChunksToLoadData.unlock();
+                        }
+                    }
+                }
+
+            }
+                //else sort the current chunk the player is in every time you move a block
+            else {
+                if (!currentChunk->inThread &&
+                    glm::round(player.lastPosition) != glm::round(player.position) && currentChunk->generatedBuffData)
+                    //only sort if block pos has changes hence round
                 {
                     //world->mutexChunksToLoadData.lock();
-                    loadedChunks.push(currentChunkToSort); //loadedchunks sorts each chunk transparent face
+                    loadedChunks.push(currentChunk); //loadedchunks sorts each chunk transparent face
                     //world->mutexChunksToLoadData.unlock();
                 }
             }
-        }
-
-    }
-        //else sort the current chunk the player is in every time you move a block
-    else
-    {
-        if(currentChunk != nullptr && !currentChunk->inThread && glm::round(player.lastPosition) != glm::round(player.position) && currentChunk->generatedBuffData)
-            //only sort if block pos has changes hence round
-        {
-            //world->mutexChunksToLoadData.lock();
-            loadedChunks.push(currentChunk); //loadedchunks sorts each chunk transparent face
-            //world->mutexChunksToLoadData.unlock();
+            player.chunkPosition = currentChunk->chunkPosition;
         }
     }
-    if (currentChunk != nullptr)
-        player.chunkPosition = currentChunk->chunkPosition;
 }
 //default way to render
 void World::renderChunks()

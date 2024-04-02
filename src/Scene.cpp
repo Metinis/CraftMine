@@ -6,6 +6,8 @@ Scene::Scene(Camera& _camera) : camera(_camera){
     ui = new UI();
 }
 
+const int Scene::SHADOW_RESOLUTION = 1024 * World::viewDistance;
+
 void Scene::initialiseWorldShaders(){
     shader = new Shader("../resources/shader/shader.vs", "../resources/shader/shader.fs");
 
@@ -64,13 +66,11 @@ void Scene::updateShadowProjection(){
     else if(std::abs(sunXOffset) < 400 && maxBrightnessFactor < 1.0f){
         maxBrightnessFactor += 0.004;
     }
+    float halfOrthoSize = World::viewDistance * Chunk::SIZE;
+    float zFar = glm::round(float(halfOrthoSize + 200 + std::abs(sunZOffset)));
 
-    //glm::vec3 lightPos = glm::vec3(8000 + sunXOffset, 200.0f, 8000 + sunZOffset);
-    //float zFar = glm::round(float(200 + std::abs(sunXOffset) + std::abs(sunZOffset)));
-    float zFar = glm::round(float(200 + 400 + std::abs(sunZOffset)));
-    glm::mat4 orthgonalProjection = glm::ortho(-200.0f, 200.0f, -200.0f, 200.0f, 0.1f, zFar);
+    glm::mat4 orthgonalProjection = glm::ortho(-halfOrthoSize, halfOrthoSize, -halfOrthoSize, halfOrthoSize, 0.1f, zFar);
     glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(glm::round(camera.position->x), 50.0f, glm::round(camera.position->z)), glm::vec3(0.0f,0.0f,-1.0f));
-    //glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(8000.0f, 50.0f, 8000.0f), glm::vec3(0.0f,0.0f,-1.0f));
     glm::mat4 lightProjection = orthgonalProjection * lightView;
 
     glm::mat4 model = glm::mat4(1.0f);
@@ -270,7 +270,9 @@ void Scene::renderWorld(World& world){
 
     //render cross hair/ui
     glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_SRC_ALPHA);
+    glDisable(GL_DEPTH_TEST);
     ui->renderCrosshair();
+    glEnable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     fbo->Unbind();
