@@ -86,6 +86,38 @@ Toolbar::Toolbar()
     slotVAO->LinkToVAO(slotShader->getAttribLocation("aTexCoord"), 2, *slotTextureVBO);
     slotTextureVBO->Unbind();
 }
+void Toolbar::changeSlot(int currentSlot) {
+    const float toolbarWidth = 0.75f;
+
+    const float slotWidth = toolbarWidth / 9;
+
+    const float halfToolbarWidth = toolbarWidth / 2.0f;
+
+    const float halfSlotWidth = slotWidth / 2.0f + 0.005f;
+
+    // Height of the toolbar
+    const float toolbarHeight = 0.15f;
+
+    // X coordinate for the center of the toolbar
+    const float toolbarCenterX = -halfToolbarWidth + slotWidth / 2 + currentSlot * slotWidth;
+
+    // Y coordinate for the bottom of the toolbar
+    const float toolbarBottomY = -0.95f;
+
+    slotVertices = {
+            glm::vec2(toolbarCenterX + halfSlotWidth, toolbarBottomY - 0.005f),  // Bottom right
+            glm::vec2(toolbarCenterX - halfSlotWidth, toolbarBottomY - 0.005f),  // Bottom left
+            glm::vec2(toolbarCenterX - halfSlotWidth, toolbarBottomY + toolbarHeight + 0.005f),  // Top left
+            glm::vec2(toolbarCenterX - halfSlotWidth, toolbarBottomY + toolbarHeight + 0.005f),  // Top left
+            glm::vec2(toolbarCenterX + halfSlotWidth, toolbarBottomY + toolbarHeight + 0.005f), // Top right
+            glm::vec2(toolbarCenterX + halfSlotWidth, toolbarBottomY - 0.005f),  // Bottom right
+    };
+    slotVAO->Bind();
+    slotVBO->SetNewData(slotVertices);
+    slotVBO->Bind();
+    slotVAO->LinkToVAO(slotShader->getAttribLocation("aPos"), 2, *slotVBO);
+    slotVBO->Unbind();
+}
 void Toolbar::renderToolbar()
 {
     shader->use();

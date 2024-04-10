@@ -31,6 +31,7 @@ private:
 public:
     Toolbar();
     void renderToolbar();
+    void changeSlot(int currentSlot);
 };
 
 
