@@ -3,7 +3,8 @@
 Scene::Scene(Camera& _camera) : camera(_camera){
     initialiseWorldShaders();
     initialiseShadowMap();
-    ui = new UI();
+    ui = new Crosshair();
+    toolbar = new Toolbar();
 }
 
 const int Scene::SHADOW_RESOLUTION = 1024 * World::viewDistance;
@@ -16,6 +17,8 @@ void Scene::initialiseWorldShaders(){
     transparentShader = new Shader("../resources/shader/shader.vs", "../resources/shader/shader.fs"); //change when transparent is different
 
     worldTexture = new Texture("../resources/texture/terrain1.png");
+
+    guiTexture = new Texture("../resources/gui/gui.png");
 
     model = glm::mat4(1.0f);
     view = glm::mat4(1.0f);
@@ -274,6 +277,8 @@ void Scene::renderWorld(World& world){
     ui->renderCrosshair();
     glEnable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    guiTexture->Bind();
+    toolbar->renderToolbar();
 
     fbo->Unbind();
     glDisable(GL_DEPTH_TEST);

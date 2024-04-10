@@ -2,8 +2,8 @@
 // Created by denis on 2024-02-05.
 //
 
-#ifndef CRAFTMINE_UI_H
-#define CRAFTMINE_UI_H
+#ifndef CRAFTMINE_CROSSHAIR_H
+#define CRAFTMINE_CROSSHAIR_H
 
 #include "VBO.h"
 #include "IBO.h"
@@ -11,17 +11,17 @@
 #include "Shader.h"
 
 
-class UI {
+class Crosshair {
 private:
-    VAO* uiVAO;
-    VBO* uiVBO;
+    VAO* CrosshairVAO;
+    VBO* CrosshairVBO;
     Shader* shader;
 
     std::vector<glm::vec2> vertices;
 public:
-    UI();
+    Crosshair();
     void renderCrosshair();
 };
 
 
-#endif //CRAFTMINE_UI_H
+#endif //CRAFTMINE_CROSSHAIR_H

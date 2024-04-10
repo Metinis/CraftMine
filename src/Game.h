@@ -13,7 +13,7 @@
 #include "Input/Camera.h"
 #include "Chunk.h"
 #include "World.h"
-#include "UI.h"
+#include "Crosshair.h"
 #include "Input/MouseInput.h"
 #include "Player/Player.h"
 #include "ScreenQuad.h"

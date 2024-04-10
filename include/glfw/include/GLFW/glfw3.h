@@ -2696,8 +2696,8 @@ GLFWAPI void glfwGetMonitorPhysicalSize(GLFWmonitor* monitor, int* widthMM, int*
  *
  *  This function retrieves the content scale for the specified monitor.  The
  *  content scale is the ratio between the current DPI and the platform's
- *  default DPI.  This is especially important for text and any UI elements.  If
- *  the pixel dimensions of your UI scaled by this look appropriate on your
+ *  default DPI.  This is especially important for text and any Crosshair elements.  If
+ *  the pixel dimensions of your Crosshair scaled by this look appropriate on your
  *  machine then it should appear at a reasonable size on other machines
  *  regardless of their DPI and scaling settings.  This relies on the system DPI
  *  and scaling settings being somewhat correct.
@@ -3704,8 +3704,8 @@ GLFWAPI void glfwGetWindowFrameSize(GLFWwindow* window, int* left, int* top, int
  *
  *  This function retrieves the content scale for the specified window.  The
  *  content scale is the ratio between the current DPI and the platform's
- *  default DPI.  This is especially important for text and any UI elements.  If
- *  the pixel dimensions of your UI scaled by this look appropriate on your
+ *  default DPI.  This is especially important for text and any Crosshair elements.  If
+ *  the pixel dimensions of your Crosshair scaled by this look appropriate on your
  *  machine then it should appear at a reasonable size on other machines
  *  regardless of their DPI and scaling settings.  This relies on the system DPI
  *  and scaling settings being somewhat correct.

@@ -8,7 +8,8 @@
 #include "World.h"
 #include "Game.h"
 #include "ScreenQuad.h"
-#include "UI.h"
+#include "Crosshair.h"
+#include "Toolbar.h"
 
 class Scene {
 private:
@@ -37,7 +38,8 @@ private:
     FBO* fbo;
     FBO* depthFBO;
     ScreenQuad* screenQuad;
-    UI* ui;
+    Crosshair* ui;
+    Toolbar* toolbar;
 
 public:
     Shader* shader;
@@ -46,6 +48,7 @@ public:
     Shader* frameShader;
     Shader* shadowMapShader;
     Texture* worldTexture;
+    Texture* guiTexture;
 
     float sunXOffset = 100;
     float sunYOffset = 50;
