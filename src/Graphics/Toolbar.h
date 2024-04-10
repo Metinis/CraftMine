@@ -16,10 +16,18 @@ private:
     VAO* ToolBarVAO;
     VBO* ToolBarVBO;
     VBO* textureVBO;
+
+    VAO* slotVAO;
+    VBO* slotVBO;
+    VBO* slotTextureVBO;
     Shader* shader;
+    Shader* slotShader;
 
     std::vector<glm::vec2> vertices;
     std::vector<glm::vec2> UVCoords;
+
+    std::vector<glm::vec2> slotVertices;
+    std::vector<glm::vec2> slotUVCoords;
 public:
     Toolbar();
     void renderToolbar();
