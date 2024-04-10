@@ -338,5 +338,12 @@ float Player::distanceToPlayer(const glm::vec3& point) const {
     //return glm::length(point - position);
     return glm::distance(position, point);
 }
+void Player::setBlockID(int blockID) {
+    currentBlockID = blockID;
+}
+
+int Player::getBlockID() {
+    return currentBlockID;
+}
 
 

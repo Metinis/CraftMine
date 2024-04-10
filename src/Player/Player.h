@@ -21,7 +21,7 @@ private:
     bool isJumping{};
     bool isFlying{};
 
-
+    int currentBlockID = 1;
 
     float movementSpeed;
 
@@ -48,6 +48,8 @@ public:
     bool checkNewPositionXZ(glm::vec3 newPosition) const;
     bool checkNewPositionY(glm::vec3& newPosition) const;
     float distanceToPlayer(const glm::vec3& point) const;
+    void setBlockID(int blockID);
+    int getBlockID();
 };
 
 

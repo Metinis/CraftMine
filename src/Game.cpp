@@ -222,24 +222,42 @@ void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed
     {
         *keyProccessed = false;
     }
-    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS){
         scene.changeSlotToolbar(0);
-    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+        player.setBlockID(1);
+    }
+    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS){
         scene.changeSlotToolbar(1);
-    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+        player.setBlockID(2);
+    }
+    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS){
         scene.changeSlotToolbar(2);
-    if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+        player.setBlockID(3);
+    }
+    if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS){
         scene.changeSlotToolbar(3);
-    if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+        player.setBlockID(4);
+    }
+    if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS){
         scene.changeSlotToolbar(4);
-    if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
+        player.setBlockID(5);
+    }
+    if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS){
         scene.changeSlotToolbar(5);
-    if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS)
+        player.setBlockID(6);
+    }
+    if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS){
         scene.changeSlotToolbar(6);
-    if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS)
+        player.setBlockID(7);
+    }
+    if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS){
         scene.changeSlotToolbar(7);
-    if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS)
+        player.setBlockID(8);
+    }
+    if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS){
         scene.changeSlotToolbar(8);
+        player.setBlockID(9);
+    }
 
 
 

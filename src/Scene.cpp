@@ -5,6 +5,7 @@ Scene::Scene(Camera& _camera) : camera(_camera){
     initialiseShadowMap();
     ui = new Crosshair();
     toolbar = new Toolbar();
+    toolbar->changeSlot(0);
 }
 
 const int Scene::SHADOW_RESOLUTION = 1024 * World::viewDistance;
