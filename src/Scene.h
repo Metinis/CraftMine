@@ -86,4 +86,6 @@ public:
     void setFBODimensions(int width, int height);
 
     void renderQuad();
+
+    void changeSlotToolbar(int slot);
 };

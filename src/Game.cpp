@@ -81,7 +81,7 @@ void Game::run(){
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        processInput(window, &wireframe, &keyProcessed, &isFullscreen, *player, *world, deltaTime);
+        processInput(window, &wireframe, &keyProcessed, &isFullscreen, *player, *world, deltaTime, *scene);
         newChunkPos = (glm::vec2(glm::round(player->position.x) / Chunk::SIZE, glm::round(player->position.z) / Chunk::SIZE));
 
         if (std::abs(newChunkPos.x - lastChunkPos.x) >= updateingInt ||
@@ -134,7 +134,7 @@ void Game::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
-void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, bool* _isFullscreen, Player& player, World& world, float& deltaTime)
+void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, bool* _isFullscreen, Player& player, World& world, float& deltaTime, Scene& scene)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
@@ -222,6 +222,26 @@ void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed
     {
         *keyProccessed = false;
     }
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+        scene.changeSlotToolbar(0);
+    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+        scene.changeSlotToolbar(1);
+    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+        scene.changeSlotToolbar(2);
+    if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+        scene.changeSlotToolbar(3);
+    if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+        scene.changeSlotToolbar(4);
+    if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
+        scene.changeSlotToolbar(5);
+    if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS)
+        scene.changeSlotToolbar(6);
+    if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS)
+        scene.changeSlotToolbar(7);
+    if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS)
+        scene.changeSlotToolbar(8);
+
+
 
 
 
