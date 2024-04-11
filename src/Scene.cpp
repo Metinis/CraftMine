@@ -71,7 +71,7 @@ void Scene::updateShadowProjection(){
         maxBrightnessFactor += 0.004;
     }
     float halfOrthoSize = World::viewDistance * Chunk::SIZE;
-    float zFar = glm::round(float(halfOrthoSize + 200 + std::abs(sunZOffset)));
+    float zFar = glm::round(float(halfOrthoSize + 200 + 400 + std::abs(sunZOffset)));
 
     glm::mat4 orthgonalProjection = glm::ortho(-halfOrthoSize, halfOrthoSize, -halfOrthoSize, halfOrthoSize, 0.1f, zFar);
     glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(glm::round(camera.position->x), 50.0f, glm::round(camera.position->z)), glm::vec3(0.0f,0.0f,-1.0f));
