@@ -44,14 +44,15 @@ Game::Game(){
     glEnable(GL_LINE_SMOOTH);
 
 
+    //TODO make each accessible through scene to be more tidy
     player = new Player();
     camera = &player->camera;
-    scene = new Scene(*camera);
+    scene = new Scene(*camera, *player);
     world = new World(*camera, *scene, *player);
     player->world = world;
 
 
-    mouseInput = new MouseInput(*camera, *world);
+    mouseInput = new MouseInput(*camera, *world, *scene);
 
 
     glfwSetWindowUserPointer(window, mouseInput);
@@ -59,6 +60,7 @@ Game::Game(){
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(window, MouseInput::mouse_callback);
     glfwSetMouseButtonCallback(window, MouseInput::mouse_button_callback);
+    glfwSetScrollCallback(window, MouseInput::scroll_callback);
 
     deltaTime = 0.0f;
     lastFrame = 0.0f;

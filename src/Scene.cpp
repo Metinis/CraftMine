@@ -1,6 +1,6 @@
 #include "Scene.h"
 
-Scene::Scene(Camera& _camera) : camera(_camera){
+Scene::Scene(Camera& _camera, Player& _player) : camera(_camera), player(_player){
     initialiseWorldShaders();
     initialiseShadowMap();
     ui = new Crosshair();

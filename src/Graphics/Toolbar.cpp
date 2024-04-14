@@ -5,6 +5,8 @@
 #include "Toolbar.h"
 Toolbar::Toolbar()
 {
+    slot = 0;
+
     const float toolbarWidth = 0.75f;
 
     const float slotWidth = toolbarWidth / 9;
@@ -118,6 +120,25 @@ void Toolbar::changeSlot(int currentSlot) {
     slotVAO->LinkToVAO(slotShader->getAttribLocation("aPos"), 2, *slotVBO);
     slotVBO->Unbind();
 }
+void Toolbar::changeSlotPositive() {
+    if(slot == 8){
+        slot = 0;
+    }
+    else {
+        slot++;
+    }
+    changeSlot(slot);
+}
+void Toolbar::changeSlotNegative() {
+    if(slot == 0){
+        slot = 8;
+    }
+    else {
+        slot--;
+    }
+    changeSlot(slot);
+}
+
 void Toolbar::renderToolbar()
 {
     shader->use();

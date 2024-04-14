@@ -4,7 +4,8 @@
 
 #include "MouseInput.h"
 
-MouseInput::MouseInput(Camera& _camera, World& _world) : lastX(1280 / 2.0f), lastY(720/ 2.0f), camera(_camera), world(_world), firstMouse(true) {}
+MouseInput::MouseInput(Camera& _camera, World& _world, Scene& _scene) : lastX(1280 / 2.0f), lastY(720/ 2.0f),
+camera(_camera), world(_world), scene(_scene), firstMouse(true) {}
 
 void MouseInput::processMouse(GLFWwindow *window, double xposIn, double yposIn) {
     auto xPos = static_cast<float>(xposIn);
@@ -37,6 +38,12 @@ void MouseInput::mouse_button_callback(GLFWwindow* window, int button, int actio
 
     mouseInput->mouseButtonCallback(window, button, action, mods);
 }
+void MouseInput::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    MouseInput* mouseInput = static_cast<MouseInput*>(glfwGetWindowUserPointer(window));
+
+    mouseInput->scrollCallback(window, xoffset, yoffset);
+}
 
 void MouseInput::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
     if(button == GLFW_MOUSE_BUTTON_LEFT){
@@ -50,5 +57,15 @@ void MouseInput::mouseButtonCallback(GLFWwindow* window, int button, int action,
         {
             world.PlaceBlocks(*camera.position, camera.Front);
         }
+    }
+}
+void MouseInput::scrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
+    //TODO make this more clean and adjust player block with current toolbar items
+    if (yoffset > 0) {
+        scene.toolbar->changeSlotNegative();
+        scene.player.setBlockID(scene.toolbar->slot + 1);
+    } else if (yoffset < 0) {
+        scene.toolbar->changeSlotPositive();
+        scene.player.setBlockID(scene.toolbar->slot + 1);
     }
 }

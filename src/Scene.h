@@ -35,11 +35,12 @@ private:
     IBO* outlineIBO = nullptr;
 
     Camera& camera;
+
     FBO* fbo;
     FBO* depthFBO;
     ScreenQuad* screenQuad;
     Crosshair* ui;
-    Toolbar* toolbar;
+
 
 public:
     Shader* shader;
@@ -50,10 +51,14 @@ public:
     Texture* worldTexture;
     Texture* guiTexture;
 
+    Player& player;
+
+    Toolbar* toolbar;
+
     float sunXOffset = 100;
     float sunYOffset = 50;
 
-    Scene(Camera& _camera);
+    Scene(Camera& _camera, Player& _player);
 
     void initialiseWorldShaders();
 

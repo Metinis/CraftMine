@@ -13,6 +13,7 @@
 
 class Toolbar {
 private:
+
     VAO* ToolBarVAO;
     VBO* ToolBarVBO;
     VBO* textureVBO;
@@ -29,9 +30,12 @@ private:
     std::vector<glm::vec2> slotVertices;
     std::vector<glm::vec2> slotUVCoords;
 public:
+    int slot;
     Toolbar();
     void renderToolbar();
     void changeSlot(int currentSlot);
+    void changeSlotPositive();
+    void changeSlotNegative();
 };
 
 

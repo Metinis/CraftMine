@@ -12,18 +12,20 @@
 
 class GLFWwindow;
 class World;
+class Scene;
 
 class MouseInput {
 private:
     World& world;
     Camera& camera;
+    Scene& scene;
     float lastX;
     float lastY;
     bool firstMouse;
 
 public:
 
-    MouseInput(Camera& _camera, World& _world);
+    MouseInput(Camera& _camera, World& _world, Scene& _scene);
 
     void processMouse(GLFWwindow* window, double xPosIn, double yPosIn);
 
@@ -31,7 +33,11 @@ public:
 
     static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 
+    static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
     void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+
+    void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 };
 
 #endif //CRAFTMINE_MOUSEINPUT_H
