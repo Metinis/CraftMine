@@ -63,9 +63,9 @@ void MouseInput::scrollCallback(GLFWwindow *window, double xoffset, double yoffs
     //TODO make this more clean and adjust player block with current toolbar items
     if (yoffset > 0) {
         scene.toolbar->changeSlotNegative();
-        scene.player.setBlockID(scene.toolbar->slot + 1);
+        scene.player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
     } else if (yoffset < 0) {
         scene.toolbar->changeSlotPositive();
-        scene.player.setBlockID(scene.toolbar->slot + 1);
+        scene.player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
     }
 }

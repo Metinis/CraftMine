@@ -20,6 +20,7 @@ uniform vec3 fogColor;
 uniform vec3 lightPos;
 
 float inShadow(vec4 fragPosLightSpace){
+    
     // perform perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     // transform to [0,1] range
@@ -51,6 +52,7 @@ float inShadow(vec4 fragPosLightSpace){
 
     if(projCoords.z > 1.0)
         shadow = 1.0;
+
         
     shadow = clamp(shadow, 0, 1.0);
 
@@ -70,8 +72,9 @@ void main()
     else
     {
         adjustedColor = sampledColor.rgb * brightness * maxBrightnessFactor;
-        if((1.0 - inShadow(fragPosLightSpace)) >= minBrightness){
-            adjustedColor.rgb *= 1.0 - inShadow(fragPosLightSpace);
+        float shadowBrightness = 1.0 - inShadow(fragPosLightSpace);
+        if(shadowBrightness >= minBrightness){
+            adjustedColor.rgb *= shadowBrightness;
         }
         else{
             adjustedColor.rgb *= minBrightness;

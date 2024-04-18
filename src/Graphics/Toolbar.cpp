@@ -3,26 +3,13 @@
 //
 
 #include "Toolbar.h"
+#include "ChunkMeshGeneration.h"
+
 Toolbar::Toolbar()
 {
     slot = 0;
 
-    const float toolbarWidth = 0.75f;
 
-    const float slotWidth = toolbarWidth / 9;
-
-    const float halfToolbarWidth = toolbarWidth / 2.0f;
-
-    const float halfSlotWidth = slotWidth / 2.0f + 0.005f;
-
-    // Height of the toolbar
-    const float toolbarHeight = 0.15f;
-
-    // X coordinate for the center of the toolbar
-    const float toolbarCenterX = 0.0f;
-
-    // Y coordinate for the bottom of the toolbar
-    const float toolbarBottomY = -0.95f;
 
     // Define the vertices of the toolbar
     vertices = {
@@ -72,39 +59,34 @@ Toolbar::Toolbar()
     ToolBarVAO->LinkToVAO(shader->getAttribLocation("aTexCoord"), 2, *textureVBO);
     textureVBO->Unbind();
 
-    slotShader = new Shader("../resources/shader/UIShader.vs", "../resources/shader/UIShader.fs");
-    slotShader->use();
+    //slotShader = new Shader("../resources/shader/UIShader.vs", "../resources/shader/UIShader.fs");
+    //slotShader->use();
 
     slotVAO = new VAO();
     slotVBO = new VBO(slotVertices);
     slotVAO->Bind();
     slotVBO->Bind();
-    slotVAO->LinkToVAO(slotShader->getAttribLocation("aPos"), 2, *slotVBO);
+    slotVAO->LinkToVAO(shader->getAttribLocation("aPos"), 2, *slotVBO);
     slotVBO->Unbind();
 
     slotTextureVBO = new VBO(slotUVCoords);
     slotVAO->Bind();
     slotTextureVBO->Bind();
-    slotVAO->LinkToVAO(slotShader->getAttribLocation("aTexCoord"), 2, *slotTextureVBO);
+    slotVAO->LinkToVAO(shader->getAttribLocation("aTexCoord"), 2, *slotTextureVBO);
     slotTextureVBO->Unbind();
+
+
+
+    for(int i = 0; i < 9; i++){
+        toolbarItems[i] = i+1;
+    }
+
+    loadItemsRendering();
 }
 void Toolbar::changeSlot(int currentSlot) {
-    const float toolbarWidth = 0.75f;
+    slot = currentSlot;
 
-    const float slotWidth = toolbarWidth / 9;
-
-    const float halfToolbarWidth = toolbarWidth / 2.0f;
-
-    const float halfSlotWidth = slotWidth / 2.0f + 0.005f;
-
-    // Height of the toolbar
-    const float toolbarHeight = 0.15f;
-
-    // X coordinate for the center of the toolbar
-    const float toolbarCenterX = -halfToolbarWidth + slotWidth / 2 + currentSlot * slotWidth;
-
-    // Y coordinate for the bottom of the toolbar
-    const float toolbarBottomY = -0.95f;
+    toolbarCenterX = -halfToolbarWidth + slotWidth / 2 + currentSlot * slotWidth;
 
     slotVertices = {
             glm::vec2(toolbarCenterX + halfSlotWidth, toolbarBottomY - 0.005f),  // Bottom right
@@ -117,7 +99,7 @@ void Toolbar::changeSlot(int currentSlot) {
     slotVAO->Bind();
     slotVBO->SetNewData(slotVertices);
     slotVBO->Bind();
-    slotVAO->LinkToVAO(slotShader->getAttribLocation("aPos"), 2, *slotVBO);
+    slotVAO->LinkToVAO(shader->getAttribLocation("aPos"), 2, *slotVBO);
     slotVBO->Unbind();
 }
 void Toolbar::changeSlotPositive() {
@@ -146,8 +128,72 @@ void Toolbar::renderToolbar()
     glDrawArrays(GL_TRIANGLES, 0, vertices.size());
     ToolBarVAO->Unbind();
 
-    slotShader->use();
+    //slotShader->use();
     slotVAO->Bind();
     glDrawArrays(GL_TRIANGLES, 0, slotVertices.size());
     slotVAO->Unbind();
+
+
+}
+
+unsigned char Toolbar::getID(unsigned char _slot) {
+    return toolbarItems[_slot];
+}
+
+void Toolbar::setID(unsigned char id, unsigned char _slot) {
+    toolbarItems[_slot] = id;
+}
+
+void Toolbar::renderItems() {
+    itemShader->use();
+    itemVAO->Bind();
+    itemIBO->Bind();
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, nullptr);
+    itemVAO->Unbind();
+    itemIBO->Unbind();
+}
+
+void Toolbar::loadItemsRendering() {
+    for(int i = 0; i < 9; i++){
+        toolbarCenterX = -halfToolbarWidth + slotWidth / 2 + i * slotWidth;
+
+        FaceData faceData = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[toolbarItems[i]],
+                                           glm::vec3(toolbarCenterX * 22,-10.9f,-20.0f));
+        for(glm::vec3 vert : faceData.vertices){
+            itemVertices.push_back(vert);
+        }
+        for(glm::vec2 uvCoord : faceData.texCoords){
+            itemUVCoords.push_back(uvCoord);
+        }
+        ChunkMeshGeneration::AddIndices(1, indices, indexCount);
+
+    }
+    itemShader = new Shader("../resources/shader/itemUI.vs", "../resources/shader/itemUI.fs");
+    itemShader->use();
+
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 view = glm::mat4(1.0f);
+    //view = glm::rotate(view, glm::radians(-45.0f), glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate around y-axis
+    //view = glm::rotate(view, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)); // Rotate around z-axis
+
+    glm::mat4 proj = glm::perspective(glm::radians(65.0f), 16.0f / 9.0f, 0.2f, 10000.0f);
+    //model = glm::scale(model, glm::vec3(1.0f));
+    itemShader->setMat4("model", model);
+    itemShader->setMat4("view", view);
+    itemShader->setMat4("projection", proj);
+
+    itemVAO = new VAO();
+    itemVBO = new VBO(itemVertices);
+    itemVAO->Bind();
+    itemVBO->Bind();
+    itemVAO->LinkToVAO(itemShader->getAttribLocation("aPos"), 3, *itemVBO);
+    itemVBO->Unbind();
+
+    itemUVVBO = new VBO(itemUVCoords);
+    itemVAO->Bind();
+    itemUVVBO->Bind();
+    itemVAO->LinkToVAO(itemShader->getAttribLocation("aTexCoord"), 2, *itemUVVBO);
+    itemUVVBO->Unbind();
+
+    itemIBO = new IBO(indices);
 }

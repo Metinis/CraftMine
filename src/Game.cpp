@@ -44,6 +44,7 @@ Game::Game(){
     glEnable(GL_LINE_SMOOTH);
 
 
+
     //TODO make each accessible through scene to be more tidy
     player = new Player();
     camera = &player->camera;
@@ -224,41 +225,42 @@ void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed
     {
         *keyProccessed = false;
     }
+    //TODO update this
     if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS){
         scene.changeSlotToolbar(0);
-        player.setBlockID(1);
+        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
     }
     if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS){
         scene.changeSlotToolbar(1);
-        player.setBlockID(2);
+        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
     }
     if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS){
         scene.changeSlotToolbar(2);
-        player.setBlockID(3);
+        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
     }
     if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS){
         scene.changeSlotToolbar(3);
-        player.setBlockID(4);
+        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
     }
     if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS){
         scene.changeSlotToolbar(4);
-        player.setBlockID(5);
+        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
     }
     if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS){
         scene.changeSlotToolbar(5);
-        player.setBlockID(6);
+        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
     }
     if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS){
         scene.changeSlotToolbar(6);
-        player.setBlockID(7);
+        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
     }
     if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS){
         scene.changeSlotToolbar(7);
-        player.setBlockID(8);
+        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
     }
     if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS){
         scene.changeSlotToolbar(8);
-        player.setBlockID(9);
+        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
     }
 
 

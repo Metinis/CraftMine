@@ -255,6 +255,8 @@ void Scene::renderToShadowMap(World& world){
         std::cout<<"Framebuffer incomplete";
     }
     render(*shadowMapShader, world);
+    //render(*shader, world);
+    render(world);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -276,14 +278,16 @@ void Scene::renderWorld(World& world){
     glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_SRC_ALPHA);
     glDisable(GL_DEPTH_TEST);
     ui->renderCrosshair();
-    glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     guiTexture->Bind();
     //toolbar->changeSlot(0);
     toolbar->renderToolbar();
+    worldTexture->Bind();
+    toolbar->renderItems();
 
     fbo->Unbind();
-    glDisable(GL_DEPTH_TEST);
+    //glDisable(GL_DEPTH_TEST);
 }
 void Scene::setFBODimensions(int width, int height){
     fbo->setDimension(width, height);
