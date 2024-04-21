@@ -27,7 +27,8 @@ namespace CraftMine {	//using namespace since it conflicts with some cameraMovem
         SAND,
         OAK_WOOD,
         OAK_LEAF,
-        GLASS
+        GLASS,
+        WOOD_PLANKS
 	};
     extern std::vector<int> transparentBlocks;
     extern std::vector<int> nonSolidBlocks;

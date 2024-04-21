@@ -77,8 +77,15 @@ Toolbar::Toolbar()
 
 
 
-    for(int i = 0; i < 9; i++){
-        toolbarItems[i] = i+1;
+    int j = 0;
+    for(unsigned char & toolbarItem : toolbarItems){
+        while(!Block::isSolid(j))
+        {
+            j++;
+        }
+        toolbarItem = j;
+
+        j++;
     }
 
     loadItemsRendering();
@@ -155,10 +162,10 @@ void Toolbar::renderItems() {
 
 void Toolbar::loadItemsRendering() {
     for(int i = 0; i < 9; i++){
-        toolbarCenterX = -halfToolbarWidth + slotWidth / 2 + i * slotWidth;
+        toolbarCenterX = -halfToolbarWidth * 22.0f + slotWidth * 22.0f  / 2 + i * slotWidth* 22.0f ;
 
         FaceData faceData = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[toolbarItems[i]],
-                                           glm::vec3(toolbarCenterX * 22,-10.9f,-20.0f));
+                                           glm::vec3((toolbarCenterX),-10.9f,-20.0f));
         for(glm::vec3 vert : faceData.vertices){
             itemVertices.push_back(vert);
         }

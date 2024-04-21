@@ -42,7 +42,8 @@ namespace CraftMine {
         {6, SAND},
         {7, OAK_WOOD},
         {8, OAK_LEAF},
-        {9, GLASS}
+        {9, GLASS},
+        {10, WOOD_PLANKS}
 	};
     std::vector<int> transparentBlocks{
         0,
