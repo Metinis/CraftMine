@@ -59,19 +59,19 @@ void Scene::updateShadowProjection(){
     glm::vec3 lightPos = glm::vec3(glm::round(camera.position->x + sunXOffset), 200, glm::round(camera.position->z + sunZOffset));
 
     if(std::abs(sunXOffset) > 400 && minBrightness > 0.3f){
-        minBrightness -= 0.001;
+        minBrightness -= 0.00001;
     }
     else if(std::abs(sunXOffset) < 400 && minBrightness < 0.5f){
-        minBrightness += 0.001;
+        minBrightness += 0.00001;
     }
     if(std::abs(sunXOffset) > 400 && maxBrightnessFactor > 0.3f){
-        maxBrightnessFactor -= 0.004;
+        maxBrightnessFactor -= 0.00004;
     }
     else if(std::abs(sunXOffset) < 400 && maxBrightnessFactor < 1.0f){
-        maxBrightnessFactor += 0.004;
+        maxBrightnessFactor += 0.00004;
     }
     float halfOrthoSize = World::viewDistance * Chunk::SIZE;
-    float zFar = glm::round(float(halfOrthoSize + 200 + 400 + std::abs(sunZOffset)));
+    float zFar = glm::round(float(halfOrthoSize + 400 + std::abs(sunZOffset)));
 
     glm::mat4 orthgonalProjection = glm::ortho(-halfOrthoSize, halfOrthoSize, -halfOrthoSize, halfOrthoSize, 0.1f, zFar);
     glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(glm::round(camera.position->x), 50.0f, glm::round(camera.position->z)), glm::vec3(0.0f,0.0f,-1.0f));
@@ -256,7 +256,7 @@ void Scene::renderToShadowMap(World& world){
     }
     render(*shadowMapShader, world);
     //render(*shader, world);
-    render(world);
+    //render(world);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

@@ -412,7 +412,9 @@ void World::renderChunks()
     {
         if(chunk->chunkHasMeshes){
             scene.renderMesh(*chunk->mesh, *scene.shader);
+            glDepthMask(GL_FALSE);
             scene.renderMesh(*chunk->transparentMesh, *scene.transparentShader);
+            glDepthMask(GL_TRUE);
         }
     }
 }

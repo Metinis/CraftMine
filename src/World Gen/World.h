@@ -54,7 +54,7 @@ public:
     Scene& scene;
 
 	static const int SIZE = 1000;
-	static const int viewDistance = 6;
+	static const int viewDistance = 10;
 	std::thread chunkThread;
 	std::thread worldGenThread;
 

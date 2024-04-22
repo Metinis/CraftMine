@@ -161,11 +161,15 @@ void Toolbar::renderItems() {
 }
 
 void Toolbar::loadItemsRendering() {
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 view = glm::mat4(1.0f);
     for(int i = 0; i < 9; i++){
         toolbarCenterX = -halfToolbarWidth * 22.0f + slotWidth * 22.0f  / 2 + i * slotWidth* 22.0f ;
 
         FaceData faceData = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[toolbarItems[i]],
                                            glm::vec3((toolbarCenterX),-10.9f,-20.0f));
+        //view = glm::rotate(view, glm::radians(-45.0f), glm::vec3((toolbarCenterX),1.0f,-20.0f)); // Rotate around y-axis
+        //model = glm::rotate(model, glm::radians(45.0f), glm::vec3((toolbarCenterX),-11.4f,-20.0f));
         for(glm::vec3 vert : faceData.vertices){
             itemVertices.push_back(vert);
         }
@@ -178,9 +182,9 @@ void Toolbar::loadItemsRendering() {
     itemShader = new Shader("../resources/shader/itemUI.vs", "../resources/shader/itemUI.fs");
     itemShader->use();
 
-    glm::mat4 model = glm::mat4(1.0f);
-    glm::mat4 view = glm::mat4(1.0f);
-    //view = glm::rotate(view, glm::radians(-45.0f), glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate around y-axis
+
+
+
     //view = glm::rotate(view, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)); // Rotate around z-axis
 
     glm::mat4 proj = glm::perspective(glm::radians(65.0f), 16.0f / 9.0f, 0.2f, 10000.0f);
