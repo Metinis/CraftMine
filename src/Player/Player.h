@@ -37,7 +37,7 @@ public:
     bool isShifting{};
 
     Player();
-    void Update(float deltaTime);
+    void Update(float& deltaTime);
     void UpdatePositionY(float& deltaTime, glm::vec3& newPosition);
     void UpdatePositionXZ(glm::vec3& newPosition);
     void UpdateDeceleration(float& deltaTime);

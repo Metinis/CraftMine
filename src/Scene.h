@@ -66,7 +66,7 @@ public:
 
     void updateShadowProjection();
 
-    void loadShader(Shader& shader, int viewDistance);
+    void loadShader(Shader& shader, const int viewDistance);
 
     void changeGlobalTexture();
 

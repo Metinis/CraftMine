@@ -96,7 +96,7 @@ void World::CheckForBlocksToBeAdded(Chunk* chunk)
 
     mutexBlocksToBeAddedList.unlock();
 }
-void World::UpdateViewDistance(glm::ivec2 cameraChunkPos)
+void World::UpdateViewDistance(glm::ivec2& cameraChunkPos)
 {
     //update comparator to current chunkPos
     playerChunkPos = cameraChunkPos;
@@ -425,6 +425,7 @@ void World::renderChunks(Shader& shader)
     {
         if(chunk->chunkHasMeshes){
             scene.renderMesh(*chunk->mesh, shader);
+
             scene.renderMesh(*chunk->transparentMesh, shader);
         }
     }

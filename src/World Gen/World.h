@@ -77,7 +77,7 @@ public:
 
     void GenerateWorldThread();
 
-	void UpdateViewDistance(glm::ivec2 cameraPos);
+	void UpdateViewDistance(glm::ivec2& cameraPos);
 
 	Chunk* GetChunk(int x, int y);
 

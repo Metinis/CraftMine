@@ -97,7 +97,7 @@ void Game::run(){
         }
         if(deltaTime >= tickSpeed){
 
-            scene->sunXOffset -= 1 * deltaTime;
+            scene->sunXOffset -= 1 * deltaTime / 2;
 
             if(scene->sunXOffset < -800)
             {

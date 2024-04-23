@@ -32,8 +32,10 @@ float inShadow(vec4 fragPosLightSpace){
     // check whether current frag pos is in shadow
     vec3 normal = normalize(Normal);
     vec3 lightDir = normalize(lightPos - FragPos);
-    float bias = max(0.0001 * (1.0 - dot(normal, lightDir)), 0.00009 );
-    //float bias = 0.0002;
+    //float bias = max(0.0001 * (1.0 - dot(normal, lightDir)), 0.00009 );
+    float bias = 0.0005;
+    float cos_theta = dot(normal, lightDir);
+    float b = bias * cos_theta;
     //float bias = 0.0001;
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(depthMap, 0);
@@ -45,14 +47,17 @@ float inShadow(vec4 fragPosLightSpace){
         for(int y = -numSamples; y <= numSamples; ++y)
         {
             float pcfDepth = texture(depthMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
+            shadow += currentDepth - b > pcfDepth ? 1.0 : 0.0;        
         }    
     }
     shadow /= float((2 * numSamples + 1) * (2 * numSamples + 1));
+    //shadow = cos_theta * shadow;
+    //shadow = shadow - cos_theta;
 
-    if(projCoords.z > 1.0)
+    if(projCoords.z > 1.0 || cos_theta <= 0)
         shadow = 1.0;
 
+    
         
     shadow = clamp(shadow, 0, 1.0);
 
