@@ -42,6 +42,7 @@ Game::Game(){
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_LINE_SMOOTH);
+    //glEnable(GL_MULTISAMPLE);
 
 
 
@@ -261,6 +262,9 @@ void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed
     if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS){
         scene.changeSlotToolbar(8);
         player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
+    }
+    if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS){
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
 
 

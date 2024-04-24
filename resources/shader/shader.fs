@@ -18,6 +18,7 @@ uniform float fogStart;
 uniform float fogEnd;
 uniform vec3 fogColor;
 uniform vec3 lightPos;
+uniform vec3 lightColor;
 
 float inShadow(vec4 fragPosLightSpace){
     
@@ -32,10 +33,10 @@ float inShadow(vec4 fragPosLightSpace){
     // check whether current frag pos is in shadow
     vec3 normal = normalize(Normal);
     vec3 lightDir = normalize(lightPos - FragPos);
-    //float bias = max(0.0001 * (1.0 - dot(normal, lightDir)), 0.00009 );
-    float bias = 0.0005;
-    float cos_theta = dot(normal, lightDir);
-    float b = bias * cos_theta;
+    float bias = max(0.0005 * (1.0 - dot(normal, lightDir)), 0.00005 );
+    //float bias = 0.0005;
+    //float cos_theta = dot(normal, lightDir);
+    //float b = bias * cos_theta;
     //float bias = 0.0001;
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(depthMap, 0);
@@ -47,14 +48,15 @@ float inShadow(vec4 fragPosLightSpace){
         for(int y = -numSamples; y <= numSamples; ++y)
         {
             float pcfDepth = texture(depthMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-            shadow += currentDepth - b > pcfDepth ? 1.0 : 0.0;        
+            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
         }    
     }
     shadow /= float((2 * numSamples + 1) * (2 * numSamples + 1));
     //shadow = cos_theta * shadow;
     //shadow = shadow - cos_theta;
+    //shadow = (cos_theta - 1.0);
 
-    if(projCoords.z > 1.0 || cos_theta <= 0)
+    if(projCoords.z > 1.0)
         shadow = 1.0;
 
     
@@ -66,33 +68,35 @@ float inShadow(vec4 fragPosLightSpace){
 
 void main()
 {
+    //ambient
+    float ambientStrength = minBrightness;
+    vec3 ambient = ambientStrength * lightColor;
+  	
+    // diffuse 
+    vec3 norm = normalize(Normal);
+    vec3 lightDir = normalize(lightPos - FragPos);
+    float diff = clamp(max(dot(norm, lightDir), 0.0), 0.0, minBrightness);
+    vec3 diffuse = diff * lightColor;
+
     vec4 sampledColor = texture(ourTexture, TexCoord);
 
-    // Adjust brightness
-    vec3 adjustedColor;
-    if(brightness < minBrightness)
-    {
-        adjustedColor = sampledColor.rgb * minBrightness;
-    }
-    else
-    {
-        adjustedColor = sampledColor.rgb * brightness * maxBrightnessFactor;
-        float shadowBrightness = 1.0 - inShadow(fragPosLightSpace);
-        if(shadowBrightness >= minBrightness){
-            adjustedColor.rgb *= shadowBrightness;
-        }
-        else{
-            adjustedColor.rgb *= minBrightness;
-        }
-    }
+    float shadow = inShadow(fragPosLightSpace);
 
-    
+    //fog
 
     float distance = length(FragPos.xyz - cameraPos);
 
     float fogFactor = smoothstep(fogStart, fogEnd, distance);
 
-    vec3 finalColor = mix(adjustedColor, fogColor, fogFactor);
+    
+
+    //result
+
+    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse)) * sampledColor.rgb;  
+
+    vec3 finalColor = mix(lighting, fogColor, fogFactor) * maxBrightnessFactor;
+
+    
 
     // Set the output color
     FragColor = vec4(finalColor, sampledColor.a);

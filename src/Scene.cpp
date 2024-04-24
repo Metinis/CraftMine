@@ -89,6 +89,7 @@ void Scene::updateShadowProjection(){
     shader->use();
     shader->setMat4("lightSpaceMatrix", lightProjection);
     shader->setVec3("lightPos", lightPos);
+    shader->setVec3("lightColor", glm::vec3(1.0f, 1.0f,1.0f));
     shader->setFloat("minBrightness", minBrightness);
     shader->setFloat("maxBrightnessFactor", maxBrightnessFactor);
 
@@ -97,6 +98,7 @@ void Scene::updateShadowProjection(){
     transparentShader->use();
     transparentShader->setMat4("lightSpaceMatrix", lightProjection);
     transparentShader->setVec3("lightPos", lightPos);
+    transparentShader->setVec3("lightColor", glm::vec3(1.0f, 1.0f,1.0f));
     transparentShader->setFloat("minBrightness", minBrightness);
     shader->setFloat("maxBrightnessFactor", maxBrightnessFactor);
 
