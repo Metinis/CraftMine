@@ -41,12 +41,13 @@ private:
     bool wireframe;
     bool keyProcessed;
     bool isFullscreen;
-    float deltaTime;
-    float lastFrame;
+    float deltaTime = 0;
+    float lastFrame = 0;
     int updateingInt;
     float tickSpeed = 0.002f;
     float currentTime = 0.0f; // Current time in seconds
-    float dayDuration = 60.0f; // Total duration of a day in seconds
+    double accumulator = 0.0;
+    double timeStep = 1.0 / 60.0; // Fixed time step
 
 
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);

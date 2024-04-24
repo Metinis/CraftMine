@@ -5,7 +5,7 @@ Player::Player(){
     camera.position = &position;
     chunkPosition = glm::vec2(position.x / Chunk::SIZE, position.z / Chunk::SIZE);
 }
-void Player::Update(float& deltaTime){
+void Player::Update(float deltaTime){
 
     lastPosition = position;
     glm::vec3 newPosition = position + playerVelocity * deltaTime;

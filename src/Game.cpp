@@ -81,9 +81,11 @@ void Game::run(){
         {
             break;
         }
-        auto currentFrame = static_cast<float>(glfwGetTime());
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
+        currentTime = glfwGetTime();
+        deltaTime = currentTime - lastFrame;
+        lastFrame = currentTime;
+
+        accumulator += deltaTime;
 
         processInput(window, &wireframe, &keyProcessed, &isFullscreen, *player, *world, deltaTime, *scene);
         newChunkPos = (glm::vec2(glm::round(player->position.x) / Chunk::SIZE, glm::round(player->position.z) / Chunk::SIZE));
@@ -126,8 +128,11 @@ void Game::run(){
         //finally output FBO to quad
         scene->renderQuad();
 
+        while(accumulator > timeStep){
+            player->Update(timeStep);
+            accumulator -= timeStep;
+        }
 
-        player->Update(deltaTime);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
