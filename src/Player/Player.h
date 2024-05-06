@@ -48,6 +48,10 @@ public:
     bool checkNewPositionXZ(glm::vec3 newPosition) const;
     bool checkNewPositionY(glm::vec3& newPosition) const;
     float distanceToPlayer(const glm::vec3& point) const;
+    glm::vec3 positionInChunk();
+    float getHeight();
+    bool checkCollisionWithBlockLocal(glm::ivec3 localPos);
+    bool checkCollisionWithBlockGlobal(glm::ivec3 localPos);
     void setBlockID(int blockID);
     int getBlockID();
 };

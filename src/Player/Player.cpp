@@ -346,4 +346,31 @@ int Player::getBlockID() {
     return currentBlockID;
 }
 
+glm::vec3 Player::positionInChunk() {
+    glm::vec3 localChunkPos; //position in chunk
+    localChunkPos.x = ((position.x - (float) chunkPosition.x * Chunk::SIZE));
+    localChunkPos.z = ((position.z - (float) chunkPosition.y * Chunk::SIZE));
+    localChunkPos.y = position.y;
+    return localChunkPos;
+}
+bool Player::checkCollisionWithBlockLocal(glm::ivec3 localPos){
+    float _widthZ = (localPos.z > positionInChunk().z) ? WIDTH + 0.01f : -WIDTH - 0.01f;
+    float _widthX = (localPos.x > positionInChunk().x) ? WIDTH + 0.01f : -WIDTH - 0.01f;
+
+    if(localPos.x != glm::round(positionInChunk().x + _widthX) ||
+            localPos.z != glm::round(positionInChunk().z + _widthZ) ||
+            (localPos.y != glm::round(positionInChunk().y - 1) && localPos.y != glm::round(positionInChunk().y))){
+        return false;
+    }
+    else{
+        return true;
+    }
+}
+bool Player::checkCollisionWithBlockGlobal(glm::ivec3 localPos){
+
+}
+float Player::getHeight() {
+    return HEIGHT;
+}
+
 

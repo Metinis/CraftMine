@@ -255,9 +255,9 @@ bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDire
             localPos.x = globalPos.x - tempCurrentChunk->chunkPosition.x * Chunk::SIZE;
             localPos.y = globalPos.y;
             localPos.z = globalPos.z - tempCurrentChunk->chunkPosition.y * Chunk::SIZE;
-            if (Block::isSolid(tempCurrentChunk->GetBlockID(localPos))) {
+            if (Block::isSolid(tempCurrentChunk->GetBlockID(localPos))){
 
-                if(static_cast<int>(glm::abs((rayOrigin.x - (rayOrigin.x + rayDirection.x * step))) > 1) ||
+                /*if(static_cast<int>(glm::abs((rayOrigin.x - (rayOrigin.x + rayDirection.x * step))) > 1) ||
                 static_cast<int>(((rayOrigin.y - (rayOrigin.y + rayDirection.y * step))) < -1) ||
                 static_cast<int>(glm::abs((rayOrigin.y - (rayOrigin.y + rayDirection.y * step))) > 2) ||
                 static_cast<int>(glm::abs((rayOrigin.z - (rayOrigin.z + rayDirection.z * step))) > 1))
@@ -268,7 +268,9 @@ bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDire
                 else
                 {
                     break;
-                }
+                }*/
+                result = localPos;
+                return true;
             }
             else
             {
@@ -287,7 +289,8 @@ void World::PlaceBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
     Chunk* currentChunk;
 
     // Raycast to find the block to place the face on
-    if (RaycastBlockPos(rayOrigin, rayDirection, localPos, currentChunk, lastEmptyPos)) {
+    if (RaycastBlockPos(rayOrigin, rayDirection, localPos, currentChunk, lastEmptyPos) &&
+        !player.checkCollisionWithBlockLocal(lastEmptyPos)){
 
         if(currentChunk->generatedBlockData) {
             currentChunk->SetBlock(lastEmptyPos, player.getBlockID());
