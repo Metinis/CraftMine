@@ -1,6 +1,7 @@
 #version 330 core
 in vec3 aPos;
 in vec2 aTexCoord;
+in float aBrightness;
 
 out vec2 TexCoord;
 
@@ -16,5 +17,6 @@ void main()
 {
     ourColor = vec3(0.5, 0.0, 0.0);
     TexCoord = aTexCoord;
-    gl_Position = projection * model * view * vec4(aPos, 1.0);
+    brightness = aBrightness;
+    gl_Position = model * vec4(aPos, 1.0);
 }

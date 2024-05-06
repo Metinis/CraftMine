@@ -44,6 +44,7 @@ private:
     VAO* itemVAO;
     VBO* itemVBO;
     VBO* itemUVVBO;
+    VBO* itemBrightnessVBO;
     IBO* itemIBO;
 
     std::vector<GLuint> indices;
@@ -60,6 +61,8 @@ private:
 
     std::vector<glm::vec3> itemVertices;
     std::vector<glm::vec2> itemUVCoords;
+
+    std::vector<float> itemBrightness;
 
     unsigned char toolbarItems[9] = {0};
 
