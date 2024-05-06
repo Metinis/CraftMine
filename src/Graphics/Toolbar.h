@@ -78,6 +78,8 @@ public:
     unsigned char getID(unsigned char _slot);
     void setID(unsigned char id, unsigned char _slot);
     void renderItems();
+
+    void renderSlot();
 };
 
 

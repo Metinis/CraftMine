@@ -283,10 +283,12 @@ void Scene::renderWorld(World& world){
     //glEnable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     guiTexture->Bind();
-    //toolbar->changeSlot(0);
     toolbar->renderToolbar();
     worldTexture->Bind();
     toolbar->renderItems();
+    guiTexture->Bind();
+    toolbar->renderSlot();
+    worldTexture->Bind();
 
     fbo->Unbind();
     //glDisable(GL_DEPTH_TEST);
