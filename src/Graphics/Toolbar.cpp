@@ -86,16 +86,21 @@ Toolbar::Toolbar()
 }
 void Toolbar::changeSlot(int currentSlot) {
     slot = currentSlot;
+    float adjustedToolbarWidth = toolbarWidth * 180/182;
+    float adjustedHalfToolbarWidth = adjustedToolbarWidth / 2.0f;
+    float adjustedSlotWidth = adjustedToolbarWidth / 9.0f;
+    float adjustedHalfSlotWidth = adjustedSlotWidth / 2.0f;
 
-    toolbarCenterX = -halfToolbarWidth + (slotWidth / 2) + currentSlot * slotWidth;
+    toolbarCenterX = -adjustedHalfToolbarWidth + adjustedHalfSlotWidth + adjustedSlotWidth * currentSlot;
+    float offset = 0.005f;
 
     slotVertices = {
-            glm::vec2(toolbarCenterX + halfSlotWidth, toolbarBottomY - 0.005f),  // Bottom right
-            glm::vec2(toolbarCenterX - halfSlotWidth, toolbarBottomY - 0.005f),  // Bottom left
-            glm::vec2(toolbarCenterX - halfSlotWidth, toolbarBottomY + toolbarHeight + 0.005f),  // Top left
-            glm::vec2(toolbarCenterX - halfSlotWidth, toolbarBottomY + toolbarHeight + 0.005f),  // Top left
-            glm::vec2(toolbarCenterX + halfSlotWidth, toolbarBottomY + toolbarHeight + 0.005f), // Top right
-            glm::vec2(toolbarCenterX + halfSlotWidth, toolbarBottomY - 0.005f),  // Bottom right
+            glm::vec2(toolbarCenterX + halfSlotWidth + offset, toolbarBottomY - offset),  // Bottom right
+            glm::vec2(toolbarCenterX - halfSlotWidth - offset, toolbarBottomY - offset),  // Bottom left
+            glm::vec2(toolbarCenterX - halfSlotWidth - offset, toolbarBottomY + toolbarHeight + offset),  // Top left
+            glm::vec2(toolbarCenterX - halfSlotWidth - offset, toolbarBottomY + toolbarHeight + offset),  // Top left
+            glm::vec2(toolbarCenterX + halfSlotWidth + offset, toolbarBottomY + toolbarHeight + offset), // Top right
+            glm::vec2(toolbarCenterX + halfSlotWidth + offset, toolbarBottomY - offset),  // Bottom right
     };
     slotVAO->Bind();
     slotVBO->SetNewData(slotVertices);

@@ -18,11 +18,11 @@ class Toolbar {
 private:
     const float toolbarWidth = 0.75f;
 
-    const float slotWidth = toolbarWidth / 9;
+    const float slotWidth = toolbarWidth / 9.0f;
 
     const float halfToolbarWidth = toolbarWidth / 2.0f;
 
-    const float halfSlotWidth = slotWidth / 2.0f + 0.005f;
+    const float halfSlotWidth = slotWidth / 2.0f;
 
     // Height of the toolbar
     const float toolbarHeight = 0.15f;
