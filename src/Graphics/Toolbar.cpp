@@ -34,7 +34,7 @@ Toolbar::Toolbar()
             glm::vec2(toolbarCenterX + halfSlotWidth, toolbarBottomY - 0.005f),  // Bottom right
     };
     slotUVCoords = {
-            glm::vec2(0.08984375f, 0.1796875f), // bottom right
+            glm::vec2(0.09375f, 0.1796875f), // bottom right
             glm::vec2(0.0f, 0.1796875f), // bottom left
             glm::vec2(0.0f, 0.0859375f), //top left
             glm::vec2(0.0f, 0.0859375f), //top left

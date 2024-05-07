@@ -15,9 +15,11 @@ class Crosshair {
 private:
     VAO* CrosshairVAO;
     VBO* CrosshairVBO;
+    VBO* UVVBO;
     Shader* shader;
 
     std::vector<glm::vec2> vertices;
+    std::vector<glm::vec2> UVCoords;
 public:
     Crosshair();
     void renderCrosshair();

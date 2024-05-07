@@ -277,12 +277,13 @@ void Scene::renderWorld(World& world){
     renderBlockOutline(world);
 
     //render cross hair/ui
-    glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_SRC_ALPHA);
+    //glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_SRC_ALPHA);
     glDisable(GL_DEPTH_TEST);
+    guiTexture->Bind();
     ui->renderCrosshair();
     //glEnable(GL_DEPTH_TEST);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    guiTexture->Bind();
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //guiTexture->Bind();
     toolbar->renderToolbar();
     worldTexture->Bind();
     toolbar->renderItems();
