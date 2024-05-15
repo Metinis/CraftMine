@@ -43,7 +43,7 @@ private:
 		}
 	};
 
-    void CheckForBlocksToBeAdded(Chunk* chunk);
+    bool CheckForBlocksToBeAdded(Chunk* chunk);
 	void GenerateChunkBuffers(std::vector<Chunk*>& addedChunks);
     void LoadThreadDataToMain();
 

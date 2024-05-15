@@ -27,10 +27,6 @@ class ChunkMeshGeneration;
 class Chunk
 {
 private:
-
-
-
-
     struct ChunkData{
         std::vector<glm::vec3> chunkVerts;
         std::vector<glm::vec2> chunkUVs;

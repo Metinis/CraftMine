@@ -69,8 +69,9 @@ void World::GenerateWorldThread()
 		}
 	}
 }
-void World::CheckForBlocksToBeAdded(Chunk* chunk)
+bool World::CheckForBlocksToBeAdded(Chunk* chunk)
 {
+    bool hasBlocksToBeAdded = false;
     mutexBlocksToBeAddedList.lock();
 
     std::vector<BlocksToBeAdded> newBlocksToBeAddedList;
@@ -82,6 +83,7 @@ void World::CheckForBlocksToBeAdded(Chunk* chunk)
         {
             //TODO, make id more clear
             chunk->SetBlock(glm::ivec3(_blocksToBeAdded.localPosition.x, _blocksToBeAdded.localPosition.y, _blocksToBeAdded.localPosition.z), 8);
+            hasBlocksToBeAdded = true;
         }
         else
         {
@@ -95,6 +97,7 @@ void World::CheckForBlocksToBeAdded(Chunk* chunk)
     }
 
     mutexBlocksToBeAddedList.unlock();
+    return hasBlocksToBeAdded;
 }
 void World::UpdateViewDistance(glm::ivec2& cameraChunkPos)
 {
@@ -353,8 +356,15 @@ void World::LoadThreadDataToMain()
             Chunk* chunk = loadedChunks.front();
             if(!chunk->inThread) {
                 chunk->sortTransparentMeshData(); //sort transparent faces before rendering
-                addedChunks.push_back(std::ref(chunk));
-                loadedChunks.pop();
+                if (CheckForBlocksToBeAdded(chunk)){
+                    loadedChunks.pop();
+                    chunksToLoadData.push_back(chunk);
+                }
+                else{
+                    addedChunks.push_back(std::ref(chunk));
+                    loadedChunks.pop();
+                }
+
             }
         }
         mutexChunksToLoadData.unlock();
