@@ -4,7 +4,7 @@ OpenGL skills.
 
 Feel free to comment on what you don't like or like, and I'll try to improve.
 
-Currently, been working on it in and out for ~4 months when I find free time.
+Currently, been working on it in and out for ~5 months when I find free time.
 
 ## The Game
 The game is basically a clone of Minecraft classic but with infinite worlds and
@@ -35,14 +35,11 @@ an inventory system, day/night cycle and the sun.
 - Sometimes the tree leaves don't get added until chunk is updated
 - Rare crash due to threading (possibly a race condition)
 - Chunks not displaying their mesh when updated too many times (just like in the very early versions of Minecraft)
-- Shadows on block sides sometimes do look out of place, need to use normalsMap for bias calculations
-- Rare collision issues if framerate is low
 - Sneaking on chunk edges may not work properly all the time
 
 ## Features to implement
 
 - Water shader
-- UI for block selection
 - Inventory system (basically a creative menu)
 - Flying
 - Saving and loading Worlds
