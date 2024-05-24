@@ -201,7 +201,10 @@ void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed
     }
     if (glfwGetKey(window, GLFW_KEY_F4) == GLFW_PRESS) {
         //std::cout<<world.blocksToBeAddedList[world.blocksToBeAddedList.size() - 1].localPosition.x << "x " << world.blocksToBeAddedList[0].localPosition.y<< "y " << world.blocksToBeAddedList[0].localPosition.z<< "z ";
-        std::cout<<world.blocksToBeAddedList.size()<<"\n";
+        //std::cout<<world.blocksToBeAddedList.size()<<"\n";
+        std::cout<<"Jumping: "<<player.isJumping<<"\n";
+        std::cout<<"Grounded: "<<player.isGrounded<<"\n";
+        std::cout<<"Velocity Y: "<<player.playerVelocity.y<<"\n";
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         player.ProcessKeyboardMovement(FORWARD, deltaTime);

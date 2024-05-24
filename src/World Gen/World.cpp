@@ -177,14 +177,15 @@ void World::UpdateViewDistance(glm::ivec2& cameraChunkPos)
 
 void World::GenerateChunkBuffers(std::vector<Chunk*>& addedChunks)
 {
-	for (Chunk* chunk : addedChunks)
-	{
-		if (!chunk->inThread)
-		{
+    for (Chunk* chunk : addedChunks)
+    {
+        if (!chunk->inThread)
+        {
+            //todo fix this race condition
             //chunk->chunkHasMeshes = false;
             chunk->generatedBuffData = false;
-			chunk->LoadBufferData();
-			chunk->generatedBuffData = true;
+            chunk->LoadBufferData();
+            chunk->generatedBuffData = true;
             if(!chunk->chunkHasMeshes)
             {
                 mutexChunksToLoadData.lock();
@@ -194,9 +195,9 @@ void World::GenerateChunkBuffers(std::vector<Chunk*>& addedChunks)
             }
 
 
-		}
-	}
-	addedChunks.clear();
+        }
+    }
+    addedChunks.clear();
 	
 }
 Chunk* World::GetChunk(int x, int y)
@@ -436,7 +437,7 @@ void World::renderChunks(Shader& shader)
 {
     for (Chunk* chunk : activeChunks)
     {
-        if(chunk->chunkHasMeshes){
+        if(chunk->chunkHasMeshes && chunk->mesh->loadedData && chunk->transparentMesh->loadedData && &shader != nullptr){
             scene.renderMesh(*chunk->mesh, shader);
 
             scene.renderMesh(*chunk->transparentMesh, shader);

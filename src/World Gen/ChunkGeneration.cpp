@@ -174,7 +174,7 @@ void ChunkGeneration::GenChunk(float* heightMap, Chunk& chunk)	//might need to b
     noise.SetNoiseType(FastNoise::SimplexFractal);
     noise.SetFractalType(FastNoise::FBM);
     noise.SetFractalOctaves(4);
-    noise.SetSeed(123);
+    noise.SetSeed(100); //123 is old seed
     noise.SetFractalLacunarity(2.0f);
     noise.SetFrequency(0.0075f);
     float scaleFactor = 0.25f;

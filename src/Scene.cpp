@@ -107,8 +107,11 @@ void Scene::updateShadowProjection(){
 }
 
 void Scene::renderMesh(Mesh& mesh, Shader& _shader){
-    _shader.use();
-    mesh.render(_shader);
+    if(mesh.loadedData){
+        _shader.use();
+        mesh.render(_shader);
+    }
+
 }
 
 void Scene::loadShader(Shader& _shader, int viewDistance) {

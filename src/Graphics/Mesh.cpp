@@ -1,6 +1,7 @@
 #include "Mesh.h"
 void Mesh::setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec3> _normals, std::vector<glm::vec2> _UVs, std::vector<GLuint> _indices, std::vector<float> _brightnessFloats)
 {
+    loadedData = false;
     vertices = _vertices;
     normals = _normals;
     UVs = _UVs;
@@ -9,6 +10,7 @@ void Mesh::setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec3> _nor
 }
 void Mesh::clearData()
 {
+    loadedData = false;
     if (meshVAO != nullptr) {
         meshVAO->Delete();
         delete meshVAO;
@@ -45,8 +47,10 @@ void Mesh::clearData()
 }
 void Mesh::render(Shader& _shader)
 {
-    _shader.use();
-    if(meshVAO != nullptr && meshIBO != nullptr && indices.size() > 0 && meshUVVBO != nullptr && meshVBO != nullptr && meshBrightnessVBO != nullptr && meshNormalVBO != nullptr) {
+
+    //todo fix race condition
+    if(loadedData && meshVAO != nullptr && meshIBO != nullptr && meshUVVBO != nullptr && meshVBO != nullptr && meshBrightnessVBO != nullptr && meshNormalVBO != nullptr) {
+        _shader.use();
         meshVAO->Bind();
         meshIBO->Bind();
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, nullptr);
@@ -55,6 +59,7 @@ void Mesh::render(Shader& _shader)
     }
 }
 void Mesh::loadData(Shader& _shader){
+    loadedData = false;
     _shader.use();
     clearData();
 
@@ -83,6 +88,7 @@ void Mesh::loadData(Shader& _shader){
     meshIBO = new IBO(indices);
     // Unbind the VAO after setting up the main shader
     meshVAO->Unbind();
+
 
 }
 

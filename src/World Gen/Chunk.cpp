@@ -143,24 +143,21 @@ void Chunk::sortTransparentMeshData() {
 }
 void Chunk::LoadBufferData()
 {
-    if(mesh != nullptr)
-    {
-        delete mesh;
+    if(!chunkHasMeshes){
+        mesh = new Mesh();
+        transparentMesh = new Mesh();
     }
-    mesh = new Mesh();
-    mesh->setData(chunkData.chunkVerts, chunkData.chunkNormals, chunkData.chunkUVs, chunkData.chunkIndices, chunkData.chunkBrightnessFloats);
-    mesh->loadData(*world.scene.shader);
-
-    if(transparentMesh != nullptr)
+    if(mesh != nullptr && !inThread && transparentMesh != nullptr)
     {
-        delete transparentMesh;
+        mesh->loadedData = false;
+        transparentMesh->loadedData = false;
+        mesh->setData(chunkData.chunkVerts, chunkData.chunkNormals, chunkData.chunkUVs, chunkData.chunkIndices, chunkData.chunkBrightnessFloats);
+        mesh->loadData(*world.scene.shader);
+        transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentNormals, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);
+        transparentMesh->loadData(*world.scene.transparentShader);
+        mesh->loadedData = true;
+        transparentMesh->loadedData = true;
     }
-
-    transparentMesh = new Mesh();
-
-    transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentNormals, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);
-    transparentMesh->loadData(*world.scene.transparentShader);
-
 }
 
 void Chunk::LoadChunkData() {

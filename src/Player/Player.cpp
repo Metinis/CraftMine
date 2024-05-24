@@ -10,20 +10,19 @@ void Player::Update(float deltaTime){
     lastPosition = position;
     glm::vec3 newPosition = position + playerVelocity * deltaTime;
 
-    UpdatePositionY(deltaTime, newPosition);
+    applyNewPositionY(newPosition);
+    calculateNewPositionY(deltaTime);
+
     if(glm::length(playerVelocity) != 0 || !isGrounded){
         UpdatePositionXZ(newPosition);
-        //Check for sorting every time you move
-    }
-
-    if(isJumping && playerVelocity.y <= 0)
-    {
-        isJumping = false;
     }
 
     if(glm::length(playerVelocity) > 0)
         UpdateDeceleration(deltaTime);
 
+    updateShifting();
+}
+void Player::updateShifting() {
     if(isShifting && !shiftChanged){
         position.y -= 0.2f;
         HEIGHT = HEIGHT - 0.2f;
@@ -38,10 +37,26 @@ void Player::Update(float deltaTime){
         shiftChanged = false;
     }
 }
-void Player::UpdatePositionY(float& deltaTime, glm::vec3& newPosition) {
+void Player::calculateNewPositionY(float& deltaTime) {
 
-    //update
+    if((!isJumping && isGrounded)){
+        //reset to 0 only if no collision
+        playerVelocity.y = 0;
+    }
+    else if (!isGrounded)
+    {
+        if(playerVelocity.y > -MAX_VELOCITY)
+            playerVelocity.y -= GRAVITY * deltaTime * GRAVITY_MULTIPLIER;
+    }
+}
+void Player::applyNewPositionY(glm::vec3 &newPosition) {
+
     glm::vec3 newYPos = glm::vec3(position.x, newPosition.y + HEIGHT, position.z);
+
+    if(isJumping && playerVelocity.y <= 0)
+    {
+        isJumping = false;
+    }
     if(!checkNewPositionY(newYPos)) {
         position.y = newPosition.y;
     }
@@ -52,14 +67,6 @@ void Player::UpdatePositionY(float& deltaTime, glm::vec3& newPosition) {
 
     isGrounded = checkNewPositionY(position);
 
-    if((!isJumping && isGrounded) || isFlying){
-        playerVelocity.y = 0;
-    }
-    if (!isGrounded && !isFlying)
-    {
-        if(playerVelocity.y > -MAX_VELOCITY)
-            playerVelocity.y -= GRAVITY * deltaTime * GRAVITY_MULTIPLIER;
-    }
 }
 void Player::UpdatePositionXZ(glm::vec3& newPosition) {
 
@@ -321,9 +328,9 @@ bool Player::checkNewPositionY(glm::vec3& newPosition) const
                 localChunkPos.x = ((newPosition.x - (float) currentChunk->chunkPosition.x * Chunk::SIZE) + xWidth);
                 localChunkPos.z = ((newPosition.z - (float) currentChunk->chunkPosition.y * Chunk::SIZE) + zWidth);
 
-                if (Block::isSolid(currentChunk->GetBlockID(
-                        glm::round(glm::vec3(localChunkPos.x, newPosition.y - 1.5, localChunkPos.z)))) ||
-                        Block::isSolid(currentChunk->GetBlockID(glm::round(glm::vec3(localChunkPos.x, newPosition.y - HEIGHT - 0.01, localChunkPos.z))))){
+                if (//Block::isSolid(currentChunk->GetBlockID(
+                        //glm::round(glm::vec3(localChunkPos.x, newPosition.y - 1.5, localChunkPos.z)))) ||
+                        Block::isSolid(currentChunk->GetBlockID(glm::round(glm::vec3(localChunkPos.x, newPosition.y - HEIGHT, localChunkPos.z))))){
                     //std::cout<<HEIGHT;
                     return true;
                 }
@@ -333,10 +340,6 @@ bool Player::checkNewPositionY(glm::vec3& newPosition) const
 
     }
     return false;
-}
-float Player::distanceToPlayer(const glm::vec3& point) const {
-    //return glm::length(point - position);
-    return glm::distance(position, point);
 }
 void Player::setBlockID(int blockID) {
     currentBlockID = blockID;
@@ -359,18 +362,15 @@ bool Player::checkCollisionWithBlockLocal(glm::ivec3 localPos){
 
     if(localPos.x != glm::round(positionInChunk().x + _widthX) ||
             localPos.z != glm::round(positionInChunk().z + _widthZ) ||
-            (localPos.y != glm::round(positionInChunk().y - 1) && localPos.y != glm::round(positionInChunk().y))){
+            (localPos.y != glm::round(positionInChunk().y - 1.5f) && localPos.y != glm::round(positionInChunk().y))){
         return false;
     }
     else{
         return true;
     }
 }
-bool Player::checkCollisionWithBlockGlobal(glm::ivec3 localPos){
 
-}
-float Player::getHeight() {
-    return HEIGHT;
-}
+
+
 
 

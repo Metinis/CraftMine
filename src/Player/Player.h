@@ -17,15 +17,15 @@ private:
     const float ACCELERATION = 50.0f;
     const float DECELERATION = 25.0f;
 
-    bool isGrounded{};
-    bool isJumping{};
+
+
     bool isFlying{};
 
     int currentBlockID = 1;
 
     float movementSpeed;
+    //todo fix private and public attributes
 
-    glm::vec3 playerVelocity{};
 public:
     World* world;
     Camera camera;
@@ -34,11 +34,14 @@ public:
     glm::ivec2 chunkPosition{};
 
     bool shiftChanged = true;
+    bool isJumping{};
+    bool isGrounded{};
     bool isShifting{};
+    glm::vec3 playerVelocity{};
 
     Player();
     void Update(float deltaTime);
-    void UpdatePositionY(float& deltaTime, glm::vec3& newPosition);
+    void calculateNewPositionY(float& deltaTime);
     void UpdatePositionXZ(glm::vec3& newPosition);
     void UpdateDeceleration(float& deltaTime);
     void ProcessKeyboardMovement(cameraMovement dir, float deltaTime);
@@ -47,11 +50,10 @@ public:
     bool checkNewPositionX(float newZ) const;
     bool checkNewPositionXZ(glm::vec3 newPosition) const;
     bool checkNewPositionY(glm::vec3& newPosition) const;
-    float distanceToPlayer(const glm::vec3& point) const;
+    void applyNewPositionY(glm::vec3& newPosition);
+    void updateShifting();
     glm::vec3 positionInChunk();
-    float getHeight();
     bool checkCollisionWithBlockLocal(glm::ivec3 localPos);
-    bool checkCollisionWithBlockGlobal(glm::ivec3 localPos);
     void setBlockID(int blockID);
     int getBlockID();
 };
