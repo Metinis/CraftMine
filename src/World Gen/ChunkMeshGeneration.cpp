@@ -31,6 +31,7 @@ bool ChunkMeshGeneration::CheckFace(int x, int y, int z, bool isSolid, unsigned 
 
 void ChunkMeshGeneration::GenFaces(Chunk& chunk)
 {
+    //std::lock_guard<std::mutex> lock(chunk.chunkMutex);
     int numFaces = 0;
     int numTransparentFaces = 0;
     for (int x = 0; x < Chunk::SIZE; x++)
@@ -114,6 +115,7 @@ void ChunkMeshGeneration::AddFaces(int x, int y, int z, int &numFaces, bool isSo
 
 void ChunkMeshGeneration::UpdateSide(CraftMine::Faces face, Chunk& chunk)
 {
+    //std::lock_guard<std::mutex> lock(chunk.chunkMutex);
     Chunk* tempChunk = nullptr;
     int numFaces = 0;
     int numTransparentFaces = 0;
@@ -248,6 +250,9 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk& chunk)
             UpdateSide(CraftMine::LEFT, chunk);
         }
     }
+    else{
+        chunk.chunkBools.leftSideUpdated = true;
+    }
     //Update the left side of the right chunk
     if (chunk.chunkPosition.x < World::SIZE - 1)
     {
@@ -269,6 +274,9 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk& chunk)
         {
             UpdateSide(CraftMine::RIGHT, chunk);
         }
+    }
+    else{
+        chunk.chunkBools.rightSideUpdated = true;
     }
     //Update back side of the front chunk
     if (chunk.chunkPosition.y < World::SIZE - 1)
@@ -292,6 +300,9 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk& chunk)
         }
 
     }
+    else{
+        chunk.chunkBools.frontUpdated = true;
+    }
     //Update front side of the back chunk
     if (chunk.chunkPosition.y > 0)
     {
@@ -312,6 +323,9 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk& chunk)
         {
             UpdateSide(CraftMine::BACK, chunk);
         }
+    }
+    else{
+        chunk.chunkBools.backUpdated = true;
     }
 }
 void ChunkMeshGeneration::IntegrateFace(FaceData faceData, bool isTransparent, Chunk& chunk)

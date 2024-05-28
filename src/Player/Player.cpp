@@ -1,7 +1,7 @@
 #include "Player.h"
 Player::Player(){
     movementSpeed = 5.0f;
-    position = glm::vec3((World::SIZE / 2) * Chunk::SIZE, Chunk::HEIGHT, 0);
+    position = glm::vec3((World::SIZE / 2) * Chunk::SIZE, Chunk::HEIGHT, (World::SIZE / 2) * Chunk::SIZE);
     camera.position = &position;
     chunkPosition = glm::vec2(position.x / Chunk::SIZE, position.z / Chunk::SIZE);
 }
@@ -197,7 +197,7 @@ void Player::ProcessKeyboardMovement(cameraMovement dir, float deltaTime)
         isShifting = true;
         if(isFlying){
             playerVelocity.y = 0;
-            playerVelocity.y -= jumpForce*2.5f;
+            playerVelocity.y -= jumpForce*4.5f;
             isFlying = !isGrounded;
         }
     }
@@ -211,7 +211,7 @@ void Player::ProcessKeyboardMovement(cameraMovement dir, float deltaTime)
         else if(isFlying){
             playerVelocity.y = 0;
             isJumping = true;
-            playerVelocity.y += jumpForce / 1.25f;
+            playerVelocity.y += jumpForce/1.1f;
         }
 
     }

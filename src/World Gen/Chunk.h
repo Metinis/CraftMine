@@ -59,7 +59,7 @@ private:
         std::array<glm::vec3, 4> normals;
     };
 
-    std::mutex chunkMutex;
+
 
 	
 public:
@@ -68,6 +68,8 @@ public:
 
     ChunkData chunkData;
     ChunkBools chunkBools;
+
+    std::mutex chunkMutex;
 
     Mesh* mesh = nullptr;
     Mesh* transparentMesh = nullptr;
@@ -97,5 +99,7 @@ public:
     //void RenderShadowChunk(Shader& _shader);
 	void Delete();
     struct CompareFaces;
+
+    bool getIsAllSidesUpdated();
 };
 

@@ -42,6 +42,7 @@ void Chunk::GenBlocks()
 
 void Chunk::ClearVertexData()
 {
+    //std::lock_guard<std::mutex> lock(chunkMutex);
     chunkData.indexCount = 0;
     chunkData.chunkVerts.clear();
     chunkData.chunkUVs.clear();
@@ -90,6 +91,7 @@ struct Chunk::CompareFaces{
     }
 };
 void Chunk::sortTransparentMeshData() {
+    std::lock_guard<std::mutex> lock(chunkMutex);
     // Sort transparent mesh data based on distance to player
     CompareFaces compareFaces{};
     glm::vec3 playerPos = *world.camera.position;
@@ -188,4 +190,8 @@ void Chunk::Delete()
 Chunk::~Chunk()
 {
     Delete();
+}
+
+bool Chunk::getIsAllSidesUpdated() {
+    return chunkBools.rightSideUpdated && chunkBools.leftSideUpdated && chunkBools.frontUpdated && chunkBools.backUpdated;
 }
