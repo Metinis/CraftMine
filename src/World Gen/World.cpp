@@ -1,6 +1,6 @@
 #include "Chunk.h"
 #include "World.h"
-#include "Input/MouseInput.h"
+#include "Input/Input.h"
 #include "ChunkMeshGeneration.h"
 #include "Player/Player.h"
 
@@ -424,7 +424,8 @@ void World::renderChunks()
 {
     for (Chunk* chunk : activeChunks)
     {
-        if(chunk->chunkHasMeshes){
+        if(chunk->chunkHasMeshes && chunk->mesh->loadedData && chunk->transparentMesh->loadedData&& chunk->mesh != nullptr &&
+           chunk->transparentMesh != nullptr){
             scene.renderMesh(*chunk->mesh, *scene.shader);
             glDepthMask(GL_FALSE);
             scene.renderMesh(*chunk->transparentMesh, *scene.transparentShader);
@@ -437,7 +438,8 @@ void World::renderChunks(Shader& shader)
 {
     for (Chunk* chunk : activeChunks)
     {
-        if(chunk->chunkHasMeshes && chunk->mesh->loadedData && chunk->transparentMesh->loadedData && &shader != nullptr){
+        if(chunk->chunkHasMeshes && chunk->mesh->loadedData && chunk->transparentMesh->loadedData && &shader != nullptr && chunk->mesh != nullptr &&
+        chunk->transparentMesh != nullptr){
             scene.renderMesh(*chunk->mesh, shader);
 
             scene.renderMesh(*chunk->transparentMesh, shader);

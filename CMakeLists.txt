@@ -479,8 +479,8 @@ add_executable(CraftMine
         src/Main.cpp
         src/Graphics/Mesh.cpp
         src/Graphics/Mesh.h
-        src/Input/MouseInput.cpp
-        src/Input/MouseInput.h
+        src/Input/Input.cpp
+        src/Input/Input.h
         src/Game.cpp
         src/Game.h
         "src/World Gen/ChunkGeneration.cpp"

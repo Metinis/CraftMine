@@ -14,14 +14,14 @@
 #include "Chunk.h"
 #include "World.h"
 #include "Crosshair.h"
-#include "Input/MouseInput.h"
+#include "Input/Input.h"
 #include "Player/Player.h"
 #include "ScreenQuad.h"
 #include "Scene.h"
 
 class Scene;
 
-class MouseInput;
+class Input;
 
 class Game {
 public:
@@ -29,19 +29,19 @@ public:
 
     void run();
 
-private:
-    GLFWwindow* window;
+    float deltaTime = 0;
     Player* player;
     Camera* camera;
     World* world;
-    MouseInput* mouseInput;
+    Input* mouseInput;
     Scene* scene;
+private:
+    GLFWwindow* window;
     glm::ivec2 lastChunkPos{};
     glm::ivec2 newChunkPos{};
     bool wireframe;
     bool keyProcessed;
     bool isFullscreen;
-    float deltaTime = 0;
     float lastFrame = 0;
     int updateingInt;
     float tickSpeed = 0.002f;
@@ -49,10 +49,7 @@ private:
     double accumulator = 0.0;
     double timeStep = 1.0 / 240.0; // Fixed time step
 
-
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-
-    static void processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, bool* _isFullscreen, Player& player, World& world, float& deltaTime, Scene& scene);
 
 };
 

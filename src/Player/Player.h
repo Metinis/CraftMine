@@ -14,12 +14,10 @@ private:
     const float WIDTH = 0.3f;
     const float GRAVITY_MULTIPLIER = 2;
     const float MAX_VELOCITY = 40.0f;
-    const float ACCELERATION = 50.0f;
+    float ACCELERATION = 50.0f;
     const float DECELERATION = 25.0f;
+    float jumpForce = 6.2f;
 
-
-
-    bool isFlying{};
 
     int currentBlockID = 1;
 
@@ -56,6 +54,10 @@ public:
     bool checkCollisionWithBlockLocal(glm::ivec3 localPos);
     void setBlockID(int blockID);
     int getBlockID();
+
+    void updateFlying();
+
+    bool isFlying{};
 };
 
 

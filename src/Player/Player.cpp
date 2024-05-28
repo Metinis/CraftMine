@@ -23,13 +23,13 @@ void Player::Update(float deltaTime){
     updateShifting();
 }
 void Player::updateShifting() {
-    if(isShifting && !shiftChanged){
+    if(isShifting && !shiftChanged && !isFlying){
         position.y -= 0.2f;
         HEIGHT = HEIGHT - 0.2f;
         movementSpeed = 2.5f;
         shiftChanged = true;
     }
-    else if(!isShifting && shiftChanged)
+    else if(!isShifting && shiftChanged && !isFlying)
     {
         position.y += 0.2f;
         HEIGHT = HEIGHT + 0.2f;
@@ -39,14 +39,22 @@ void Player::updateShifting() {
 }
 void Player::calculateNewPositionY(float& deltaTime) {
 
-    if((!isJumping && isGrounded)){
+    if(!isJumping && isGrounded){
         //reset to 0 only if no collision
         playerVelocity.y = 0;
     }
     else if (!isGrounded)
     {
         if(playerVelocity.y > -MAX_VELOCITY)
-            playerVelocity.y -= GRAVITY * deltaTime * GRAVITY_MULTIPLIER;
+        {
+            if(isFlying && playerVelocity.y > 0)
+                playerVelocity.y -= GRAVITY * deltaTime * GRAVITY_MULTIPLIER;
+            else if(isFlying)
+                playerVelocity.y = 0;
+            else
+                playerVelocity.y -= GRAVITY * deltaTime * GRAVITY_MULTIPLIER;
+        }
+
     }
 }
 void Player::applyNewPositionY(glm::vec3 &newPosition) {
@@ -182,30 +190,40 @@ void Player::ProcessKeyboardMovement(cameraMovement dir, float deltaTime)
         glm::vec2 normalizedXZ = glm::normalize(glm::vec2(playerVelocity.x, playerVelocity.z));
         playerVelocity.x = normalizedXZ.x * movementSpeed;
         playerVelocity.z = normalizedXZ.y * movementSpeed;
+
     }
 
     if (dir == cameraMovement::DOWN) {
         isShifting = true;
         if(isFlying){
             playerVelocity.y = 0;
-            playerVelocity.y -= 6.20f;
+            playerVelocity.y -= jumpForce*2.5f;
             isFlying = !isGrounded;
         }
     }
     if (dir == cameraMovement::UP) {
-        if((isGrounded && !isJumping))
+        if(isGrounded && !isJumping)
         {
             playerVelocity.y = 0;
             isJumping = true;
-            playerVelocity.y += 6.20f;
+            playerVelocity.y += jumpForce;
         }
-        else if(playerVelocity.y > 8 || isFlying){ //TODO, implement a press system instead of holding key
-            isFlying = !isFlying;
+        else if(isFlying){
             playerVelocity.y = 0;
-            playerVelocity.y += 6.20f;
-            //playerVelocity.y = 0;
+            isJumping = true;
+            playerVelocity.y += jumpForce / 1.25f;
         }
 
+    }
+}
+void Player::updateFlying(){
+    isFlying = !isFlying;
+    if(isFlying){
+        movementSpeed = 10.0f;
+    }
+    else
+    {
+        movementSpeed = 5.0f;
     }
 }
 bool Player::isColliding(glm::vec3& newPosition, glm::vec3 front) const //front can be x or z since they are checked separately

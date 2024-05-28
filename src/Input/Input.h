@@ -6,6 +6,7 @@
 #include "Chunk.h"
 #include "World.h"
 #include"glfw/include/GLFW/glfw3.h"
+#include "Game.h"
 
 #ifndef CRAFTMINE_MOUSEINPUT_H
 #define CRAFTMINE_MOUSEINPUT_H
@@ -13,19 +14,26 @@
 class GLFWwindow;
 class World;
 class Scene;
+class Game;
 
-class MouseInput {
+class Input {
 private:
+
+    Game& game;
     World& world;
     Camera& camera;
     Scene& scene;
+    Player& player;
     float lastX;
     float lastY;
     bool firstMouse;
 
+    double lastPressTime = 0; //used for jumping
+    float timeFrame = 0.25f; //used for jumping
+
 public:
 
-    MouseInput(Camera& _camera, World& _world, Scene& _scene);
+    Input(Camera &_camera, World &_world, Scene &_scene, Player &_player, Game &_game);
 
     void processMouse(GLFWwindow* window, double xPosIn, double yPosIn);
 
@@ -38,6 +46,13 @@ public:
     void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 
     void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
+
+    void processKey(int key, int action);
+
+    static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
+
+    static void processInput(GLFWwindow *window, bool *wireframe, bool *keyProccessed, bool *_isFullscreen, Player &player,
+                             World &world, float &deltaTime, Scene &scene);
 };
 
 #endif //CRAFTMINE_MOUSEINPUT_H

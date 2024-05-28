@@ -7,6 +7,7 @@
 #include <glm/vec3.hpp>
 #include <utility>
 #include "Shader.h"
+#include <iostream>
 
 class Mesh {
 private:
@@ -26,6 +27,7 @@ private:
 
 public:
     bool loadedData = false;
+    bool beingRendered = false;
     void setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec3> _normals, std::vector<glm::vec2> _UVs, std::vector<GLuint> _indices, std::vector<float> _brightnessFloats);
     void clearData();
     void render(Shader& _shader);

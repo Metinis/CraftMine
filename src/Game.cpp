@@ -35,6 +35,7 @@ Game::Game(){
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     glEnable(GL_CULL_FACE);
@@ -54,15 +55,16 @@ Game::Game(){
     player->world = world;
 
 
-    mouseInput = new MouseInput(*camera, *world, *scene);
+    mouseInput = new Input(*camera, *world, *scene, *player, *this);
 
 
     glfwSetWindowUserPointer(window, mouseInput);
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetCursorPosCallback(window, MouseInput::mouse_callback);
-    glfwSetMouseButtonCallback(window, MouseInput::mouse_button_callback);
-    glfwSetScrollCallback(window, MouseInput::scroll_callback);
+    glfwSetCursorPosCallback(window, Input::mouse_callback);
+    glfwSetMouseButtonCallback(window, Input::mouse_button_callback);
+    glfwSetScrollCallback(window, Input::scroll_callback);
+    glfwSetKeyCallback(window, Input::key_callback);
 
     deltaTime = 0.0f;
     lastFrame = 0.0f;
@@ -87,7 +89,7 @@ void Game::run(){
 
         accumulator += deltaTime;
 
-        processInput(window, &wireframe, &keyProcessed, &isFullscreen, *player, *world, deltaTime, *scene);
+        Input::processInput(window, &wireframe, &keyProcessed, &isFullscreen, *player, *world, deltaTime, *scene);
         newChunkPos = (glm::vec2(glm::round(player->position.x) / Chunk::SIZE, glm::round(player->position.z) / Chunk::SIZE));
 
         if (std::abs(newChunkPos.x - lastChunkPos.x) >= updateingInt ||
@@ -143,142 +145,8 @@ void Game::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
-void Game::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, bool* _isFullscreen, Player& player, World& world, float& deltaTime, Scene& scene)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
-    if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS && !*wireframe && !*keyProccessed)
-    {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        *wireframe = true;
-        *keyProccessed = true;
-    }
-    else if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS && *wireframe && !*keyProccessed)
-    {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        *wireframe = false;
-        *keyProccessed = true;
-    }
-    if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_RELEASE)
-    {
-        *keyProccessed = false;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS) {
-        //if(!_isFullscreen && !*keyProccessed){
-            // Get the primary monitor
-            GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
-
-            // Get the video mode of the primary monitor
-            const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
-
-            // Switch the window to fullscreen mode
-            glfwSetWindowMonitor(window, primaryMonitor, 0, 0, mode->width, mode->height, mode->refreshRate);
-            glfwSwapInterval(0);
-            *keyProccessed = true;
-            *_isFullscreen = true;
-            int width, height;
-            glfwGetFramebufferSize(window, &width, &height);
-            glViewport(0, 0, width, height);
-        //}
-        /*else if(!*keyProccessed)
-        {
-            // Get the primary monitor
-            GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
-
-            // Get the video mode of the primary monitor
-            const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
-
-            // Switch the window to windowed mode
-            glfwSetWindowMonitor(window, NULL, 0, 0, mode->width, mode->height, mode->refreshRate);
-            *keyProccessed = true;
-            *_isFullscreen = false;
-        }*/
-    }
-    if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_RELEASE){
-        *keyProccessed = false;
-    }
-    if (glfwGetKey(window, GLFW_KEY_F4) == GLFW_PRESS) {
-        //std::cout<<world.blocksToBeAddedList[world.blocksToBeAddedList.size() - 1].localPosition.x << "x " << world.blocksToBeAddedList[0].localPosition.y<< "y " << world.blocksToBeAddedList[0].localPosition.z<< "z ";
-        //std::cout<<world.blocksToBeAddedList.size()<<"\n";
-        std::cout<<"Jumping: "<<player.isJumping<<"\n";
-        std::cout<<"Grounded: "<<player.isGrounded<<"\n";
-        std::cout<<"Velocity Y: "<<player.playerVelocity.y<<"\n";
-    }
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        player.ProcessKeyboardMovement(FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        player.ProcessKeyboardMovement(BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        player.ProcessKeyboardMovement(cameraMovement::LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        player.ProcessKeyboardMovement(cameraMovement::RIGHT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        player.ProcessKeyboardMovement(cameraMovement::DOWN, deltaTime);
-    else if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE){
-        player.isShifting = false;
-        //player.shiftChanged = false;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !*keyProccessed && !*wireframe){
-        player.ProcessKeyboardMovement(cameraMovement::UP, deltaTime);
-        *wireframe = true;
-        *keyProccessed = true;
-    }
-    else if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !*keyProccessed && *wireframe) {
-        *wireframe = false;
-        *keyProccessed = true;
-
-    }
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE)
-    {
-        *keyProccessed = false;
-    }
-    //TODO update this
-    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS){
-        scene.changeSlotToolbar(0);
-        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
-    }
-    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS){
-        scene.changeSlotToolbar(1);
-        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
-    }
-    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS){
-        scene.changeSlotToolbar(2);
-        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
-    }
-    if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS){
-        scene.changeSlotToolbar(3);
-        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
-    }
-    if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS){
-        scene.changeSlotToolbar(4);
-        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
-    }
-    if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS){
-        scene.changeSlotToolbar(5);
-        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
-    }
-    if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS){
-        scene.changeSlotToolbar(6);
-        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
-    }
-    if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS){
-        scene.changeSlotToolbar(7);
-        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
-    }
-    if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS){
-        scene.changeSlotToolbar(8);
-        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
-    }
-    if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS){
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    }
 
 
 
 
-
-}
 

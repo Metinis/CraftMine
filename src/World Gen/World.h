@@ -14,7 +14,7 @@
 
 class Player;
 
-class MouseInput;
+class Input;
 
 class Chunk;
 
