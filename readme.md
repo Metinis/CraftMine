@@ -41,7 +41,6 @@ an inventory system, day/night cycle and the sun.
 
 - Water shader
 - Inventory system (basically a creative menu)
-- Flying
 - Saving and loading Worlds
 - More varied terrain generation
 - Flowers
