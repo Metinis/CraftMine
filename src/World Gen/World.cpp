@@ -202,7 +202,7 @@ void World::GenerateChunkBuffers(std::vector<Chunk*>& addedChunks)
 }
 Chunk* World::GetChunk(int x, int y)
 {
-    if(x > 0 && x < SIZE && y > 0 && y < SIZE)
+    if(x >= 0 && x < SIZE && y >= 0 && y < SIZE)
 	    return chunks[x + SIZE * y];
     else
         return nullptr;
@@ -220,7 +220,7 @@ bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDire
 
         glm::ivec2 posInChunks = glm::ivec2(globalPos.x / Chunk::SIZE, globalPos.z / Chunk::SIZE);
 
-        if(posInChunks.x > 0 && posInChunks.x < World::SIZE && posInChunks.y > 0 && posInChunks.y < World::SIZE){
+        if(posInChunks.x >= 0 && posInChunks.x < World::SIZE && posInChunks.y >= 0 && posInChunks.y < World::SIZE){
             currentChunk = GetChunk(posInChunks.x, posInChunks.y);
             if (currentChunk != nullptr && currentChunk->generatedBlockData) {
 

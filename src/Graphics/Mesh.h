@@ -8,6 +8,7 @@
 #include <utility>
 #include "Shader.h"
 #include <iostream>
+#include <mutex>
 
 class Mesh {
 private:
@@ -24,9 +25,12 @@ private:
     std::vector<GLuint> indices;
     std::vector<float> brightnessFloats;
 
+    std::mutex meshMutex;
+
 
 public:
     bool loadedData = false;
+    bool deletedData = false;
     bool beingRendered = false;
     void setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec3> _normals, std::vector<glm::vec2> _UVs, std::vector<GLuint> _indices, std::vector<float> _brightnessFloats);
     void clearData();

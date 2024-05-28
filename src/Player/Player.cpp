@@ -1,7 +1,7 @@
 #include "Player.h"
 Player::Player(){
     movementSpeed = 5.0f;
-    position = glm::vec3((World::SIZE / 2) * Chunk::SIZE, Chunk::HEIGHT, (World::SIZE / 2) * Chunk::SIZE);
+    position = glm::vec3((World::SIZE / 2) * Chunk::SIZE, Chunk::HEIGHT, 0);
     camera.position = &position;
     chunkPosition = glm::vec2(position.x / Chunk::SIZE, position.z / Chunk::SIZE);
 }
@@ -219,7 +219,7 @@ void Player::ProcessKeyboardMovement(cameraMovement dir, float deltaTime)
 void Player::updateFlying(){
     isFlying = !isFlying;
     if(isFlying){
-        movementSpeed = 10.0f;
+        movementSpeed = 200.0f;
     }
     else
     {

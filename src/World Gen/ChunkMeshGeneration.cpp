@@ -124,51 +124,72 @@ void ChunkMeshGeneration::UpdateSide(CraftMine::Faces face, Chunk& chunk)
     int startEdge = 0;
     int endEdge = Chunk::SIZE - 1;
 
+    //std::cout<<"Current chunk at: " <<chunk.chunkPosition.x <<"x "<<chunk.chunkPosition.y <<"z \n";
     switch (face)
     {
+
         case CraftMine::LEFT:
+            //if(chunk.chunkPosition.x > 0){
             tempChunk = chunk.world.GetChunk(chunk.chunkPosition.x - 1, chunk.chunkPosition.y);
-            for (int y = 0; y < Chunk::HEIGHT; y++)
-            {
-                for (int z = 0; z < Chunk::SIZE; z++)
+            if(tempChunk != nullptr){
+                for (int y = 0; y < Chunk::HEIGHT; y++)
                 {
-                    chunk.chunkBools.leftSideUpdated = true;
-                    AddEdgeFaces(glm::ivec3(startEdge, y, z), numFaces, numTransparentFaces, z, endEdge, tempChunk, CraftMine::LEFT, chunk);
+                    for (int z = 0; z < Chunk::SIZE; z++)
+                    {
+                        //std::cout<<"Updating chunk at: " <<tempChunk->chunkPosition.x <<"x "<<tempChunk->chunkPosition.y <<"z \n";
+                        chunk.chunkBools.leftSideUpdated = true;
+                        AddEdgeFaces(glm::ivec3(startEdge, y, z), numFaces, numTransparentFaces, z, endEdge, tempChunk, CraftMine::LEFT, chunk);
+                    }
                 }
             }
+
+            //}
+
             break;
         case CraftMine::RIGHT:
             tempChunk = chunk.world.GetChunk(chunk.chunkPosition.x + 1, chunk.chunkPosition.y);
-            for (int y = 0; y < Chunk::HEIGHT; y++)
-            {
-                for (int z = 0; z < Chunk::SIZE; z++)
+            if(tempChunk != nullptr){
+                for (int y = 0; y < Chunk::HEIGHT; y++)
                 {
-                    chunk.chunkBools.rightSideUpdated = true;
-                    AddEdgeFaces(glm::ivec3(endEdge, y, z), numFaces, numTransparentFaces, z, startEdge, tempChunk, CraftMine::RIGHT, chunk);
+                    for (int z = 0; z < Chunk::SIZE; z++)
+                    {
+                        //std::cout<<"Updating chunk at: " <<tempChunk->chunkPosition.x <<"x "<<tempChunk->chunkPosition.y <<"z \n";
+                        chunk.chunkBools.rightSideUpdated = true;
+                        AddEdgeFaces(glm::ivec3(endEdge, y, z), numFaces, numTransparentFaces, z, startEdge, tempChunk, CraftMine::RIGHT, chunk);
+                    }
                 }
             }
+
             break;
         case CraftMine::FRONT:
             tempChunk = chunk.world.GetChunk(chunk.chunkPosition.x, chunk.chunkPosition.y + 1);
-            for (int x = 0; x < Chunk::SIZE; x++)
-            {
-                for (int y = 0; y < Chunk::HEIGHT; y++)
+            if(tempChunk != nullptr){
+                for (int x = 0; x < Chunk::SIZE; x++)
                 {
-                    chunk.chunkBools.frontUpdated = true;
-                    AddEdgeFaces(glm::ivec3(x, y, endEdge), numFaces, numTransparentFaces, startEdge, x, tempChunk, CraftMine::FRONT, chunk);
+                    for (int y = 0; y < Chunk::HEIGHT; y++)
+                    {
+                        //std::cout<<"Updating chunk at: " <<tempChunk->chunkPosition.x <<"x "<<tempChunk->chunkPosition.y <<"z \n";
+                        chunk.chunkBools.frontUpdated = true;
+                        AddEdgeFaces(glm::ivec3(x, y, endEdge), numFaces, numTransparentFaces, startEdge, x, tempChunk, CraftMine::FRONT, chunk);
+                    }
                 }
             }
+
             break;
         case CraftMine::BACK:
             tempChunk = chunk.world.GetChunk(chunk.chunkPosition.x, chunk.chunkPosition.y - 1);
-            for (int x = 0; x < Chunk::SIZE; x++)
-            {
-                for (int y = 0; y < Chunk::HEIGHT; y++)
+            if(tempChunk != nullptr){
+                for (int x = 0; x < Chunk::SIZE; x++)
                 {
-                    chunk.chunkBools.backUpdated = true;
-                    AddEdgeFaces(glm::ivec3(x, y, startEdge), numFaces, numTransparentFaces, endEdge, x, tempChunk, CraftMine::BACK, chunk);
+                    for (int y = 0; y < Chunk::HEIGHT; y++)
+                    {
+                        //std::cout<<"Updating chunk at: " <<tempChunk->chunkPosition.x <<"x "<<tempChunk->chunkPosition.y <<"z \n";
+                        chunk.chunkBools.backUpdated = true;
+                        AddEdgeFaces(glm::ivec3(x, y, startEdge), numFaces, numTransparentFaces, endEdge, x, tempChunk, CraftMine::BACK, chunk);
+                    }
                 }
             }
+
             break;
     }
     AddIndices(numFaces, chunk.chunkData.chunkIndices, chunk.chunkData.indexCount);

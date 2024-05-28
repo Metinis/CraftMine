@@ -127,7 +127,7 @@ void ChunkGeneration::generateLeaves(int startX, int endX, int startZ, int endZ,
                                  (z > Chunk::SIZE - 1) ? (chunk.chunkPosition.y + 1) :
                                  chunk.chunkPosition.y;
 
-                if(tempChunkX > 0 && tempChunkX < World::SIZE && tempChunkZ > 0 && tempChunkZ < World::SIZE)
+                if(tempChunkX >= 0 && tempChunkX < World::SIZE && tempChunkZ >= 0 && tempChunkZ < World::SIZE)
                 {
                     Chunk& tempChunk = *chunk.world.GetChunk(tempChunkX, tempChunkZ);
 

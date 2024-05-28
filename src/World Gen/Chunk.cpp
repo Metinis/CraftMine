@@ -35,6 +35,7 @@ void Chunk::SetBlock(glm::ivec3 pos, unsigned char id)
 
 void Chunk::GenBlocks()
 {
+    //std::lock_guard<std::mutex> lock(chunkMutex);
     ChunkGeneration::GenBlocks(*this);
     generatedBlockData = true;
 }
@@ -143,6 +144,7 @@ void Chunk::sortTransparentMeshData() {
 }
 void Chunk::LoadBufferData()
 {
+    std::lock_guard<std::mutex> lock(chunkMutex);
     if(!chunkHasMeshes){
         mesh = new Mesh();
         transparentMesh = new Mesh();
@@ -158,9 +160,11 @@ void Chunk::LoadBufferData()
         mesh->loadedData = true;
         transparentMesh->loadedData = true;
     }
+
 }
 
 void Chunk::LoadChunkData() {
+    std::lock_guard<std::mutex> lock(chunkMutex);
     ClearVertexData();
     ChunkMeshGeneration::GenFaces(*this);
     ChunkMeshGeneration::UpdateNeighbours(*this);
@@ -168,6 +172,8 @@ void Chunk::LoadChunkData() {
 
 void Chunk::Delete()
 {
+    std::lock_guard<std::mutex> lock(chunkMutex);
+
     chunkHasMeshes = false;
     //generatedBuffData = false;
     ClearVertexData();
@@ -176,6 +182,7 @@ void Chunk::Delete()
 
     delete transparentMesh;
     transparentMesh = nullptr;
+
 }
 
 Chunk::~Chunk()

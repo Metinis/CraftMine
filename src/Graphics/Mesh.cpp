@@ -1,6 +1,7 @@
 #include "Mesh.h"
 void Mesh::setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec3> _normals, std::vector<glm::vec2> _UVs, std::vector<GLuint> _indices, std::vector<float> _brightnessFloats)
 {
+    //std::lock_guard<std::mutex> lock(meshMutex);
     loadedData = false;
     vertices = _vertices;
     normals = _normals;
@@ -10,6 +11,7 @@ void Mesh::setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec3> _nor
 }
 void Mesh::clearData()
 {
+    std::lock_guard<std::mutex> lock(meshMutex);
     loadedData = false;
     if (meshVAO != nullptr) {
         meshVAO->Delete();
@@ -44,10 +46,11 @@ void Mesh::clearData()
         delete meshNormalVBO;
         meshNormalVBO = nullptr;
     }
+    deletedData = true;
 }
 void Mesh::render(Shader& _shader)
 {
-
+    std::lock_guard<std::mutex> lock(meshMutex);
     //todo fix race condition
     if(loadedData && meshVAO != nullptr && meshIBO != nullptr && meshUVVBO != nullptr && meshVBO != nullptr && meshBrightnessVBO != nullptr && meshNormalVBO != nullptr) {
         _shader.use();
@@ -59,6 +62,7 @@ void Mesh::render(Shader& _shader)
     }
 }
 void Mesh::loadData(Shader& _shader){
+    //std::lock_guard<std::mutex> lock(meshMutex);
     loadedData = false;
     _shader.use();
     clearData();

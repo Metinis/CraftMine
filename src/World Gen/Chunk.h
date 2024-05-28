@@ -15,6 +15,7 @@
 #include "FastNoise/FastNoise.h"
 #include <random>
 #include "BlockData.h"
+#include <mutex>
 
 class Player;
 
@@ -27,6 +28,7 @@ class ChunkMeshGeneration;
 class Chunk
 {
 private:
+    bool isLoadingData = false;
     struct ChunkData{
         std::vector<glm::vec3> chunkVerts;
         std::vector<glm::vec2> chunkUVs;
@@ -57,6 +59,7 @@ private:
         std::array<glm::vec3, 4> normals;
     };
 
+    std::mutex chunkMutex;
 
 	
 public:
