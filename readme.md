@@ -33,8 +33,6 @@ an inventory system, day/night cycle and the sun.
 ## Known Issues
 
 - Sometimes the tree leaves don't get added until chunk is updated
-- Rare crash due to threading (possibly a race condition)
-- Chunks not displaying their mesh when updated too many times (just like in the very early versions of Minecraft)
 - Sneaking on chunk edges may not work properly all the time
 
 ## Features to implement
