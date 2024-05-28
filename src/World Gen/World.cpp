@@ -368,6 +368,7 @@ void World::LoadThreadDataToMain()
                 else if(!chunk->getIsAllSidesUpdated()){
                     loadedChunks.pop();
                     ChunkMeshGeneration::UpdateNeighbours(*chunk);
+                    addedChunks.push_back(std::ref(chunk));
                 }
                 else{
                     addedChunks.push_back(std::ref(chunk));
