@@ -219,7 +219,7 @@ void Player::ProcessKeyboardMovement(cameraMovement dir, float deltaTime)
 void Player::updateFlying(){
     isFlying = !isFlying;
     if(isFlying){
-        movementSpeed = 200.0f;
+        movementSpeed = 15.0f;
     }
     else
     {
