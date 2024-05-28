@@ -242,7 +242,9 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk& chunk)
                 UpdateSide(CraftMine::RIGHT, *tempChunk);
                 tempChunk->inThread = false;
 
+                chunk.world.mutexChunksToLoadData.lock();
                 chunk.world.loadedChunks.push(tempChunk);
+                chunk.world.mutexChunksToLoadData.unlock();
             }
         }
         else if (tempChunk != nullptr && tempChunk->generatedBlockData)
@@ -267,7 +269,9 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk& chunk)
                 UpdateSide(CraftMine::LEFT, *tempChunk);
                 tempChunk->inThread = false;
 
+                chunk.world.mutexChunksToLoadData.lock();
                 chunk.world.loadedChunks.push(tempChunk);
+                chunk.world.mutexChunksToLoadData.unlock();
             }
         }
         else if (tempChunk != nullptr && tempChunk->generatedBlockData)
@@ -291,7 +295,9 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk& chunk)
                 tempChunk->generatedBuffData = false;
                 UpdateSide(CraftMine::BACK, *tempChunk);
                 tempChunk->inThread = false;
+                chunk.world.mutexChunksToLoadData.lock();
                 chunk.world.loadedChunks.push(tempChunk);
+                chunk.world.mutexChunksToLoadData.unlock();
             }
         }
         else if (tempChunk != nullptr && tempChunk->generatedBlockData)
@@ -316,7 +322,9 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk& chunk)
                 tempChunk->generatedBuffData = false;
                 UpdateSide(CraftMine::FRONT, *tempChunk);
                 tempChunk->inThread = false;
+                chunk.world.mutexChunksToLoadData.lock();
                 chunk.world.loadedChunks.push(tempChunk);
+                chunk.world.mutexChunksToLoadData.unlock();
             }
         }
         else if (tempChunk != nullptr && tempChunk->generatedBlockData)
