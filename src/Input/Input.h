@@ -27,6 +27,12 @@ private:
     float lastX;
     float lastY;
     bool firstMouse;
+    bool wireFrame = false;
+    bool fullscreen = false;
+    bool isCursorLocked = true;
+
+    int windowedXPos, windowedYPos;
+    int windowedWidth, windowedHeight;
 
     double lastPressTime = 0; //used for jumping
     float timeFrame = 0.25f; //used for jumping
@@ -47,7 +53,7 @@ public:
 
     void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
-    void processKey(int key, int action);
+    void processKey(int key, int action, GLFWwindow* window);
 
     static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 

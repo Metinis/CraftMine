@@ -8,23 +8,25 @@ Input::Input(Camera& _camera, World& _world, Scene& _scene, Player& _player, Gam
                                                                                             camera(_camera), world(_world), scene(_scene), player(_player), game(_game), firstMouse(true) {}
 
 void Input::processMouse(GLFWwindow *window, double xposIn, double yposIn) {
-    auto xPos = static_cast<float>(xposIn);
-    auto yPos = static_cast<float>(yposIn);
+    if(isCursorLocked){
+        auto xPos = static_cast<float>(xposIn);
+        auto yPos = static_cast<float>(yposIn);
 
-    if (firstMouse) {
+        if (firstMouse) {
+            lastX = xPos;
+            lastY = yPos;
+            firstMouse = false;
+        }
+
+        float xOffset = xPos - lastX;
+        float yOffset = lastY - yPos; // reversed since y-coordinates go from bottom to top
+
         lastX = xPos;
         lastY = yPos;
-        firstMouse = false;
+
+        // Assuming camera is an instance of some camera class
+        camera.ProcessMouseMovement(xOffset, yOffset);
     }
-
-    float xOffset = xPos - lastX;
-    float yOffset = lastY - yPos; // reversed since y-coordinates go from bottom to top
-
-    lastX = xPos;
-    lastY = yPos;
-
-    // Assuming camera is an instance of some camera class
-    camera.ProcessMouseMovement(xOffset, yOffset);
 }
 void Input::mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
@@ -47,35 +49,40 @@ void Input::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 
 void Input::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
     if(button == GLFW_MOUSE_BUTTON_LEFT){
-        if(action == GLFW_PRESS)
+        if(action == GLFW_PRESS && isCursorLocked)
         {
             world.BreakBlocks(*camera.position, camera.Front);
         }
+        else{
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            isCursorLocked = true;
+        }
     }
     if(button == GLFW_MOUSE_BUTTON_RIGHT){
-        if(action == GLFW_PRESS)
+        if(action == GLFW_PRESS && isCursorLocked)
         {
             world.PlaceBlocks(*camera.position, camera.Front);
         }
     }
 }
 void Input::scrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
-    //TODO make this more clean and adjust player block with current toolbar items
-    if (yoffset > 0) {
-        scene.toolbar->changeSlotNegative();
-        scene.player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
-    } else if (yoffset < 0) {
-        scene.toolbar->changeSlotPositive();
-        scene.player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
+    if(isCursorLocked) {
+        if (yoffset > 0) {
+            scene.toolbar->changeSlotNegative();
+            scene.player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
+        } else if (yoffset < 0) {
+            scene.toolbar->changeSlotPositive();
+            scene.player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
+        }
     }
 }
 void Input::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     Input* input = static_cast<Input*>(glfwGetWindowUserPointer(window));
-    input->processKey(key, action);
+    input->processKey(key, action, window);
 
 }
-void Input::processKey(int key, int action) {
+void Input::processKey(int key, int action, GLFWwindow* window) {
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
         double currentTime = glfwGetTime();
         if(currentTime - lastPressTime <= timeFrame)
@@ -83,70 +90,49 @@ void Input::processKey(int key, int action) {
 
         lastPressTime = currentTime;
     }
-
-}
-void Input::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, bool* _isFullscreen, Player& player, World& world, float& deltaTime, Scene& scene)
-{
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS && !*wireframe && !*keyProccessed)
+    if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS && !wireFrame)
     {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        *wireframe = true;
-        *keyProccessed = true;
     }
-    else if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS && *wireframe && !*keyProccessed)
-    {
+    else if(glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS && wireFrame){
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        *wireframe = false;
-        *keyProccessed = true;
     }
-    if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_RELEASE)
-    {
-        *keyProccessed = false;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS && !fullscreen) {
         // Get the primary monitor
         GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
 
         // Get the video mode of the primary monitor
         const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
 
+        glfwGetWindowPos(window, &windowedXPos, &windowedYPos);
+        glfwGetWindowSize(window, &windowedWidth, &windowedHeight);
+
+
         // Switch the window to fullscreen mode
         glfwSetWindowMonitor(window, primaryMonitor, 0, 0, mode->width, mode->height, mode->refreshRate);
         glfwSwapInterval(0);
-        *keyProccessed = true;
-        *_isFullscreen = true;
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
         glViewport(0, 0, width, height);
+        fullscreen = true;
     }
-    if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_RELEASE){
-        *keyProccessed = false;
+    else if(glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS && fullscreen){
+        // Switch back to windowed mode
+        glfwSetWindowMonitor(window, nullptr, windowedXPos, windowedYPos, windowedWidth, windowedHeight, 0);
+
+        // Restore V-Sync (optional)
+        //glfwSwapInterval(1);
+
+        fullscreen = false;
     }
     if (glfwGetKey(window, GLFW_KEY_F4) == GLFW_PRESS) {
         std::cout<<"Flying: "<<player.isFlying<<"\n";
         std::cout<<"Jumping: "<<player.isJumping<<"\n";
         std::cout<<"Grounded: "<<player.isGrounded<<"\n";
         std::cout<<"Velocity Y: "<<player.playerVelocity.y<<"\n";
-    }
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        player.ProcessKeyboardMovement(FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        player.ProcessKeyboardMovement(BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        player.ProcessKeyboardMovement(cameraMovement::LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        player.ProcessKeyboardMovement(cameraMovement::RIGHT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        player.ProcessKeyboardMovement(cameraMovement::DOWN, deltaTime);
-    else if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE){
-        player.isShifting = false;
-    }
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        player.ProcessKeyboardMovement(cameraMovement::UP, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS){
         scene.changeSlotToolbar(0);
@@ -184,12 +170,33 @@ void Input::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccesse
         scene.changeSlotToolbar(8);
         player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
     }
-    if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS){
+    if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS && isCursorLocked){
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        isCursorLocked = false;
+    }
+    else if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS && !isCursorLocked){
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        isCursorLocked = true;
     }
 
+}
+void Input::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, bool* _isFullscreen, Player& player, World& world, float& deltaTime, Scene& scene)
+{
 
-
-
-
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        player.ProcessKeyboardMovement(FORWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        player.ProcessKeyboardMovement(BACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        player.ProcessKeyboardMovement(cameraMovement::LEFT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        player.ProcessKeyboardMovement(cameraMovement::RIGHT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+        player.ProcessKeyboardMovement(cameraMovement::DOWN, deltaTime);
+    else if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE){
+        player.isShifting = false;
+    }
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+        player.ProcessKeyboardMovement(cameraMovement::UP, deltaTime);
+    }
 }

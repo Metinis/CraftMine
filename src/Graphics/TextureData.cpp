@@ -82,6 +82,14 @@ const std::map<CraftMine::BlockType, std::map<CraftMine::Faces, int>> TextureDat
           {CraftMine::Faces::TOP, 4},
           {CraftMine::Faces::BOTTOM, 4}},
         },
+        {CraftMine::BlockType::SNOW_GRASS,
+         {{CraftMine::Faces::BACK, 68},
+          {CraftMine::Faces::FRONT, 68},
+          {CraftMine::Faces::LEFT, 68},
+          {CraftMine::Faces::RIGHT, 68},
+          {CraftMine::Faces::TOP, 66},
+          {CraftMine::Faces::BOTTOM, 2}},
+        },
 };
 std::vector<glm::vec2> TextureData::GetUVs(int atlasID)
 {

@@ -32,9 +32,12 @@ void ChunkGeneration::GenBlocks(Chunk& chunk){
                     id = 2; //if there's tree above, make dirt block, not grass
                     genTree(glm::vec3(x, y+1, z), chunk);
                 }
-            } else if (y > columnHeight - 4 && y < columnHeight) {
+
+            }
+            else if (y > columnHeight - 4 && y < columnHeight) {
                 id = 2;                        //dirt layer
-            } else if (y <= columnHeight - 4 && y > 0) {
+            }
+            else if (y <= columnHeight - 4 && y > 0) {
                 id = 3;                        //stone layer
             } else if (y == 0) {
                 id = 4;                        //bedrock layer
@@ -187,7 +190,7 @@ void ChunkGeneration::GenChunk(float* heightMap, Chunk& chunk) {
     biomeNoise.SetFractalType(FastNoise::Billow); // Use Billow noise for smoother biome transitions
     biomeNoise.SetFractalOctaves(1); // Fewer octaves for broader biome regions
     biomeNoise.SetSeed(200); // Different seed for biome noise
-    biomeNoise.SetFrequency(0.002f); // Larger scale for biome definition
+    biomeNoise.SetFrequency(0.001f); // Larger scale for biome definition
 
     for (int x = 0; x < Chunk::SIZE; x++) {
         for (int z = 0; z < Chunk::SIZE; z++) {
@@ -201,19 +204,19 @@ void ChunkGeneration::GenChunk(float* heightMap, Chunk& chunk) {
             float normalizedBiomeValue = (biomeValue + 1.0f) / 2.0f;
 
             // Calculate heights for different biomes
-            int mountainHeight = static_cast<int>((noiseValue + 1.0) * 100.0f * scaleFactor * 3);
-            int plainsHeight = static_cast<int>((noiseValue + 1.0) * 100.0f * scaleFactor / 2);
+            int mountainHeight = static_cast<int>((noiseValue + 1.0) * 100.0f * scaleFactor * 4);
+            int plainsHeight = static_cast<int>((noiseValue + 1.0) * 100.0f * scaleFactor / 3);
             int forestHeight = static_cast<int>((noiseValue + 1.0) * 100.0f * scaleFactor);
 
             // Interpolation between biomes based on normalizedBiomeValue
             float blendedHeight;
-            if (normalizedBiomeValue > 0.75f) {
+            if (normalizedBiomeValue > 0.6f) {
                 // Blend between mountain and forest
-                float t = (normalizedBiomeValue - 0.75f) / 0.25f;
+                float t = (normalizedBiomeValue - 0.6f) / 0.4f;
                 blendedHeight = lerp(forestHeight, mountainHeight, t);
-            } else if (normalizedBiomeValue < 0.25f) {
+            } else if (normalizedBiomeValue < 0.1f) {
                 // Blend between plains and forest
-                float t = normalizedBiomeValue / 0.25f;
+                float t = normalizedBiomeValue / 0.1f;
                 blendedHeight = lerp(plainsHeight, forestHeight, t);
             } else {
                 // Default to forest height if in the middle range

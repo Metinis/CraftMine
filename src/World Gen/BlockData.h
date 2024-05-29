@@ -28,7 +28,8 @@ namespace CraftMine {	//using namespace since it conflicts with some cameraMovem
         OAK_WOOD,
         OAK_LEAF,
         GLASS,
-        WOOD_PLANKS
+        WOOD_PLANKS,
+        SNOW_GRASS
 	};
     enum Biome {
         MOUNTAIN,
