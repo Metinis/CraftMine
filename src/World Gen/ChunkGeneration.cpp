@@ -207,13 +207,13 @@ void ChunkGeneration::GenChunk(float* heightMap, Chunk& chunk) {
 
             // Interpolation between biomes based on normalizedBiomeValue
             float blendedHeight;
-            if (normalizedBiomeValue > 0.6f) {
+            if (normalizedBiomeValue > 0.75f) {
                 // Blend between mountain and forest
-                float t = (normalizedBiomeValue - 0.6f) / 0.4f;
+                float t = (normalizedBiomeValue - 0.75f) / 0.25f;
                 blendedHeight = lerp(forestHeight, mountainHeight, t);
-            } else if (normalizedBiomeValue < 0.4f) {
+            } else if (normalizedBiomeValue < 0.25f) {
                 // Blend between plains and forest
-                float t = normalizedBiomeValue / 0.4f;
+                float t = normalizedBiomeValue / 0.25f;
                 blendedHeight = lerp(plainsHeight, forestHeight, t);
             } else {
                 // Default to forest height if in the middle range
