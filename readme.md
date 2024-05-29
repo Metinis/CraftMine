@@ -10,7 +10,7 @@ Currently, been working on it in and out for ~5 months when I find free time.
 The game is basically a clone of Minecraft classic but with infinite worlds and
 shadow mapping. 
 
-![screenshot.png](screenshot.png)
+![screenshot2.png](screenshot2.png)
 
 There are still a few features I want to add like swimming, bug/crash fixes, UI,
 an inventory system, day/night cycle and the sun.
@@ -29,6 +29,8 @@ an inventory system, day/night cycle and the sun.
 - F11 for fullscreen (can't get out of fullscreen for now)
 - Shadows using shadow maps from the sun
 - Tree generation
+
+![screenshot.png](screenshot.png)
 
 ## Known Issues
 
