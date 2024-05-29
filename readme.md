@@ -12,9 +12,6 @@ shadow mapping.
 
 ![screenshot2.png](screenshot2.png)
 
-There are still a few features I want to add like swimming, bug/crash fixes, UI,
-an inventory system, day/night cycle and the sun.
-
 ## Current Features
 
 - Infinite world generation
@@ -26,7 +23,7 @@ an inventory system, day/night cycle and the sun.
 - Collision system
 - "Physics"
 - Sneaking using shift
-- F11 for fullscreen (can't get out of fullscreen for now)
+- F11 for fullscreen
 - Shadows using shadow maps from the sun
 - Tree generation
 
@@ -42,7 +39,6 @@ an inventory system, day/night cycle and the sun.
 - Water shader
 - Inventory system (basically a creative menu)
 - Saving and loading Worlds
-- More varied terrain generation
 - Flowers
 - Ores
 - Caves
