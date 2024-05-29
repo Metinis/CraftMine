@@ -166,27 +166,64 @@ void ChunkGeneration::generateLeaves(int startX, int endX, int startZ, int endZ,
         }
     }
 }
-void ChunkGeneration::GenChunk(float* heightMap, Chunk& chunk)	//might need to be amended to include more chunks
-{
+float lerp(float a, float b, float t) {
+    return a + t * (b - a);
+}
+
+void ChunkGeneration::GenChunk(float* heightMap, Chunk& chunk) {
     FastNoise noise;
+    FastNoise biomeNoise; // New noise for biome selection
 
     // Set noise parameters
     noise.SetNoiseType(FastNoise::SimplexFractal);
     noise.SetFractalType(FastNoise::FBM);
     noise.SetFractalOctaves(4);
-    noise.SetSeed(100); //123 is old seed
+    noise.SetSeed(100); // Example seed
     noise.SetFractalLacunarity(2.0f);
     noise.SetFrequency(0.0075f);
     float scaleFactor = 0.25f;
 
-    for (int x = 0; x < Chunk::SIZE; x++)
-    {
-        for (int z = 0; z < Chunk::SIZE; z++)
-        {
+    biomeNoise.SetNoiseType(FastNoise::SimplexFractal); // Set biome noise type
+    biomeNoise.SetFractalType(FastNoise::Billow); // Use Billow noise for smoother biome transitions
+    biomeNoise.SetFractalOctaves(1); // Fewer octaves for broader biome regions
+    biomeNoise.SetSeed(200); // Different seed for biome noise
+    biomeNoise.SetFrequency(0.002f); // Larger scale for biome definition
 
-            float noiseValue = noise.GetNoise((float)x + (Chunk::SIZE * (float)chunk.chunkPosition.x), (float)z + (Chunk::SIZE * (float)chunk.chunkPosition.y));
-            int terrainHeight = static_cast<int>((noiseValue + 1.0) * 100.0f * scaleFactor); //100.0f represents the highest point
-            heightMap[x + Chunk::SIZE * z] = terrainHeight;
+    for (int x = 0; x < Chunk::SIZE; x++) {
+        for (int z = 0; z < Chunk::SIZE; z++) {
+            float worldX = static_cast<float>(x) + (Chunk::SIZE * static_cast<float>(chunk.chunkPosition.x));
+            float worldZ = static_cast<float>(z) + (Chunk::SIZE * static_cast<float>(chunk.chunkPosition.y));
+
+            float biomeValue = biomeNoise.GetNoise(worldX, worldZ);
+            float noiseValue = noise.GetNoise(worldX, worldZ);
+
+            // Normalize biomeValue to [0, 1] range
+            float normalizedBiomeValue = (biomeValue + 1.0f) / 2.0f;
+
+            // Calculate heights for different biomes
+            int mountainHeight = static_cast<int>((noiseValue + 1.0) * 100.0f * scaleFactor * 3);
+            int plainsHeight = static_cast<int>((noiseValue + 1.0) * 100.0f * scaleFactor / 2);
+            int forestHeight = static_cast<int>((noiseValue + 1.0) * 100.0f * scaleFactor);
+
+            // Interpolation between biomes based on normalizedBiomeValue
+            float blendedHeight;
+            if (normalizedBiomeValue > 0.6f) {
+                // Blend between mountain and forest
+                float t = (normalizedBiomeValue - 0.6f) / 0.4f;
+                blendedHeight = lerp(forestHeight, mountainHeight, t);
+            } else if (normalizedBiomeValue < 0.4f) {
+                // Blend between plains and forest
+                float t = normalizedBiomeValue / 0.4f;
+                blendedHeight = lerp(plainsHeight, forestHeight, t);
+            } else {
+                // Default to forest height if in the middle range
+                blendedHeight = forestHeight;
+            }
+
+            heightMap[x + Chunk::SIZE * z] = blendedHeight;
         }
     }
 }
+
+
+

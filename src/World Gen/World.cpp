@@ -298,10 +298,6 @@ void World::PlaceBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
 
         if(currentChunk->generatedBlockData) {
             currentChunk->SetBlock(lastEmptyPos, player.getBlockID());
-            std::cout<<"back updated: "<< currentChunk->chunkBools.backUpdated<<"\n";
-            std::cout<<"front updated: "<< currentChunk->chunkBools.frontUpdated<<"\n";
-            std::cout<<"right updated: "<< currentChunk->chunkBools.rightSideUpdated<<"\n";
-            std::cout<<"left updated: "<< currentChunk->chunkBools.leftSideUpdated<<"\n";
             mutexChunksToLoadData.lock();
             chunksToLoadData.push_back(std::ref(currentChunk));
             mutexChunksToLoadData.unlock();

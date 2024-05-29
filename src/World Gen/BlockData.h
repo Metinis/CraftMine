@@ -30,6 +30,11 @@ namespace CraftMine {	//using namespace since it conflicts with some cameraMovem
         GLASS,
         WOOD_PLANKS
 	};
+    enum Biome {
+        MOUNTAIN,
+        PLAINS,
+        FOREST
+    };
     extern std::vector<int> transparentBlocks;
     extern std::vector<int> nonSolidBlocks;
 	extern std::map<unsigned char, BlockType> BlockIDMap;

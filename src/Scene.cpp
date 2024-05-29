@@ -56,7 +56,7 @@ void Scene::initialiseShadowMap(){
 void Scene::updateShadowProjection(){
     shadowMapShader->use();
 
-    glm::vec3 lightPos = glm::vec3(glm::round(camera.position->x + sunXOffset), 200, glm::round(camera.position->z + sunZOffset));
+    glm::vec3 lightPos = glm::vec3(glm::round(camera.position->x + sunXOffset), Chunk::HEIGHT + 100, glm::round(camera.position->z + sunZOffset));
 
     if(std::abs(sunXOffset) > 400 && minBrightness > 0.3f){
         minBrightness -= 0.00001;
@@ -71,10 +71,10 @@ void Scene::updateShadowProjection(){
         maxBrightnessFactor += 0.00004;
     }
     float halfOrthoSize = World::viewDistance * Chunk::SIZE;
-    float zFar = glm::round(float(halfOrthoSize + 400 + std::abs(sunZOffset)));
+    float zFar = glm::round(float(halfOrthoSize + 400 + std::abs(sunZOffset) + Chunk::HEIGHT));
 
     glm::mat4 orthgonalProjection = glm::ortho(-halfOrthoSize, halfOrthoSize, -halfOrthoSize, halfOrthoSize, 0.1f, zFar);
-    glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(glm::round(camera.position->x), 50.0f, glm::round(camera.position->z)), glm::vec3(0.0f,0.0f,-1.0f));
+    glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(glm::round(camera.position->x), 50, glm::round(camera.position->z)), glm::vec3(0.0f,0.0f,-1.0f));
     glm::mat4 lightProjection = orthgonalProjection * lightView;
 
     glm::mat4 model = glm::mat4(1.0f);

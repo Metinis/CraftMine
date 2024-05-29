@@ -64,7 +64,7 @@ private:
 	
 public:
 	static const int SIZE = 16;
-	static const int HEIGHT = 128;
+	static const int HEIGHT = 256;
 
     ChunkData chunkData;
     ChunkBools chunkBools;
