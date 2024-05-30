@@ -181,7 +181,7 @@ void ChunkGeneration::GenChunk(float* heightMap, Chunk& chunk) {
     noise.SetNoiseType(FastNoise::SimplexFractal);
     noise.SetFractalType(FastNoise::FBM);
     noise.SetFractalOctaves(4);
-    noise.SetSeed(100); // Example seed
+    noise.SetSeed(123); // Example seed
     noise.SetFractalLacunarity(2.0f);
     noise.SetFrequency(0.0075f);
     float scaleFactor = 0.25f;
@@ -189,8 +189,8 @@ void ChunkGeneration::GenChunk(float* heightMap, Chunk& chunk) {
     biomeNoise.SetNoiseType(FastNoise::SimplexFractal); // Set biome noise type
     biomeNoise.SetFractalType(FastNoise::Billow); // Use Billow noise for smoother biome transitions
     biomeNoise.SetFractalOctaves(1); // Fewer octaves for broader biome regions
-    biomeNoise.SetSeed(200); // Different seed for biome noise
-    biomeNoise.SetFrequency(0.001f); // Larger scale for biome definition
+    biomeNoise.SetSeed(123); // Different seed for biome noise
+    biomeNoise.SetFrequency(0.0015f); // Larger scale for biome definition
 
     for (int x = 0; x < Chunk::SIZE; x++) {
         for (int z = 0; z < Chunk::SIZE; z++) {
