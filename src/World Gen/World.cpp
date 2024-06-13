@@ -438,13 +438,22 @@ void World::renderChunks()
         }
     }
 }
+void World::renderTransparentMeshes(Shader& shader) {
+    for (Chunk* chunk : activeChunks)
+    {
+        if(chunk->chunkHasMeshes && chunk->transparentMesh->loadedData && chunk->transparentMesh != nullptr){
+            //scene.renderMesh(*chunk->mesh, shader);
+
+            scene.renderMesh(*chunk->transparentMesh, shader);
+        }
+    }
+}
 //optional way to render with dedicated shader (used for shadow map depth)
 void World::renderChunks(Shader& shader)
 {
     for (Chunk* chunk : activeChunks)
     {
-        if(chunk->chunkHasMeshes && chunk->mesh->loadedData && chunk->transparentMesh->loadedData && &shader != nullptr && chunk->mesh != nullptr &&
-        chunk->transparentMesh != nullptr){
+        if(chunk->chunkHasMeshes && chunk->mesh->loadedData && &shader != nullptr && chunk->mesh != nullptr){
             scene.renderMesh(*chunk->mesh, shader);
 
             scene.renderMesh(*chunk->transparentMesh, shader);
@@ -463,4 +472,17 @@ void World::update()
 
     sortChunks();
 }
+
+void World::renderSolidMeshes(Shader &shader) {
+    for (Chunk* chunk : activeChunks)
+    {
+        if(chunk->chunkHasMeshes && chunk->mesh->loadedData && &shader != nullptr && chunk->mesh != nullptr){
+            scene.renderMesh(*chunk->mesh, shader);
+
+            //scene.renderMesh(*chunk->transparentMesh, shader);
+        }
+    }
+}
+
+
 

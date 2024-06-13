@@ -8,20 +8,20 @@ ScreenQuad::ScreenQuad(){
     std::vector<float> rectangleVertices =
             {
                     // Coords               // texCoords
-                    1.0f, -1.0f,  1.0f, 0.0f,
-                    -1.0f, -1.0f,  0.0f, 0.0f,
-                    -1.0f,  1.0f,  0.0f, 1.0f,
+                    1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+                    -1.0f, -1.0f, 0.0f,  0.0f, 0.0f,
+                    -1.0f,  1.0f, 0.0f,  0.0f, 1.0f,
 
-                    1.0f,  1.0f,  1.0f, 1.0f,
-                    1.0f, -1.0f,  1.0f, 0.0f,
-                    -1.0f,  1.0f,  0.0f, 1.0f
+                    1.0f,  1.0f, 0.0f,  1.0f, 1.0f,
+                    1.0f, -1.0f, 0.0f,  1.0f, 0.0f,
+                    -1.0f,  1.0f, 0.0f,  0.0f, 1.0f
             };
     quadVAO = new VAO();
     quadVBO = new VBO(rectangleVertices);
     quadVAO->Bind();
     quadVBO->Bind();
-    quadVAO->LinkToVAO(0, 2, 4 * sizeof(float), ((void*)0), *quadVBO);
-    quadVAO->LinkToVAO(1, 2, 4 * sizeof(float), (void*)(2 * sizeof(float)), *quadVBO);
+    quadVAO->LinkToVAO(0, 3, 5 * sizeof(float), ((void*)0), *quadVBO);
+    quadVAO->LinkToVAO(1, 2, 5 * sizeof(float), (void*)(3 * sizeof(float)), *quadVBO);
     quadVAO->Unbind();
     quadVBO->Unbind();
 }

@@ -156,9 +156,9 @@ void Chunk::LoadBufferData()
         mesh->loadedData = false;
         transparentMesh->loadedData = false;
         mesh->setData(chunkData.chunkVerts, chunkData.chunkNormals, chunkData.chunkUVs, chunkData.chunkIndices, chunkData.chunkBrightnessFloats);
-        mesh->loadData(*world.scene.shader);
+        mesh->loadData(*world.scene.geometryShader);
         transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentNormals, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);
-        transparentMesh->loadData(*world.scene.transparentShader);
+        transparentMesh->loadData(*world.scene.geometryShader);
         mesh->loadedData = true;
         transparentMesh->loadedData = true;
     }

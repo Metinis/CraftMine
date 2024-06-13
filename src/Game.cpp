@@ -122,6 +122,7 @@ void Game::run(){
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
         scene->setFBODimensions(width, height);
+        scene->setGBufferDimensions(width, height);
 
         scene->renderWorld(*world);
 

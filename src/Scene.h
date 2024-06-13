@@ -41,6 +41,9 @@ private:
     ScreenQuad* screenQuad;
     Crosshair* ui;
 
+    unsigned int gBuffer;
+    GLuint gPosition, gNormal, gAlbedoSpec;
+    unsigned int rboDepth;
 
 public:
     Shader* shader;
@@ -48,6 +51,7 @@ public:
     Shader* outlineShader;
     Shader* frameShader;
     Shader* shadowMapShader;
+    Shader* geometryShader;
     Texture* worldTexture;
     Texture* guiTexture;
 
@@ -93,4 +97,8 @@ public:
     void renderQuad();
 
     void changeSlotToolbar(int slot);
+
+    void initialiseGBuffer();
+
+    void setGBufferDimensions(int width, int height);
 };

@@ -13,10 +13,10 @@
 
 class FBO {
 private:
-    unsigned int ID;
+
     unsigned int texture;
     unsigned int RBO;
-    unsigned int width, height;
+
 
     void initialiseTexture();
 
@@ -25,6 +25,8 @@ private:
     void initialiseRBO();
 
 public:
+    unsigned int ID;
+    unsigned int width, height;
     FBO(int _width, int _height);
     //initialises the standard FBO
     void initialiseTextureFBO();

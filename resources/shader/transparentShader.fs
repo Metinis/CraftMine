@@ -1,17 +1,18 @@
 #version 330 core
 out vec4 FragColor;
 
+in vec3 ourColor;
 in vec2 TexCoord;
+in float brightness;
+in vec3 Normal;
 
 uniform float minBrightness;
 uniform float maxBrightnessFactor;
 
-vec3 Normal;
-vec3 FragPos;
+uniform mat4 lightSpaceMatrix;
 
-uniform sampler2D gPosition;
-uniform sampler2D gNormal;
-uniform sampler2D gAlbedoSpec;
+in vec3 FragPos;
+uniform sampler2D ourTexture;
 uniform sampler2D depthMap;
 uniform vec3 cameraPos;
 uniform float fogStart;
@@ -19,7 +20,6 @@ uniform float fogEnd;
 uniform vec3 fogColor;
 uniform vec3 lightPos;
 uniform vec3 lightColor;
-uniform mat4 lightSpaceMatrix;
 
 float inShadow(vec4 fragPosLightSpace){
     
@@ -42,7 +42,7 @@ float inShadow(vec4 fragPosLightSpace){
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(depthMap, 0);
 
-    int numSamples = 3;
+    int numSamples = 2;
 
     for(int x = -numSamples; x <= numSamples; ++x)
     {
@@ -69,9 +69,6 @@ float inShadow(vec4 fragPosLightSpace){
 
 void main()
 {
-    Normal = texture(gNormal, TexCoord).rgb;
-    FragPos = texture(gPosition, TexCoord).rgb;
-
     //ambient
     float ambientStrength = minBrightness;
     vec3 ambient = ambientStrength * lightColor;
@@ -84,7 +81,7 @@ void main()
 
     vec4 fragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);
 
-    vec4 sampledColor = texture(gAlbedoSpec, TexCoord);
+    vec4 sampledColor = texture(ourTexture, TexCoord);
 
     float shadow = inShadow(fragPosLightSpace);
 
@@ -98,7 +95,7 @@ void main()
 
     //result
 
-    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse)) * sampledColor.rgb * maxBrightnessFactor;  
+    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse)) * sampledColor.rgb * maxBrightnessFactor * brightness;  
 
     vec3 finalColor = mix(lighting, fogColor, fogFactor);
 
@@ -107,4 +104,3 @@ void main()
     // Set the output color
     FragColor = vec4(finalColor, sampledColor.a);
 }
-

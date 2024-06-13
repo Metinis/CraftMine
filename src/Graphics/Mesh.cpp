@@ -51,7 +51,6 @@ void Mesh::clearData()
 void Mesh::render(Shader& _shader)
 {
     std::lock_guard<std::mutex> lock(meshMutex);
-    //todo fix race condition
     if(loadedData && meshVAO != nullptr && meshIBO != nullptr && meshUVVBO != nullptr && meshVBO != nullptr && meshBrightnessVBO != nullptr && meshNormalVBO != nullptr) {
         _shader.use();
         meshVAO->Bind();
@@ -72,17 +71,17 @@ void Mesh::loadData(Shader& _shader){
 
     meshVBO = new VBO(vertices);
     meshVBO->Bind();
-    meshVAO->LinkToVAO(_shader.getAttribLocation("aPos"), 3, *meshVBO);
+    meshVAO->LinkToVAO(0, 3, *meshVBO);
     meshVBO->Unbind();
 
     meshUVVBO = new VBO(UVs);
     meshUVVBO->Bind();
-    meshVAO->LinkToVAO(_shader.getAttribLocation("aTexCoord"), 2, *meshUVVBO);
+    meshVAO->LinkToVAO(2, 2, *meshUVVBO);
     meshUVVBO->Unbind();
 
     meshNormalVBO = new VBO(normals);
     meshNormalVBO->Bind();
-    meshVAO->LinkToVAO(_shader.getAttribLocation("aNormal"), 3, *meshNormalVBO);
+    meshVAO->LinkToVAO(1, 3, *meshNormalVBO);
     meshNormalVBO->Unbind();
 
     meshBrightnessVBO = new VBO(brightnessFloats);

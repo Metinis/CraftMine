@@ -3,6 +3,7 @@
 Scene::Scene(Camera& _camera, Player& _player) : camera(_camera), player(_player){
     initialiseWorldShaders();
     initialiseShadowMap();
+    initialiseGBuffer();
     ui = new Crosshair();
     toolbar = new Toolbar();
     toolbar->changeSlot(0);
@@ -15,7 +16,9 @@ void Scene::initialiseWorldShaders(){
 
     outlineShader = new Shader("../resources/shader/OutlineShader.vs", "../resources/shader/OutlineShader.fs");
 
-    transparentShader = new Shader("../resources/shader/shader.vs", "../resources/shader/shader.fs"); //change when transparent is different
+    transparentShader = new Shader("../resources/shader/transparentShader.vs", "../resources/shader/transparentShader.fs");
+
+    geometryShader = new Shader("../resources/shader/gShader.vs", "../resources/shader/gShader.fs");
 
     worldTexture = new Texture("../resources/texture/terrain1.png");
 
@@ -29,6 +32,17 @@ void Scene::initialiseWorldShaders(){
     outlineShader->setMat4("model", model);
     outlineShader->setMat4("projection", proj);
 
+    geometryShader->use();
+    geometryShader->setMat4("model", model);
+    geometryShader->setMat4("projection", proj);
+    //geometryShader->setMat4("view", view);
+
+    shader->use();
+    shader->setInt("gPosition", 0);
+    shader->setInt("gNormal", 1);
+    shader->setInt("gAlbedoSpec", 2);
+    shader->setInt("depthMap", 3);
+
     loadShader(*shader, World::viewDistance);
     loadShader(*transparentShader, World::viewDistance);
 }
@@ -37,6 +51,7 @@ void Scene::initialiseShadowMap(){
     screenQuad = new ScreenQuad();
 
     fbo = new FBO(1280, 720);
+    fbo->bindForRender();
     fbo->initialiseTextureFBO();
 
     frameShader = new Shader("../resources/shader/framebuffer.vs", "../resources/shader/framebuffer.fs");
@@ -49,6 +64,7 @@ void Scene::initialiseShadowMap(){
 
 
     depthFBO = new FBO(SHADOW_RESOLUTION, SHADOW_RESOLUTION);
+
     depthFBO->initialiseDepthFBO();
 
     updateShadowProjection();
@@ -83,7 +99,7 @@ void Scene::updateShadowProjection(){
 
     glUniformMatrix4fv(glGetUniformLocation(shadowMapShader->ID, "lightProjection"), 1, GL_FALSE, glm::value_ptr(lightProjection));
 
-    glActiveTexture(GL_TEXTURE1);
+    glActiveTexture(GL_TEXTURE3);
     depthFBO->bindForRead();
 
     shader->use();
@@ -93,16 +109,16 @@ void Scene::updateShadowProjection(){
     shader->setFloat("minBrightness", minBrightness);
     shader->setFloat("maxBrightnessFactor", maxBrightnessFactor);
 
-    glUniform1i(glGetUniformLocation(shader->ID, "depthMap"), 1);
+    glUniform1i(glGetUniformLocation(shader->ID, "depthMap"), 3);
 
     transparentShader->use();
     transparentShader->setMat4("lightSpaceMatrix", lightProjection);
     transparentShader->setVec3("lightPos", lightPos);
     transparentShader->setVec3("lightColor", glm::vec3(1.0f, 1.0f,1.0f));
     transparentShader->setFloat("minBrightness", minBrightness);
-    shader->setFloat("maxBrightnessFactor", maxBrightnessFactor);
+    transparentShader->setFloat("maxBrightnessFactor", maxBrightnessFactor);
 
-    glUniform1i(glGetUniformLocation(transparentShader->ID, "depthMap"), 1);
+    glUniform1i(glGetUniformLocation(transparentShader->ID, "depthMap"), 3);
     glActiveTexture(GL_TEXTURE0);
 }
 
@@ -156,10 +172,12 @@ void Scene::updateShaders(){
     view = camera.GetViewMatrix();
     outlineShader->use();
     outlineShader->setMat4("view", view);
-    shader->use();
-    shader->setMat4("view", view);
+    //shader->use();
+    //shader->setMat4("view", view);
     transparentShader->use();
     transparentShader->setMat4("view", view);
+    geometryShader->use();
+    geometryShader->setMat4("view", view);
 }
 void Scene::renderBlockOutline(World& world)
 {
@@ -251,6 +269,7 @@ void Scene::render(World& world){
 void Scene::renderToShadowMap(World& world){
     glEnable(GL_DEPTH_TEST);
 
+    //glActiveTexture(GL_TEXTURE3);
     depthFBO->bindForRender();
     glClear(GL_DEPTH_BUFFER_BIT);
     shadowMapShader->use();
@@ -264,48 +283,159 @@ void Scene::renderToShadowMap(World& world){
     //render(world);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    //glViewport(0, 0, 1280, 720);  // Restore viewport
 }
 void Scene::renderWorld(World& world){
 
-    fbo->bindForRender();
-
+    //glViewport(0, 0, 1280, 720);
+    glEnable(GL_DEPTH_TEST);
     glClearColor(0.55f, 0.75f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
 
+    glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glActiveTexture(GL_TEXTURE0);
+    worldTexture->Bind();
+    geometryShader->use();
+    world.renderSolidMeshes(*geometryShader);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    fbo->bindForRender();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    shader->use();
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, gPosition);
+
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, gNormal);
+
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
+
+    glActiveTexture(GL_TEXTURE3);
+    depthFBO->bindForRead();
+    screenQuad->renderQuad(*shader);
+    fbo->Unbind();
+    // 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
+    // ----------------------------------------------------------------------------------
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo->ID); // write to default framebuffer
+    glBlitFramebuffer(0, 0, fbo->width, fbo->height, 0, 0, fbo->width, fbo->height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo->ID);
+
+
+    transparentShader->use();
+    glActiveTexture(GL_TEXTURE0);
     worldTexture->Bind();
 
-    //world.update();
-    render(world);
+    glDepthMask(GL_FALSE);
+    world.renderTransparentMeshes(*transparentShader);
+    glDepthMask(GL_TRUE);
     renderBlockOutline(world);
+    glDisable(GL_DEPTH_TEST);
 
     //render cross hair/ui
-    //glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_SRC_ALPHA);
-    glDisable(GL_DEPTH_TEST);
     guiTexture->Bind();
     ui->renderCrosshair();
-    //glEnable(GL_DEPTH_TEST);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //guiTexture->Bind();
     toolbar->renderToolbar();
     worldTexture->Bind();
     toolbar->renderItems();
     guiTexture->Bind();
     toolbar->renderSlot();
     worldTexture->Bind();
-
     fbo->Unbind();
-    //glDisable(GL_DEPTH_TEST);
 }
 void Scene::setFBODimensions(int width, int height){
     fbo->setDimension(width, height);
 }
 void Scene::renderQuad(){
+    glActiveTexture(GL_TEXTURE0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     fbo->bindForRead();
     frameShader->use();
+    GLint textureLocation = glGetUniformLocation(frameShader->ID, "sampledTexture");
+    glUniform1i(textureLocation, 0);
+    //glActiveTexture(GL_TEXTURE3);
+    //depthFBO->bindForRead();
     screenQuad->renderQuad(*frameShader);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Scene::changeSlotToolbar(int slot) {
     toolbar->changeSlot(slot);
+}
+
+void Scene::initialiseGBuffer() {
+    glGenFramebuffers(1, &gBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+    // position color buffer
+    glGenTextures(1, &gPosition);
+    glBindTexture(GL_TEXTURE_2D, gPosition);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 1280, 720, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
+    // normal color buffer
+    glGenTextures(1, &gNormal);
+    glBindTexture(GL_TEXTURE_2D, gNormal);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 1280, 720, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
+    // color + specular color buffer
+    glGenTextures(1, &gAlbedoSpec);
+    glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1280, 720, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpec, 0);
+    // tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
+    unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+    glDrawBuffers(3, attachments);
+    // create and attach depth buffer (renderbuffer)
+
+    glGenRenderbuffers(1, &rboDepth);
+    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1280, 720);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+    // finally check if framebuffer is complete
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "Framebuffer not complete!" << std::endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Scene::setGBufferDimensions(int width, int height) {
+    glViewport(0, 0, width, height);
+    glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+    // position color buffer
+    glBindTexture(GL_TEXTURE_2D, gPosition);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
+    // normal color buffer
+    glBindTexture(GL_TEXTURE_2D, gNormal);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
+    // color + specular color buffer
+    glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpec, 0);
+
+    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+    // finally check if framebuffer is complete
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "Framebuffer not complete!" << std::endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

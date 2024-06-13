@@ -91,6 +91,10 @@ public:
 
     void renderChunks();
 
+    void renderSolidMeshes(Shader& shader);
+
+    void renderTransparentMeshes(Shader& shader);
+
 	void update();
 
     void sortChunks();
