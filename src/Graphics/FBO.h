@@ -33,7 +33,7 @@ public:
 
     void initialiseDepthFBO();
 
-    void setDimension(int _width, int _height);
+    void setDimensionTexture(int _width, int _height);
 
     void bindForRender() const;
 
@@ -42,4 +42,6 @@ public:
     static void Unbind();
 
     void Delete();
+
+    void setDimensionDepthMap(int _width, int _height);
 };

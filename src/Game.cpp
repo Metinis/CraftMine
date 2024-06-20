@@ -48,6 +48,7 @@ Game::Game(){
 
 
     //TODO make each accessible through scene to be more tidy
+    World::viewDistance = 12;
     player = new Player();
     camera = &player->camera;
     scene = new Scene(*camera, *player);

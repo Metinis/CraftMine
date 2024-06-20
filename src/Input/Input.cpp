@@ -178,7 +178,23 @@ void Input::processKey(int key, int action, GLFWwindow* window) {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         isCursorLocked = true;
     }
+    if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS){
+        if(World::viewDistance >= 18){
+            World::viewDistance = 6;
+            world.UpdateViewDistance(player.chunkPosition);
+            scene.loadShader(*scene.shader, World::viewDistance);
+            scene.loadShader(*scene.transparentShader, World::viewDistance);
+            scene.updateShadowResolution();
+        }
+        else {
+            World::viewDistance += 3;
+            world.UpdateViewDistance(player.chunkPosition);
+            scene.loadShader(*scene.shader, World::viewDistance);
+            scene.loadShader(*scene.transparentShader, World::viewDistance);
+            scene.updateShadowResolution();
+        }
 
+    }
 }
 void Input::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, bool* _isFullscreen, Player& player, World& world, float& deltaTime, Scene& scene)
 {

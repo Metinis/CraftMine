@@ -13,7 +13,8 @@
 
 class Scene {
 private:
-    static const int SHADOW_RESOLUTION;
+    static int SHADOW_RESOLUTION;
+    static int SHADOW_DISTANCE;
 
     glm::mat4 model{};
     glm::mat4 view{};
@@ -37,7 +38,6 @@ private:
     Camera& camera;
 
     FBO* fbo;
-    FBO* depthFBO;
     ScreenQuad* screenQuad;
     Crosshair* ui;
 
@@ -46,6 +46,8 @@ private:
     unsigned int rboDepth;
 
 public:
+
+    FBO* depthFBO;
     Shader* shader;
     Shader* transparentShader;
     Shader* outlineShader;
@@ -75,6 +77,8 @@ public:
     void changeGlobalTexture();
 
     void updateShaders();
+
+    void updateShadowResolution();
 
     void renderBlockOutline(World& world);
 

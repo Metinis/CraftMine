@@ -43,11 +43,18 @@ void FBO::initialiseDepthFBO(){
     if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
         std::cout << "Framebuffer error: " << fboStatus << std::endl;
 }
-void FBO::setDimension(int _width, int _height){
+void FBO::setDimensionTexture(int _width, int _height){
     width = _width;
     height = _height;
     initialiseTexture();
     //initialiseDepthMap();
+    initialiseRBO();
+}
+void FBO::setDimensionDepthMap(int _width, int _height){
+    width = _width;
+    height = _height;
+    //initialiseTexture();
+    initialiseDepthMap();
     initialiseRBO();
 }
 void FBO::initialiseTexture(){
@@ -61,8 +68,6 @@ void FBO::initialiseTexture(){
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 }
 void FBO::initialiseDepthMap(){
-    glGenTextures(1, &texture);
-
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

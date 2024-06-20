@@ -9,7 +9,8 @@ Scene::Scene(Camera& _camera, Player& _player) : camera(_camera), player(_player
     toolbar->changeSlot(0);
 }
 
-const int Scene::SHADOW_RESOLUTION = 1024 * World::viewDistance;
+int Scene::SHADOW_DISTANCE = World::viewDistance;
+int Scene::SHADOW_RESOLUTION = 1024 * SHADOW_DISTANCE;
 
 void Scene::initialiseWorldShaders(){
     shader = new Shader("../resources/shader/shader.vs", "../resources/shader/shader.fs");
@@ -86,7 +87,9 @@ void Scene::updateShadowProjection(){
     else if(std::abs(sunXOffset) < 400 && maxBrightnessFactor < 1.0f){
         maxBrightnessFactor += 0.00004;
     }
-    float halfOrthoSize = World::viewDistance * Chunk::SIZE;
+
+
+    float halfOrthoSize = SHADOW_DISTANCE * Chunk::SIZE;
     float zFar = glm::round(float(halfOrthoSize + 400 + std::abs(sunZOffset) + Chunk::HEIGHT));
 
     glm::mat4 orthgonalProjection = glm::ortho(-halfOrthoSize, halfOrthoSize, -halfOrthoSize, halfOrthoSize, 0.1f, zFar);
@@ -351,7 +354,7 @@ void Scene::renderWorld(World& world){
     fbo->Unbind();
 }
 void Scene::setFBODimensions(int width, int height){
-    fbo->setDimension(width, height);
+    fbo->setDimensionTexture(width, height);
 }
 void Scene::renderQuad(){
     glActiveTexture(GL_TEXTURE0);
@@ -438,4 +441,10 @@ void Scene::setGBufferDimensions(int width, int height) {
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cout << "Framebuffer not complete!" << std::endl;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Scene::updateShadowResolution() {
+    Scene::SHADOW_DISTANCE = World::viewDistance;
+    Scene::SHADOW_RESOLUTION = 1024 * SHADOW_DISTANCE;
+    depthFBO->setDimensionDepthMap(SHADOW_RESOLUTION, SHADOW_RESOLUTION);
 }

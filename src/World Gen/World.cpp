@@ -7,7 +7,7 @@
 
 World::World(Camera& _camera, Scene& _scene, Player& _player) : camera(_camera), scene(_scene), player(_player)
 {
-
+    World::viewDistance = 12;
     playerChunkPos = glm::ivec2((*camera.position).x / Chunk::SIZE, (*camera.position).z / Chunk::SIZE); //used for priority queues, chunks closest have priority
 
     //initialise threads
@@ -17,7 +17,7 @@ World::World(Camera& _camera, Scene& _scene, Player& _player) : camera(_camera),
 	worldGenThread.detach();
 
 }
-
+int World::viewDistance = 12;
 void World::GenerateChunkThread()
 {
     volatile bool keepRunning = true;
