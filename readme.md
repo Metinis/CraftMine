@@ -43,7 +43,6 @@ shadow mapping.
 - Ores
 - Caves
 - Ambient occlusion
-- Deferred rendering
 - Swimming
 - In-water post-processing effect
 - Sun/moon
