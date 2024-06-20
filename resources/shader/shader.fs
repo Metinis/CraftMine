@@ -34,7 +34,7 @@ float inShadow(vec4 fragPosLightSpace){
     // check whether current frag pos is in shadow
     vec3 normal = normalize(Normal);
     vec3 lightDir = normalize(lightPos - FragPos);
-    float bias = max(0.001 * (1.0 - dot(normal, lightDir)), 0.0001 );
+    float bias = max(0.0005 * (1.0 - dot(normal, lightDir)), 0.00005 );
     //float bias = 0.0005;
     //float cos_theta = dot(normal, lightDir);
     //float b = bias * cos_theta;
