@@ -36,6 +36,7 @@ shadow mapping.
 
 - Sometimes the tree leaves don't get added until chunk is updated
 - Sneaking on chunk edges may not work properly all the time
+- Transparent objects not rendering properly on AMD
 
 ## Features to implement
 
