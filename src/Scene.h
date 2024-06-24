@@ -30,6 +30,7 @@ private:
     int sunZOffset = 25;
 
     glm::ivec3 lastOutlinePos;
+    glm::vec3 fogColor = glm::vec3(0.55f, 0.75f, 1.0f);
 
     VAO* outlineVAO = nullptr;
     VBO* outlineVBO = nullptr;

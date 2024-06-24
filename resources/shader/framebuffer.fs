@@ -6,6 +6,7 @@ in vec2 texCoords;
 uniform sampler2D sampledTexture;
 uniform float near_plane;
 uniform float far_plane;
+uniform bool inWater;
 
 float LinearizeDepth(float depth)
 {
@@ -14,9 +15,19 @@ float LinearizeDepth(float depth)
 }
 
 void main()
-{       
-    //float depthValue = texture(sampledTexture, texCoords).r;    
-    //FragColor = vec4(vec3(LinearizeDepth(depthValue) / far_plane), 1.0); // perspective  
-    FragColor = texture(sampledTexture, texCoords);
-    //FragColor = vec4(vec3(depthValue), 1.0); // orthographic
+{      
+    if(inWater){
+        vec4 sampledColor = texture(sampledTexture, texCoords);
+
+        // Apply blue effect by increasing the blue component and reducing red and green
+        float blueStrength = 0.2; // Adjust this value to control the intensity of the blue effect
+        sampledColor.rgb = vec3(sampledColor.r * (1.0 - blueStrength), 
+                            sampledColor.g * (1.0 - blueStrength), 
+                            sampledColor.b + blueStrength * (1.0 - sampledColor.b));
+
+        FragColor = sampledColor;
+    } 
+    else{
+        FragColor = texture(sampledTexture, texCoords);
+    }
 }

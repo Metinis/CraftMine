@@ -7,6 +7,7 @@ Player::Player(){
 }
 void Player::Update(float deltaTime){
 
+    checkIfSwimming(glm::round(position));
     lastPosition = position;
     glm::vec3 newPosition = position + playerVelocity * deltaTime;
 
@@ -37,6 +38,19 @@ void Player::updateShifting() {
         shiftChanged = false;
     }
 }
+void Player::checkIfSwimming(glm::ivec3 pos){
+    glm::ivec3 posInChunk = positionInChunk();
+    if(world->GetChunk(chunkPosition.x, chunkPosition.y)->GetBlockID(glm::round(glm::vec3(posInChunk.x, pos.y - 1, posInChunk.z))) == 5){
+        isSwimming = true;
+        movementSpeed = 3.5f;
+    }
+    else
+    {
+        isSwimming = false;
+        movementSpeed = 5.0f;
+        //std::cout<<"not swimming\n";
+    }
+}
 void Player::calculateNewPositionY(float& deltaTime) {
 
     if(!isJumping && isGrounded){
@@ -51,6 +65,8 @@ void Player::calculateNewPositionY(float& deltaTime) {
                 playerVelocity.y -= GRAVITY * deltaTime * GRAVITY_MULTIPLIER;
             else if(isFlying)
                 playerVelocity.y = 0;
+            else if(isSwimming)
+                playerVelocity.y -= (GRAVITY * deltaTime * GRAVITY_MULTIPLIER)/4;
             else
                 playerVelocity.y -= GRAVITY * deltaTime * GRAVITY_MULTIPLIER;
         }
@@ -80,7 +96,7 @@ void Player::UpdatePositionXZ(glm::vec3& newPosition) {
 
     glm::vec3 newPosX = glm::vec3(newPosition.x, newPosition.y, position.z);
     glm::vec3 newPosZ = glm::vec3(position.x, newPosition.y, newPosition.z);
-    if(!isColliding(newPosition, camera.Front))
+    if(!isColliding(newPosition))
     {
         if((isShifting && checkNewPositionY(newPosition)) || (isShifting && !isGrounded))
         {
@@ -202,11 +218,16 @@ void Player::ProcessKeyboardMovement(cameraMovement dir, float deltaTime)
         }
     }
     if (dir == cameraMovement::UP) {
-        if(isGrounded && !isJumping)
+        if((isGrounded && !isJumping) || isSwimming)
         {
             playerVelocity.y = 0;
             isJumping = true;
-            playerVelocity.y += jumpForce;
+            if(!isSwimming)
+                playerVelocity.y += jumpForce;
+            else if(isSwimming && !isColliding(position + playerVelocity * deltaTime))
+                playerVelocity.y += jumpForce / 2;
+            else
+                playerVelocity.y += jumpForce;
         }
         else if(isFlying){
             playerVelocity.y = 0;
@@ -226,7 +247,7 @@ void Player::updateFlying(){
         movementSpeed = 5.0f;
     }
 }
-bool Player::isColliding(glm::vec3& newPosition, glm::vec3 front) const //front can be x or z since they are checked separately
+bool Player::isColliding(glm::vec3 newPosition) const //front can be x or z since they are checked separately
 {
     //by default false
     return (checkNewPositionZ(newPosition.z) ||
@@ -385,6 +406,17 @@ bool Player::checkCollisionWithBlockLocal(glm::ivec3 localPos){
     }
     else{
         return true;
+    }
+}
+
+bool Player::isHeadInWater(){
+    glm::ivec3 posInChunk = positionInChunk();
+    if(world->GetChunk(chunkPosition.x, chunkPosition.y)->GetBlockID(posInChunk) == 5){
+        return true;
+    }
+    else
+    {
+        return false;
     }
 }
 

@@ -140,7 +140,7 @@ void Scene::loadShader(Shader& _shader, int viewDistance) {
     _shader.setVec3("cameraPos", *camera.position);
     _shader.setFloat("fogStart", ((viewDistance - (viewDistance/3)) < viewDistance - 1 ? (viewDistance - (viewDistance/3)) : 0) * Chunk::SIZE);
     _shader.setFloat("fogEnd", (viewDistance-1) * Chunk::SIZE);
-    _shader.setVec3("fogColor", glm::vec3(0.55f, 0.75f, 1.0f));
+    _shader.setVec3("fogColor", fogColor);
 }
 void Scene::changeGlobalTexture()
 {
@@ -170,6 +170,27 @@ void Scene::updateShaders(){
     }
     glm::vec3 position = *camera.position;
     shader->setVec3("cameraPos", position);
+    if(player.isHeadInWater()){
+        fogColor = glm::vec3(0.1f, 0.1f, 0.1f);
+        shader->setFloat("fogStart",  5);
+        shader->setFloat("fogEnd", 8);
+        shader->setVec3("fogColor", fogColor);
+        transparentShader->use();
+        transparentShader->setFloat("fogStart",  5);
+        transparentShader->setFloat("fogEnd", 8);
+        transparentShader->setVec3("fogColor", fogColor);
+    }
+    else{
+        fogColor = glm::vec3(0.55f, 0.75f, 1.0f);
+        int viewDistance = World::viewDistance;
+        shader->setFloat("fogStart", ((viewDistance - (viewDistance/3)) < viewDistance - 1 ? (viewDistance - (viewDistance/3)) : 0) * Chunk::SIZE);
+        shader->setFloat("fogEnd", (viewDistance-1) * Chunk::SIZE);
+        shader->setVec3("fogColor", fogColor);
+        transparentShader->use();
+        transparentShader->setFloat("fogStart", ((viewDistance - (viewDistance/3)) < viewDistance - 1 ? (viewDistance - (viewDistance/3)) : 0) * Chunk::SIZE);
+        transparentShader->setFloat("fogEnd", (viewDistance-1) * Chunk::SIZE);
+        transparentShader->setVec3("fogColor", fogColor);
+    }
     transparentShader->use();
     transparentShader->setVec3("cameraPos", position);
     view = camera.GetViewMatrix();
@@ -363,8 +384,15 @@ void Scene::renderQuad(){
     frameShader->use();
     GLint textureLocation = glGetUniformLocation(frameShader->ID, "sampledTexture");
     glUniform1i(textureLocation, 0);
-    //glActiveTexture(GL_TEXTURE3);
-    //depthFBO->bindForRead();
+    //before rendering check if player is in water and apply water effect to frame shader
+    if(player.isHeadInWater()){
+        frameShader->setBool("inWater", true);
+    }
+    else{
+
+        frameShader->setBool("inWater", false);
+    }
+
     screenQuad->renderQuad(*frameShader);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

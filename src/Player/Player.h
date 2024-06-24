@@ -35,6 +35,7 @@ public:
     bool isJumping{};
     bool isGrounded{};
     bool isShifting{};
+    bool isSwimming{};
     glm::vec3 playerVelocity{};
 
     Player();
@@ -43,7 +44,8 @@ public:
     void UpdatePositionXZ(glm::vec3& newPosition);
     void UpdateDeceleration(float& deltaTime);
     void ProcessKeyboardMovement(cameraMovement dir, float deltaTime);
-    bool isColliding(glm::vec3& newPosition, glm::vec3 front) const;
+    bool isColliding(glm::vec3 newPosition) const;
+    bool isHeadInWater();
     bool checkNewPositionZ(float newZ) const;
     bool checkNewPositionX(float newZ) const;
     bool checkNewPositionXZ(glm::vec3 newPosition) const;
@@ -58,6 +60,8 @@ public:
     void updateFlying();
 
     bool isFlying{};
+
+    void checkIfSwimming(glm::ivec3 pos);
 };
 
 

@@ -128,7 +128,6 @@ void Game::run(){
         scene->renderWorld(*world);
 
         glViewport(0, 0, width, height);
-
         //finally output FBO to quad
         scene->renderQuad();
 
