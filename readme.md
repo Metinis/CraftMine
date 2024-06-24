@@ -28,6 +28,7 @@ shadow mapping.
 - Tree generation
 - Swimming
 - In-water post-processing effect
+- Deferred Rendering
 
 ![screenshot.png](screenshot.png)
 
