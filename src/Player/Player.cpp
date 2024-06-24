@@ -44,7 +44,7 @@ void Player::checkIfSwimming(glm::ivec3 pos){
         isSwimming = true;
         movementSpeed = 3.5f;
     }
-    else
+    else if(isSwimming)
     {
         isSwimming = false;
         movementSpeed = 5.0f;
