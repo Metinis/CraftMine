@@ -26,6 +26,9 @@ shadow mapping.
 - F11 for fullscreen
 - Shadows using shadow maps from the sun
 - Tree generation
+- Swimming
+- In-water post-processing effect
+- Deferred Rendering
 
 ![screenshot.png](screenshot.png)
 
@@ -43,8 +46,6 @@ shadow mapping.
 - Ores
 - Caves
 - Ambient occlusion
-- Swimming
-- In-water post-processing effect
 - Sun/moon
 - Day/night cycle
 - Clouds
