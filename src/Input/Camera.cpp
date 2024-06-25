@@ -13,7 +13,7 @@ Camera::Camera()
 }
 glm::mat4 Camera::GetViewMatrix()
 {
-	return glm::lookAt(*position, *position + Front, WorldUp);
+	return glm::lookAt(position, position + Front, WorldUp);
 }
 void Camera::ProcessMouseMovement(float xoffset, float yoffset)
 {
@@ -43,4 +43,9 @@ void Camera::updateCameraVectors()
 	// also re-calculate the Right and Up vector
 	Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 	Up = glm::normalize(glm::cross(Right, Front));
+}
+
+void Camera::updatePosition(glm::vec3 lastPlayerPos, glm::vec3 playerPos, double alpha) {
+    glm::vec3 interpolatedPosition = glm::mix(lastPlayerPos, playerPos, static_cast<float>(alpha));
+    position = interpolatedPosition;
 }

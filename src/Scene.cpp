@@ -73,7 +73,7 @@ void Scene::initialiseShadowMap(){
 void Scene::updateShadowProjection(){
     shadowMapShader->use();
 
-    glm::vec3 lightPos = glm::vec3(glm::round(camera.position->x + sunXOffset), Chunk::HEIGHT + 100, glm::round(camera.position->z + sunZOffset));
+    glm::vec3 lightPos = glm::vec3(glm::round(camera.position.x + sunXOffset), Chunk::HEIGHT + 100, glm::round(camera.position.z + sunZOffset));
 
     if(std::abs(sunXOffset) > 400 && minBrightness > 0.3f){
         minBrightness -= 0.00001;
@@ -93,7 +93,7 @@ void Scene::updateShadowProjection(){
     float zFar = glm::round(float(halfOrthoSize + 400 + std::abs(sunZOffset) + Chunk::HEIGHT));
 
     glm::mat4 orthgonalProjection = glm::ortho(-halfOrthoSize, halfOrthoSize, -halfOrthoSize, halfOrthoSize, 0.1f, zFar);
-    glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(glm::round(camera.position->x), 50, glm::round(camera.position->z)), glm::vec3(0.0f,0.0f,-1.0f));
+    glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(glm::round(camera.position.x), 50, glm::round(camera.position.z)), glm::vec3(0.0f,0.0f,-1.0f));
     glm::mat4 lightProjection = orthgonalProjection * lightView;
 
     glm::mat4 model = glm::mat4(1.0f);
@@ -137,7 +137,7 @@ void Scene::loadShader(Shader& _shader, int viewDistance) {
     _shader.use();
     _shader.setMat4("model", model);
     _shader.setMat4("projection", proj);
-    _shader.setVec3("cameraPos", *camera.position);
+    _shader.setVec3("cameraPos", camera.position);
     _shader.setFloat("fogStart", ((viewDistance - (viewDistance/3)) < viewDistance - 1 ? (viewDistance - (viewDistance/3)) : 0) * Chunk::SIZE);
     _shader.setFloat("fogEnd", (viewDistance-1) * Chunk::SIZE);
     _shader.setVec3("fogColor", fogColor);
@@ -164,11 +164,7 @@ void Scene::changeGlobalTexture()
 
 void Scene::updateShaders(){
     shader->use();
-    //std::cout<< (int)((camera.position->x));
-    if(camera.position == nullptr){
-        std::cout<<"bug";
-    }
-    glm::vec3 position = *camera.position;
+    glm::vec3 position = camera.position;
     shader->setVec3("cameraPos", position);
     if(player.isHeadInWater()){
         fogColor = glm::vec3(0.1f, 0.1f, 0.1f);
@@ -207,7 +203,7 @@ void Scene::renderBlockOutline(World& world)
 {
     glm::ivec3 result;
     Chunk* currentChunk;
-    if(world.RaycastBlockPos(*camera.position, camera.Front, result, currentChunk)){
+    if(world.RaycastBlockPos(camera.position, camera.Front, result, currentChunk)){
         glm::ivec3 globalPos = glm::vec3(result.x + currentChunk->chunkPosition.x * Chunk::SIZE, result.y, result.z + currentChunk->chunkPosition.y * Chunk::SIZE);
         if(globalPos != lastOutlinePos)
         {

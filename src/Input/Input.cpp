@@ -51,7 +51,7 @@ void Input::mouseButtonCallback(GLFWwindow* window, int button, int action, int 
     if(button == GLFW_MOUSE_BUTTON_LEFT){
         if(action == GLFW_PRESS && isCursorLocked)
         {
-            world.BreakBlocks(*camera.position, camera.Front);
+            world.BreakBlocks(camera.position, camera.Front);
         }
         else{
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -61,7 +61,7 @@ void Input::mouseButtonCallback(GLFWwindow* window, int button, int action, int 
     if(button == GLFW_MOUSE_BUTTON_RIGHT){
         if(action == GLFW_PRESS && isCursorLocked)
         {
-            world.PlaceBlocks(*camera.position, camera.Front);
+            world.PlaceBlocks(camera.position, camera.Front);
         }
     }
 }

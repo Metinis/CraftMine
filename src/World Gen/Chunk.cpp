@@ -94,8 +94,8 @@ void Chunk::sortTransparentMeshData() {
     std::lock_guard<std::mutex> lock(chunkMutex);
     // Sort transparent mesh data based on distance to player
     CompareFaces compareFaces{};
-    glm::vec3 playerPos = *world.camera.position;
-    compareFaces.playerPos = playerPos;
+    glm::vec3 cameraPos = world.camera.position;
+    compareFaces.playerPos = cameraPos;
     std::vector<ChunkDataPair> combinedData;
     int k = 0;
     for (int i = 0; i < chunkData.transparentVerts.size(); i += 4) {

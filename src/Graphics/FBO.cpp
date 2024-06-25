@@ -53,9 +53,7 @@ void FBO::setDimensionTexture(int _width, int _height){
 void FBO::setDimensionDepthMap(int _width, int _height){
     width = _width;
     height = _height;
-    //initialiseTexture();
     initialiseDepthMap();
-    initialiseRBO();
 }
 void FBO::initialiseTexture(){
 

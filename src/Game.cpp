@@ -89,18 +89,25 @@ void Game::run(){
         lastFrame = currentTime;
 
         accumulator += deltaTime;
+        while(accumulator >= timeStep){
+            player->Update(timeStep);
+            newChunkPos = (glm::vec2(glm::round(player->position.x) / Chunk::SIZE, glm::round(player->position.z) / Chunk::SIZE));
+
+            if (std::abs(newChunkPos.x - lastChunkPos.x) >= updateingInt ||
+                std::abs(newChunkPos.y - lastChunkPos.y) >= updateingInt) {
+                lastChunkPos = newChunkPos;
+                std::cout << newChunkPos.x << "x " << newChunkPos.y << "z \n";
+                world->UpdateViewDistance(newChunkPos);
+            }
+            accumulator -= timeStep;
+        }
+        const double alpha = accumulator / timeStep;
+
+        //interpolate player pos and camera pos for smooth movement
+        camera->updatePosition(player->lastPosition, player->position, alpha);
 
         Input::processInput(window, &wireframe, &keyProcessed, &isFullscreen, *player, *world, deltaTime, *scene);
-        newChunkPos = (glm::vec2(glm::round(player->position.x) / Chunk::SIZE, glm::round(player->position.z) / Chunk::SIZE));
 
-        if (std::abs(newChunkPos.x - lastChunkPos.x) >= updateingInt ||
-            std::abs(newChunkPos.y - lastChunkPos.y) >= updateingInt) {
-            lastChunkPos = newChunkPos;
-            std::cout << newChunkPos.x << "x " << newChunkPos.y << "z \n";
-            world->UpdateViewDistance(newChunkPos);
-
-
-        }
         if(deltaTime >= tickSpeed){
 
             scene->sunXOffset -= 1 * deltaTime / 2;
@@ -131,10 +138,6 @@ void Game::run(){
         //finally output FBO to quad
         scene->renderQuad();
 
-        while(accumulator > timeStep){
-            player->Update(timeStep);
-            accumulator -= timeStep;
-        }
 
 
         glfwSwapBuffers(window);

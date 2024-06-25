@@ -8,7 +8,7 @@
 World::World(Camera& _camera, Scene& _scene, Player& _player) : camera(_camera), scene(_scene), player(_player)
 {
     World::viewDistance = 12;
-    playerChunkPos = glm::ivec2((*camera.position).x / Chunk::SIZE, (*camera.position).z / Chunk::SIZE); //used for priority queues, chunks closest have priority
+    playerChunkPos = glm::ivec2((player.position).x / Chunk::SIZE, (player.position).z / Chunk::SIZE); //used for priority queues, chunks closest have priority
 
     //initialise threads
 	chunkThread = std::thread(&World::GenerateChunkThread, this);

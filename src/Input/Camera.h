@@ -28,11 +28,12 @@ public:
     glm::vec3 Front;
 	float Yaw;
 	float Pitch;
-    glm::vec3 *position = nullptr;
+    glm::vec3 position;
 	Camera();
 
 	glm::mat4 GetViewMatrix();
 	void ProcessMouseMovement(float xoffset, float yoffset);
+    void updatePosition(glm::vec3 lastPlayerPos, glm::vec3 playerPos, double alpha);
 
 };
 #endif

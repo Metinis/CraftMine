@@ -2,7 +2,7 @@
 Player::Player(){
     movementSpeed = 5.0f;
     position = glm::vec3((World::SIZE / 2) * Chunk::SIZE, Chunk::HEIGHT, (World::SIZE / 2) * Chunk::SIZE);
-    camera.position = &position;
+    camera.position = position;
     chunkPosition = glm::vec2(position.x / Chunk::SIZE, position.z / Chunk::SIZE);
 }
 void Player::Update(float deltaTime){
@@ -12,6 +12,7 @@ void Player::Update(float deltaTime){
     glm::vec3 newPosition = position + playerVelocity * deltaTime;
 
     applyNewPositionY(newPosition);
+
     calculateNewPositionY(deltaTime);
 
     if(glm::length(playerVelocity) != 0 || !isGrounded){
@@ -77,6 +78,7 @@ void Player::calculateNewPositionY(float& deltaTime) {
 }
 void Player::applyNewPositionY(glm::vec3 &newPosition) {
 
+    bool isNewPosGrounded = checkNewPositionY(newPosition);
     glm::vec3 newYPos = glm::vec3(position.x, newPosition.y + HEIGHT, position.z);
 
     if(isJumping && playerVelocity.y <= 0)
@@ -84,15 +86,18 @@ void Player::applyNewPositionY(glm::vec3 &newPosition) {
         isJumping = false;
     }
     if(!checkNewPositionY(newYPos)) {
-        position.y = newPosition.y;
+        if(!isGrounded && isNewPosGrounded && !isJumping){
+            position.y = glm::round(newPosition).y + (2.0f - HEIGHT - 0.01f);
+        }
+        else{
+            position.y = newPosition.y;
+        }
     }
     else if(!isGrounded){
         playerVelocity.y = 0;
         isJumping = false;
     }
-
     isGrounded = checkNewPositionY(position);
-
 }
 void Player::UpdatePositionXZ(glm::vec3& newPosition) {
 
