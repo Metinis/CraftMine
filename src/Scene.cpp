@@ -378,6 +378,7 @@ void Scene::setFBODimensions(int width, int height){
     fbo->setDimensionTexture(width, height);
 }
 void Scene::renderQuad(){
+
     glActiveTexture(GL_TEXTURE0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     fbo->bindForRead();
