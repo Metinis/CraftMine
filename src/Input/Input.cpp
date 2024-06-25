@@ -179,8 +179,8 @@ void Input::processKey(int key, int action, GLFWwindow* window) {
         isCursorLocked = true;
     }
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS){
-        if(World::viewDistance >= 18){
-            World::viewDistance = 6;
+        if(World::viewDistance >= 15){
+            World::viewDistance = 3;
             world.UpdateViewDistance(player.chunkPosition);
             scene.loadShader(*scene.shader, World::viewDistance);
             scene.loadShader(*scene.transparentShader, World::viewDistance);
