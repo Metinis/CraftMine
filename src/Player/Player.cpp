@@ -42,12 +42,14 @@ void Player::checkIfSwimming(glm::ivec3 pos){
     glm::ivec3 posInChunk = positionInChunk();
     if(world->GetChunk(chunkPosition.x, chunkPosition.y)->GetBlockID(glm::round(glm::vec3(posInChunk.x, pos.y - 1, posInChunk.z))) == 5){
         isSwimming = true;
-        movementSpeed = 3.5f;
+        if(!isFlying)
+            movementSpeed = 3.5f;
     }
     else if(isSwimming)
     {
         isSwimming = false;
-        movementSpeed = 5.0f;
+        if(!isFlying)
+            movementSpeed = 5.0f;
         //std::cout<<"not swimming\n";
     }
 }
