@@ -78,7 +78,8 @@ void Player::calculateNewPositionY(float& deltaTime) {
 }
 void Player::applyNewPositionY(glm::vec3 &newPosition) {
 
-    bool isNewPosGrounded = checkNewPositionY(newPosition);
+    glm::vec3 newYposGround = glm::vec3(position.x, newPosition.y, position.z);
+    bool isNewPosGrounded = checkNewPositionY(newYposGround);
     glm::vec3 newYPos = glm::vec3(position.x, newPosition.y + HEIGHT, position.z);
 
     if(isJumping && playerVelocity.y <= 0)
@@ -86,7 +87,7 @@ void Player::applyNewPositionY(glm::vec3 &newPosition) {
         isJumping = false;
     }
     if(!checkNewPositionY(newYPos)) {
-        if(!isGrounded && isNewPosGrounded && !isJumping && !isColliding(newPosition)){
+        if(!isGrounded && isNewPosGrounded && !isJumping){// && !isColliding(glm::vec3(position.x, newPosition.y, position.z))){
             if(!isShifting){
 
                 position.y = glm::round(newPosition).y + 0.21f;
@@ -295,6 +296,7 @@ bool Player::checkNewPositionZ(float newZ) const
             if (Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y1, newChunkPosZ))) ||
                 Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y2, newChunkPosZ)))||
                 Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y3, newChunkPosZ)))) {
+                std::cout<<"collision with z\n";
                 return true;
             }
         }
@@ -326,6 +328,8 @@ bool Player::checkNewPositionX(float newX) const
             if (Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y1, newChunkPosZ))) ||
                 Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y2, newChunkPosZ)))||
                 Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y3, newChunkPosZ)))) {
+
+                std::cout<<"collision with x\n";
                 return true;
             }
         }
@@ -356,6 +360,7 @@ bool Player::checkNewPositionXZ(glm::vec3 newPosition) const
                     glm::round(glm::vec3(newChunkPos.x, newChunkPos.y - 1.5f, newChunkPos.z)))) ||
                 Block::isSolid(currentChunk->GetBlockID(
                         glm::round(glm::vec3(newChunkPos.x, newChunkPos.y - 1.0f, newChunkPos.z))))) {
+            std::cout<<"collision with xz\n";
             return true;
         }
     }
