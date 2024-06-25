@@ -86,14 +86,14 @@ void Player::applyNewPositionY(glm::vec3 &newPosition) {
         isJumping = false;
     }
     if(!checkNewPositionY(newYPos)) {
-        if(!isGrounded && isNewPosGrounded && !isJumping){
+        if(!isGrounded && isNewPosGrounded && !isJumping && !isColliding(newPosition)){
             if(!isShifting){
 
-                position.y = glm::round(newPosition).y + 0.21f;//((2.0f - HEIGHT) - 0.001f);
+                position.y = glm::round(newPosition).y + 0.21f;
             }
             else{
 
-                position.y = glm::round(newPosition).y + 0.01f;//((2.0f - HEIGHT) - 0.001f);
+                position.y = glm::round(newPosition).y + 0.01f;
             }
         }
         else if(!isGrounded || isJumping){
