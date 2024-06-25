@@ -51,7 +51,6 @@ void Player::checkIfSwimming(glm::ivec3 pos){
         isSwimming = false;
         if(!isFlying)
             movementSpeed = 5.0f;
-        //std::cout<<"not swimming\n";
     }
 }
 void Player::calculateNewPositionY(float& deltaTime) {
@@ -87,7 +86,7 @@ void Player::applyNewPositionY(glm::vec3 &newPosition) {
         isJumping = false;
     }
     if(!checkNewPositionY(newYPos)) {
-        if(!isGrounded && isNewPosGrounded && !isJumping){// && !isColliding(glm::vec3(position.x, newPosition.y, position.z))){
+        if(!isGrounded && isNewPosGrounded && !isJumping){
             if(!isShifting){
 
                 position.y = glm::round(newPosition).y + 0.21f;
@@ -296,7 +295,6 @@ bool Player::checkNewPositionZ(float newZ) const
             if (Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y1, newChunkPosZ))) ||
                 Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y2, newChunkPosZ)))||
                 Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y3, newChunkPosZ)))) {
-                std::cout<<"collision with z\n";
                 return true;
             }
         }
@@ -328,8 +326,6 @@ bool Player::checkNewPositionX(float newX) const
             if (Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y1, newChunkPosZ))) ||
                 Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y2, newChunkPosZ)))||
                 Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y3, newChunkPosZ)))) {
-
-                std::cout<<"collision with x\n";
                 return true;
             }
         }
@@ -360,7 +356,6 @@ bool Player::checkNewPositionXZ(glm::vec3 newPosition) const
                     glm::round(glm::vec3(newChunkPos.x, newChunkPos.y - 1.5f, newChunkPos.z)))) ||
                 Block::isSolid(currentChunk->GetBlockID(
                         glm::round(glm::vec3(newChunkPos.x, newChunkPos.y - 1.0f, newChunkPos.z))))) {
-            std::cout<<"collision with xz\n";
             return true;
         }
     }
@@ -386,10 +381,7 @@ bool Player::checkNewPositionY(glm::vec3& newPosition) const
                 localChunkPos.x = ((newPosition.x - (float) currentChunk->chunkPosition.x * Chunk::SIZE) + xWidth);
                 localChunkPos.z = ((newPosition.z - (float) currentChunk->chunkPosition.y * Chunk::SIZE) + zWidth);
 
-                if (//Block::isSolid(currentChunk->GetBlockID(
-                        //glm::round(glm::vec3(localChunkPos.x, newPosition.y - 1.5, localChunkPos.z)))) ||
-                        Block::isSolid(currentChunk->GetBlockID(glm::round(glm::vec3(localChunkPos.x, newPosition.y - HEIGHT, localChunkPos.z))))){
-                    //std::cout<<HEIGHT;
+                if (Block::isSolid(currentChunk->GetBlockID(glm::round(glm::vec3(localChunkPos.x, newPosition.y - HEIGHT, localChunkPos.z))))){
                     return true;
                 }
             }
