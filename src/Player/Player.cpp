@@ -87,9 +87,16 @@ void Player::applyNewPositionY(glm::vec3 &newPosition) {
     }
     if(!checkNewPositionY(newYPos)) {
         if(!isGrounded && isNewPosGrounded && !isJumping){
-            position.y = glm::round(newPosition).y + (2.0f - HEIGHT - 0.01f);
+            if(!isShifting){
+
+                position.y = glm::round(newPosition).y + 0.21f;//((2.0f - HEIGHT) - 0.001f);
+            }
+            else{
+
+                position.y = glm::round(newPosition).y + 0.01f;//((2.0f - HEIGHT) - 0.001f);
+            }
         }
-        else{
+        else if(!isGrounded || isJumping){
             position.y = newPosition.y;
         }
     }
@@ -220,7 +227,7 @@ void Player::ProcessKeyboardMovement(cameraMovement dir, float deltaTime)
         isShifting = true;
         if(isFlying){
             playerVelocity.y = 0;
-            playerVelocity.y -= jumpForce*4.5f;
+            playerVelocity.y -= jumpForce*2.5f;
             isFlying = !isGrounded;
         }
     }

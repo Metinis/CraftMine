@@ -118,13 +118,10 @@ void Game::run(){
             }
 
             scene->updateShadowProjection();
+
+            scene->renderToShadowMap(*world);
         }
-
-
         world->update();
-        //render shadow map
-
-        scene->renderToShadowMap(*world);
 
         //render normal world
         int width, height;

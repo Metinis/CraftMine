@@ -10,7 +10,7 @@
 class Player {
 private:
     const float GRAVITY = 9.8f;
-    float HEIGHT = 1.55f;
+    float HEIGHT = 1.75f;
     const float WIDTH = 0.3f;
     const float GRAVITY_MULTIPLIER = 2;
     const float MAX_VELOCITY = 40.0f;
@@ -31,7 +31,7 @@ public:
     glm::vec3 lastPosition{};
     glm::ivec2 chunkPosition{};
 
-    bool shiftChanged = true;
+    bool shiftChanged = false;
     bool isJumping{};
     bool isGrounded{};
     bool isShifting{};
