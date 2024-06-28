@@ -84,14 +84,25 @@ void Input::mouseButtonCallback(GLFWwindow* window, int button, int action, int 
         else //if mouse under inventory
         {
             int toolbarIndex = scene.inventory->determineToolbarIndex(cursorX / width, cursorY / height);
-            unsigned char blockID = scene.toolbar->getID(toolbarIndex);
-            scene.toolbar->setID(scene.cursorBlock->currentBlock, toolbarIndex);
-            scene.toolbar->loadItemsRendering();
-            player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
-            scene.inventory->loadItemsRendering();
-            scene.cursorBlock->currentBlock = 0;
-            scene.cursorBlock->loadBlockRendering(blockID);
-            scene.cursorBlock->setScreenDimensions(width, height);
+            if(toolbarIndex != -1){
+                unsigned char blockID = scene.toolbar->getID(toolbarIndex);
+                scene.toolbar->setID(scene.cursorBlock->currentBlock, toolbarIndex);
+                scene.toolbar->loadItemsRendering();
+                player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
+
+                scene.inventory->loadItemsRendering();
+                scene.cursorBlock->currentBlock = 0;
+                scene.cursorBlock->loadBlockRendering(blockID);
+                scene.cursorBlock->setScreenDimensions(width, height);
+            }
+            else{
+                scene.inventory->loadItemsRendering();
+                scene.cursorBlock->currentBlock = 0;
+                scene.cursorBlock->loadBlockRendering(0);
+                scene.cursorBlock->setScreenDimensions(width, height);
+            }
+
+
         }
     }
     if(button == GLFW_MOUSE_BUTTON_RIGHT && !scene.inventoryOpen){

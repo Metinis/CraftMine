@@ -269,7 +269,7 @@ int Inventory::determineToolbarIndex(float mouseX, float mouseY){
 
     // Ensure the mouse click is within the inventory bounds
     if (mouseX < minX || mouseX > maxX || mouseY < minY || mouseY > maxY) {
-        return 0;
+        return -1;
     }
 
     // Calculate the column (xIndex) and row (yIndex) of the slot
