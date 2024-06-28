@@ -135,11 +135,11 @@ void ChunkGeneration::generateLeaves(int startX, int endX, int startZ, int endZ,
                     Chunk& tempChunk = *chunk.world.GetChunk(tempChunkX, tempChunkZ);
 
                     int tempChunkLocalX = (x < 0) ? (Chunk::SIZE + x) :
-                                          (x > 15) ? (x - Chunk::SIZE) :
+                                          (x > Chunk::SIZE - 1) ? (x - Chunk::SIZE) :
                                           x;
 
                     int tempChunkLocalZ = (z < 0) ? (Chunk::SIZE + z) :
-                                          (z > 15) ? (z - Chunk::SIZE) :
+                                          (z > Chunk::SIZE - 1) ? (z - Chunk::SIZE) :
                                           z;
 
                     if(&tempChunk != nullptr && tempChunk.generatedBlockData && !tempChunk.inThread && tempChunk.generatedBuffData)

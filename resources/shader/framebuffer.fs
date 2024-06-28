@@ -7,6 +7,7 @@ uniform sampler2D sampledTexture;
 uniform float near_plane;
 uniform float far_plane;
 uniform bool inWater;
+uniform bool inInventory;
 
 float LinearizeDepth(float depth)
 {
@@ -26,7 +27,17 @@ void main()
                             sampledColor.b + blueStrength * (1.0 - sampledColor.b));
 
         FragColor = sampledColor;
-    } 
+    }
+    else if(inInventory){
+            vec4 sampledColor = texture(sampledTexture, texCoords);
+
+            float blueStrength = 0.7; // Adjust this value to control the intensity of the dark effect
+            sampledColor.rgb = vec3(sampledColor.r * (1.0 - blueStrength),
+                                sampledColor.g * (1.0 - blueStrength),
+                                sampledColor.b * (1.0 - blueStrength));
+
+            FragColor = sampledColor;
+        }
     else{
         FragColor = texture(sampledTexture, texCoords);
     }

@@ -8,8 +8,10 @@
 #include "World.h"
 #include "Game.h"
 #include "ScreenQuad.h"
-#include "Crosshair.h"
-#include "Toolbar.h"
+#include "Player/Crosshair.h"
+#include "Player/Toolbar.h"
+#include "Player/Inventory.h"
+#include "CursorBlock.h"
 
 class Scene {
 private:
@@ -57,13 +59,19 @@ public:
     Shader* geometryShader;
     Texture* worldTexture;
     Texture* guiTexture;
+    Texture* inventoryTexture;
+    CursorBlock* cursorBlock;
 
     Player& player;
 
     Toolbar* toolbar;
+    Inventory* inventory;
 
     float sunXOffset = 100;
     float sunYOffset = 50;
+
+    bool inventoryOpen = false;
+    unsigned char blockGrabbed = 0;
 
     Scene(Camera& _camera, Player& _player);
 
@@ -101,9 +109,13 @@ public:
 
     void renderQuad();
 
+    void drawBlockOnCursor();
+
     void changeSlotToolbar(int slot);
 
     void initialiseGBuffer();
 
     void setGBufferDimensions(int width, int height);
+
+    void renderGUI();
 };

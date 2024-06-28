@@ -7,6 +7,7 @@ Scene::Scene(Camera& _camera, Player& _player) : camera(_camera), player(_player
     ui = new Crosshair();
     toolbar = new Toolbar();
     toolbar->changeSlot(0);
+    inventory = new Inventory(*toolbar);
 }
 
 int Scene::SHADOW_DISTANCE = World::viewDistance;
@@ -25,9 +26,23 @@ void Scene::initialiseWorldShaders(){
 
     guiTexture = new Texture("../resources/gui/gui.png");
 
+    inventoryTexture = new Texture("../resources/gui/inventory.png");
+
+    cursorBlock = new CursorBlock();
+
+    // Get the primary monitor
+    GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+
+    // Get the video mode of the primary monitor
+    const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+
+    // Calculate the aspect ratio
+    float aspectRatio = (float)mode->width / (float)mode->height;
+
+
     model = glm::mat4(1.0f);
     view = glm::mat4(1.0f);
-    proj = glm::perspective(glm::radians(65.0f), 16.0f / 9.0f, 0.2f, 10000.0f);
+    proj = glm::perspective(glm::radians(65.0f), aspectRatio, 0.2f, 10000.0f);
 
     outlineShader->use();
     outlineShader->setMat4("model", model);
@@ -357,18 +372,49 @@ void Scene::renderWorld(World& world){
     world.renderTransparentMeshes(*transparentShader);
     glDepthMask(GL_TRUE);
     renderBlockOutline(world);
-    glDisable(GL_DEPTH_TEST);
+    //render toolbar to world frame buffer for post processing if inventory open
+    if(inventoryOpen){
+        glDisable(GL_DEPTH_TEST);
 
+        guiTexture->Bind();
+        toolbar->renderToolbar();
+        worldTexture->Bind();
+        toolbar->renderItems();
+        guiTexture->Bind();
+        toolbar->renderSlot();
+        worldTexture->Bind();
+
+        glEnable(GL_DEPTH_TEST);
+    }
+    fbo->Unbind();
+}
+void Scene::renderGUI(){
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDisable(GL_DEPTH_TEST);
     //render cross hair/ui
     guiTexture->Bind();
     ui->renderCrosshair();
-    toolbar->renderToolbar();
-    worldTexture->Bind();
-    toolbar->renderItems();
-    guiTexture->Bind();
-    toolbar->renderSlot();
-    worldTexture->Bind();
-    fbo->Unbind();
+    if(!inventoryOpen) {
+        toolbar->renderToolbar();
+        worldTexture->Bind();
+        toolbar->renderItems();
+        guiTexture->Bind();
+        toolbar->renderSlot();
+        worldTexture->Bind();
+    }
+
+    if(inventoryOpen){
+        inventoryTexture->Bind();
+        inventory->renderInventory();
+        worldTexture->Bind();
+        inventory->renderItems();
+        if(cursorBlock->currentBlock != 0){
+            cursorBlock->renderBlockOnCursor();
+        }
+    }
+
+
+    glEnable(GL_DEPTH_TEST);
 }
 void Scene::setFBODimensions(int width, int height){
     fbo->setDimensionTexture(width, height);
@@ -381,14 +427,9 @@ void Scene::renderQuad(){
     frameShader->use();
     GLint textureLocation = glGetUniformLocation(frameShader->ID, "sampledTexture");
     glUniform1i(textureLocation, 0);
-    //before rendering check if player is in water and apply water effect to frame shader
-    if(player.isHeadInWater()){
-        frameShader->setBool("inWater", true);
-    }
-    else{
-
-        frameShader->setBool("inWater", false);
-    }
+    //before rendering check if player is in water and apply water effect to frame shader, same for inventory
+    frameShader->setBool("inWater", player.isHeadInWater());
+    frameShader->setBool("inInventory", inventoryOpen);
 
     screenQuad->renderQuad(*frameShader);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -472,4 +513,8 @@ void Scene::updateShadowResolution() {
     Scene::SHADOW_DISTANCE = World::viewDistance;
     Scene::SHADOW_RESOLUTION = 1024 * SHADOW_DISTANCE;
     depthFBO->setDimensionDepthMap(SHADOW_RESOLUTION, SHADOW_RESOLUTION);
+}
+
+void Scene::drawBlockOnCursor() {
+
 }

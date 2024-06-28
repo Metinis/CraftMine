@@ -45,8 +45,6 @@ Game::Game(){
     glEnable(GL_LINE_SMOOTH);
     //glEnable(GL_MULTISAMPLE);
 
-
-
     //TODO make each accessible through scene to be more tidy
     World::viewDistance = 12;
     player = new Player();
@@ -134,6 +132,8 @@ void Game::run(){
         glViewport(0, 0, width, height);
         //finally output FBO to quad
         scene->renderQuad();
+
+        scene->renderGUI();
 
 
 

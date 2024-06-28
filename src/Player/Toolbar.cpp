@@ -159,68 +159,74 @@ void Toolbar::renderItems() {
 }
 
 void Toolbar::loadItemsRendering() {
+    deleteItemBuffers();
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 view = glm::mat4(1.0f);
     for(int i = 0; i < 9; i++){
-        toolbarCenterX = -halfToolbarWidth * 22.0f + (slotWidth) * 22.0f  / 2 + i * 1.2f * (slotWidth) * 22.0f ;
+        if(toolbarItems[i] != 0){
+            toolbarCenterX = -halfToolbarWidth * 22.0f + (slotWidth) * 22.0f  / 2 + i * 1.2f * (slotWidth) * 22.0f ;
 
-        glm::vec3 blockCenter = glm::vec3(toolbarCenterX - 1.47f, -13.5f, 0.0f);
+            glm::vec3 blockCenter = glm::vec3(toolbarCenterX - 1.47f, -13.5f, 0.0f);
 
-        glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.0375f, 0.065f, 0.0375f));
-        glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(25.0f), glm::vec3(1.0f,0.0f, 0.0f));
-        glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), glm::vec3(0.0f,1.0f, 0.0f));
+            glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.0375f, 0.065f, 0.0375f));
+            glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(25.0f), glm::vec3(1.0f,0.0f, 0.0f));
+            glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), glm::vec3(0.0f,1.0f, 0.0f));
 
 
 
-        FaceData faceDataFront = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[toolbarItems[i]],
-                                                blockCenter);
-        FaceData faceDataRight = Block::GetFace(CraftMine::Faces::RIGHT, BlockIDMap[toolbarItems[i]],
-                                                blockCenter);
-        FaceData faceDataTop = Block::GetFace(CraftMine::Faces::TOP, BlockIDMap[toolbarItems[i]],
-                                              blockCenter);
-        std::vector<glm::vec3> verts;
-        verts.insert(verts.end(), faceDataFront.vertices.begin(), faceDataFront.vertices.end());
-        verts.insert(verts.end(), faceDataRight.vertices.begin(), faceDataRight.vertices.end());
-        verts.insert(verts.end(), faceDataTop.vertices.begin(), faceDataTop.vertices.end());
+            FaceData faceDataFront = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[toolbarItems[i]],
+                                                    blockCenter);
+            FaceData faceDataRight = Block::GetFace(CraftMine::Faces::RIGHT, BlockIDMap[toolbarItems[i]],
+                                                    blockCenter);
+            FaceData faceDataTop = Block::GetFace(CraftMine::Faces::TOP, BlockIDMap[toolbarItems[i]],
+                                                  blockCenter);
+            std::vector<glm::vec3> verts;
+            verts.insert(verts.end(), faceDataFront.vertices.begin(), faceDataFront.vertices.end());
+            verts.insert(verts.end(), faceDataRight.vertices.begin(), faceDataRight.vertices.end());
+            verts.insert(verts.end(), faceDataTop.vertices.begin(), faceDataTop.vertices.end());
 
-        std::vector<glm::vec2> uvCoords;
-        uvCoords.insert(uvCoords.end(), faceDataFront.texCoords.begin(), faceDataFront.texCoords.end());
-        uvCoords.insert(uvCoords.end(), faceDataRight.texCoords.begin(), faceDataRight.texCoords.end());
-        uvCoords.insert(uvCoords.end(), faceDataTop.texCoords.begin(), faceDataTop.texCoords.end());
+            std::vector<glm::vec2> uvCoords;
+            uvCoords.insert(uvCoords.end(), faceDataFront.texCoords.begin(), faceDataFront.texCoords.end());
+            uvCoords.insert(uvCoords.end(), faceDataRight.texCoords.begin(), faceDataRight.texCoords.end());
+            uvCoords.insert(uvCoords.end(), faceDataTop.texCoords.begin(), faceDataTop.texCoords.end());
 
-        std::vector<float> brightness;
-        for(int i = 0; i < 4; i++){
-            itemBrightness.push_back(faceDataFront.brightness);
+            std::vector<float> brightness;
+            for(int i = 0; i < 4; i++){
+                itemBrightness.push_back(faceDataFront.brightness);
+            }
+            for(int i = 0; i < 4; i++){
+                itemBrightness.push_back(faceDataRight.brightness);
+            }
+            for(int i = 0; i < 4; i++){
+                itemBrightness.push_back(faceDataTop.brightness);
+            }
+
+            for(glm::vec3 vert : verts){
+                glm::mat4 translationToOrigin = glm::translate(glm::mat4(1.0f), -blockCenter);
+                glm::mat4 translationBack = glm::translate(glm::mat4(1.0f), blockCenter);
+                glm::vec3 rotatedVert = glm::vec3(scale * translationBack * rotationX * rotationY * translationToOrigin * glm::vec4(vert, 1.0f));
+                itemVertices.push_back(rotatedVert);
+            }
+            for(glm::vec2 uvCoord : uvCoords){
+                itemUVCoords.push_back(uvCoord);
+            }
+            ChunkMeshGeneration::AddIndices(3, indices, indexCount);
         }
-        for(int i = 0; i < 4; i++){
-            itemBrightness.push_back(faceDataRight.brightness);
-        }
-        for(int i = 0; i < 4; i++){
-            itemBrightness.push_back(faceDataTop.brightness);
-        }
 
-        for(glm::vec3 vert : verts){
-            glm::mat4 translationToOrigin = glm::translate(glm::mat4(1.0f), -blockCenter);
-            glm::mat4 translationBack = glm::translate(glm::mat4(1.0f), blockCenter);
-            glm::vec3 rotatedVert = glm::vec3(scale * translationBack * rotationX * rotationY * translationToOrigin * glm::vec4(vert, 1.0f));
-            itemVertices.push_back(rotatedVert);
-        }
-        for(glm::vec2 uvCoord : uvCoords){
-            itemUVCoords.push_back(uvCoord);
-        }
-        ChunkMeshGeneration::AddIndices(3, indices, indexCount);
 
     }
     itemShader = new Shader("../resources/shader/itemUI.vs", "../resources/shader/itemUI.fs");
     itemShader->use();
 
+    GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
 
+    // Get the video mode of the primary monitor
+    const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
 
+    // Calculate the aspect ratio
+    float aspectRatio = (float)mode->width / (float)mode->height;
+    glm::mat4 proj = glm::perspective(glm::radians(65.0f), aspectRatio, 0.1f, 100.0f);
 
-    //view = glm::rotate(view, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)); // Rotate around z-axis
-
-    glm::mat4 proj = glm::perspective(glm::radians(65.0f), 16.0f / 9.0f, 0.1f, 100.0f);
-    //model = glm::scale(model, glm::vec3(1.0f));
     itemShader->setMat4("model", model);
     itemShader->setMat4("view", view);
     itemShader->setMat4("projection", proj);
@@ -245,4 +251,31 @@ void Toolbar::loadItemsRendering() {
     itemBrightnessVBO->Unbind();
 
     itemIBO = new IBO(indices);
+}
+void Toolbar::deleteItemBuffers(){
+    if(itemShader != nullptr){
+        delete itemShader;
+        itemShader = nullptr;
+    }
+    if(itemVAO != nullptr){
+        delete itemVAO;
+        itemVAO = nullptr;
+    }if(itemVBO != nullptr){
+        delete itemVBO;
+        itemVBO = nullptr;
+    }if(itemBrightnessVBO != nullptr){
+        delete itemBrightnessVBO;
+        itemBrightnessVBO = nullptr;
+    }if(itemUVVBO != nullptr){
+        delete itemUVVBO;
+        itemUVVBO = nullptr;
+    }if(itemIBO != nullptr){
+        delete itemIBO;
+        itemIBO = nullptr;
+    }
+    indices.clear();
+    indexCount = 0;
+    itemVertices.clear();
+    itemUVCoords.clear();
+    itemBrightness.clear();
 }

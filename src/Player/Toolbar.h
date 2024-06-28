@@ -33,25 +33,25 @@ private:
     // Y coordinate for the bottom of the toolbar
     const float toolbarBottomY = -0.95f;
 
-    VAO* ToolBarVAO;
-    VBO* ToolBarVBO;
-    VBO* textureVBO;
+    VAO* ToolBarVAO = nullptr;
+    VBO* ToolBarVBO = nullptr;
+    VBO* textureVBO = nullptr;
 
-    VAO* slotVAO;
-    VBO* slotVBO;
-    VBO* slotTextureVBO;
+    VAO* slotVAO = nullptr;
+    VBO* slotVBO = nullptr;
+    VBO* slotTextureVBO = nullptr;
 
-    VAO* itemVAO;
-    VBO* itemVBO;
-    VBO* itemUVVBO;
-    VBO* itemBrightnessVBO;
-    IBO* itemIBO;
+    VAO* itemVAO = nullptr;
+    VBO* itemVBO = nullptr;
+    VBO* itemUVVBO = nullptr;
+    VBO* itemBrightnessVBO = nullptr;
+    IBO* itemIBO = nullptr;
 
-    std::vector<GLuint> indices;
+    std::vector<GLuint> indices; //used for rendering blocks
     int indexCount = 0;
 
-    Shader* shader;
-    Shader* itemShader;
+    Shader* shader = nullptr;
+    Shader* itemShader = nullptr;
 
     std::vector<glm::vec2> vertices;
     std::vector<glm::vec2> UVCoords;
@@ -66,8 +66,6 @@ private:
 
     unsigned char toolbarItems[9] = {0};
 
-    void loadItemsRendering();
-
 public:
     int slot;
     Toolbar();
@@ -80,6 +78,10 @@ public:
     void renderItems();
 
     void renderSlot();
+
+    void deleteItemBuffers();
+
+    void loadItemsRendering();
 };
 
 

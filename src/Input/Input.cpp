@@ -27,6 +27,9 @@ void Input::processMouse(GLFWwindow *window, double xposIn, double yposIn) {
         // Assuming camera is an instance of some camera class
         camera.ProcessMouseMovement(xOffset, yOffset);
     }
+    if(scene.inventoryOpen){
+        scene.cursorBlock->setMousePosCoordinates(xposIn, yposIn);
+    }
 }
 void Input::mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
@@ -48,7 +51,7 @@ void Input::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 }
 
 void Input::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
-    if(button == GLFW_MOUSE_BUTTON_LEFT){
+    if(button == GLFW_MOUSE_BUTTON_LEFT && !scene.inventoryOpen){
         if(action == GLFW_PRESS && isCursorLocked)
         {
             world.BreakBlocks(camera.position, camera.Front);
@@ -58,7 +61,33 @@ void Input::mouseButtonCallback(GLFWwindow* window, int button, int action, int 
             isCursorLocked = true;
         }
     }
-    if(button == GLFW_MOUSE_BUTTON_RIGHT){
+    else if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && scene.inventoryOpen){
+        double cursorX;
+        double cursorY;
+        int width;
+        int height;
+        glfwGetWindowSize(window, &width, &height);
+        glfwGetCursorPos(window, &cursorX, &cursorY);
+        if((cursorY / height) < 0.77f){
+            unsigned char blockID = scene.inventory->determineSlotBlockID(cursorX / width, cursorY / height);
+            scene.cursorBlock->currentBlock = 0;
+            scene.cursorBlock->loadBlockRendering(blockID);
+            scene.cursorBlock->setScreenDimensions(width, height);
+        }
+        else //if mouse under inventory
+        {
+            int toolbarIndex = scene.inventory->determineToolbarIndex(cursorX / width, cursorY / height);
+            unsigned char blockID = scene.toolbar->getID(toolbarIndex);
+            scene.toolbar->setID(scene.cursorBlock->currentBlock, toolbarIndex);
+            scene.toolbar->loadItemsRendering();
+            player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
+            scene.inventory->loadItemsRendering();
+            scene.cursorBlock->currentBlock = 0;
+            scene.cursorBlock->loadBlockRendering(blockID);
+            scene.cursorBlock->setScreenDimensions(width, height);
+        }
+    }
+    if(button == GLFW_MOUSE_BUTTON_RIGHT && !scene.inventoryOpen){
         if(action == GLFW_PRESS && isCursorLocked)
         {
             world.PlaceBlocks(camera.position, camera.Front);
@@ -194,6 +223,33 @@ void Input::processKey(int key, int action, GLFWwindow* window) {
             scene.updateShadowResolution();
         }
 
+    }
+    if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS){
+        scene.inventoryOpen = !scene.inventoryOpen;
+        if(scene.inventoryOpen){
+            // Save the current cursor position
+            glfwGetCursorPos(window, &previousCursorX, &previousCursorY);
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            isCursorLocked = false;
+        }
+        else{
+            // Get the window size
+            int width, height;
+            glfwGetWindowSize(window, &width, &height);
+
+            // Calculate the center position
+            double centerX = width / 2.0;
+            double centerY = height / 2.0;
+
+
+
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+            glfwSetCursorPos(window, previousCursorX, previousCursorY);
+            isCursorLocked = true;
+
+            scene.cursorBlock->currentBlock=0;
+        }
     }
 }
 void Input::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, bool* _isFullscreen, Player& player, World& world, float& deltaTime, Scene& scene)

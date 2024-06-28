@@ -37,6 +37,8 @@ private:
     double lastPressTime = 0; //used for jumping
     float timeFrame = 0.25f; //used for jumping
 
+// Declare variables to store the previous cursor position
+    double previousCursorX = 0.0, previousCursorY = 0.0;
 public:
 
     Input(Camera &_camera, World &_world, Scene &_scene, Player &_player, Game &_game);
