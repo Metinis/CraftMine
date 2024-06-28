@@ -70,9 +70,16 @@ void Input::mouseButtonCallback(GLFWwindow* window, int button, int action, int 
         glfwGetCursorPos(window, &cursorX, &cursorY);
         if((cursorY / height) < 0.77f){
             unsigned char blockID = scene.inventory->determineSlotBlockID(cursorX / width, cursorY / height);
-            scene.cursorBlock->currentBlock = 0;
-            scene.cursorBlock->loadBlockRendering(blockID);
-            scene.cursorBlock->setScreenDimensions(width, height);
+            if(scene.cursorBlock->currentBlock == 0) {
+                scene.cursorBlock->currentBlock = 0;
+                scene.cursorBlock->loadBlockRendering(blockID);
+                scene.cursorBlock->setScreenDimensions(width, height);
+            }
+            else{
+                scene.cursorBlock->currentBlock = 0;
+                scene.cursorBlock->loadBlockRendering(0);
+                scene.cursorBlock->setScreenDimensions(width, height);
+            }
         }
         else //if mouse under inventory
         {
