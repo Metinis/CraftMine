@@ -40,7 +40,6 @@ shadow mapping.
 ## Features to implement
 
 - Water shader
-- Inventory system (basically a creative menu)
 - Saving and loading Worlds
 - Flowers
 - Ores
