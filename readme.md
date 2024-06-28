@@ -29,6 +29,7 @@ shadow mapping.
 - Swimming
 - In-water post-processing effect
 - Deferred Rendering
+- Creative Menu
 
 ![screenshot.png](screenshot.png)
 
@@ -40,7 +41,6 @@ shadow mapping.
 ## Features to implement
 
 - Water shader
-- Inventory system (basically a creative menu)
 - Saving and loading Worlds
 - Flowers
 - Ores
