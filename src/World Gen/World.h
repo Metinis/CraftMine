@@ -102,6 +102,10 @@ public:
     void renderChunks(Shader& shader);
 
     void sortTransparentFaces();
+
+    void sortChunks(glm::vec3 pos);
+
+    void renderChunks(Shader &shader, glm::vec3 lightPos);
 };
 
 

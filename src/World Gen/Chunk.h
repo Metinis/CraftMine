@@ -92,6 +92,7 @@ public:
 	void ClearVertexData();
     static bool compareDistanceToPlayer(const ChunkDataPair& pair1, const ChunkDataPair& pair2, glm::vec3 playerPos);
     void sortTransparentMeshData();
+    void sortTransparentMeshData(glm::vec3 position);
 	//OpenGL stuff
 	void LoadChunkData();
 	void LoadBufferData();

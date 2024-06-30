@@ -137,7 +137,7 @@ void Input::processKey(int key, int action, GLFWwindow* window) {
 
         lastPressTime = currentTime;
     }
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT))
         glfwSetWindowShouldClose(window, true);
 
     if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS && !wireFrame)
@@ -242,7 +242,7 @@ void Input::processKey(int key, int action, GLFWwindow* window) {
         }
 
     }
-    if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS){
+    if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS || (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS && scene.inventoryOpen)){
         scene.inventoryOpen = !scene.inventoryOpen;
         if(scene.inventoryOpen){
             // Save the current cursor position
@@ -258,8 +258,6 @@ void Input::processKey(int key, int action, GLFWwindow* window) {
             // Calculate the center position
             double centerX = width / 2.0;
             double centerY = height / 2.0;
-
-
 
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 

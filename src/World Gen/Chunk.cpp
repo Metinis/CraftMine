@@ -90,6 +90,8 @@ struct Chunk::CompareFaces{
 
     }
 };
+
+
 void Chunk::sortTransparentMeshData() {
     std::lock_guard<std::mutex> lock(chunkMutex);
     // Sort transparent mesh data based on distance to player
@@ -113,7 +115,48 @@ void Chunk::sortTransparentMeshData() {
         combinedData.push_back(pair);
         k+=6;
     }
-    //std::cout<<combinedData.size()<<"\n"<<chunkData.transparentVerts.size() / 4<<"\n";
+    std::sort(combinedData.begin(), combinedData.end(), compareFaces);
+
+    chunkData.transparentVerts.clear();
+    chunkData.transparentUVs.clear();
+    chunkData.transparentBrightnessFloats.clear();
+    chunkData.transparentIndices.clear();
+    chunkData.transparentNormals.clear();
+
+    for (int i = 0; i < combinedData.size(); i++) {
+        for (int j = 0; j < 4; j++) {
+
+            chunkData.transparentVerts.push_back(combinedData[i].vertices[j]);
+            chunkData.transparentNormals.push_back(combinedData[i].normals[j]);
+            chunkData.transparentUVs.push_back(combinedData[i].uvs[j]);
+            chunkData.transparentBrightnessFloats.push_back(combinedData[i].brightnessFloats[j]);
+        }
+    }
+    chunkData.transparentIndexCount = 0;
+    ChunkMeshGeneration::AddIndices(combinedData.size(), chunkData.transparentIndices, chunkData.transparentIndexCount);
+}
+void Chunk::sortTransparentMeshData(glm::vec3 position) {
+    std::lock_guard<std::mutex> lock(chunkMutex);
+    // Sort transparent mesh data based on distance to player
+    CompareFaces compareFaces{};
+    compareFaces.playerPos = position;
+    std::vector<ChunkDataPair> combinedData;
+    int k = 0;
+    for (int i = 0; i < chunkData.transparentVerts.size(); i += 4) {
+        ChunkDataPair pair{};
+        for (int j = 0; j < 4; j++) {
+            pair.vertices[j] = chunkData.transparentVerts[i + j];
+            pair.normals[j] = chunkData.transparentNormals[i + j];
+            pair.brightnessFloats[j] = chunkData.transparentBrightnessFloats[i+j];
+            pair.uvs[j] = chunkData.transparentUVs[i + j];
+        }
+        for(int j = 0; j < 6; j++)
+        {
+            pair.indices[j] = chunkData.transparentIndices[k + j];
+        }
+        combinedData.push_back(pair);
+        k+=6;
+    }
     std::sort(combinedData.begin(), combinedData.end(), compareFaces);
 
     chunkData.transparentVerts.clear();
@@ -131,18 +174,9 @@ void Chunk::sortTransparentMeshData() {
             chunkData.transparentUVs.push_back(combinedData[i].uvs[j]);
             chunkData.transparentBrightnessFloats.push_back(combinedData[i].brightnessFloats[j]);
         }
-        for (int j = 0; j < 6; j++) {
-            //need to change indices according to verts
-            //chunkData.transparentIndices.push_back(combinedData[i].indices[j]);
-        }
-        //k+=4;
     }
-    //chunkData.transparentIndexCount = k;
     chunkData.transparentIndexCount = 0;
     ChunkMeshGeneration::AddIndices(combinedData.size(), chunkData.transparentIndices, chunkData.transparentIndexCount);
-
-    // Now, setData with the sorted data
-    //transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);
 }
 void Chunk::LoadBufferData()
 {

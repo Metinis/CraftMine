@@ -386,6 +386,12 @@ void World::sortChunks(){
     compareChunks._playerChunkPos = playerChunkPos;
     std::sort(activeChunks.begin(), activeChunks.end(), compareChunks);
 }
+
+void World::sortChunks(glm::vec3 pos){
+    CompareChunks compareChunks;
+    compareChunks._playerChunkPos = pos;
+    std::sort(activeChunks.begin(), activeChunks.end(), compareChunks);
+}
 void World::sortTransparentFaces() {
     if(player.chunkPosition.x > 0 && player.chunkPosition.x < World::SIZE && player.chunkPosition.y > 0 && player.chunkPosition.y < World::SIZE) {
         Chunk *currentChunk = GetChunk(playerChunkPos.x, playerChunkPos.y);
@@ -454,6 +460,19 @@ void World::renderChunks(Shader& shader)
     for (Chunk* chunk : activeChunks)
     {
         if(chunk->chunkHasMeshes && chunk->mesh->loadedData && &shader != nullptr && chunk->mesh != nullptr){
+            scene.renderMesh(*chunk->mesh, shader);
+
+            scene.renderMesh(*chunk->transparentMesh, shader);
+        }
+    }
+}
+
+void World::renderChunks(Shader& shader, glm::vec3 lightPos)
+{
+    for (Chunk* chunk : activeChunks)
+    {
+        if(chunk->chunkHasMeshes && chunk->mesh->loadedData && &shader != nullptr && chunk->mesh != nullptr){
+            //chunk->sortTransparentMeshData(lightPos);
             scene.renderMesh(*chunk->mesh, shader);
 
             scene.renderMesh(*chunk->transparentMesh, shader);

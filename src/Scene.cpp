@@ -87,8 +87,7 @@ void Scene::initialiseShadowMap(){
 }
 void Scene::updateShadowProjection(){
     shadowMapShader->use();
-
-    glm::vec3 lightPos = glm::vec3(glm::round(camera.position.x + sunXOffset), Chunk::HEIGHT + 100, glm::round(camera.position.z + sunZOffset));
+    lightPos = glm::vec3(glm::round(camera.position.x + sunXOffset), Chunk::HEIGHT + 100, glm::round(camera.position.z + sunZOffset));
 
     if(std::abs(sunXOffset) > 400 && minBrightness > 0.3f){
         minBrightness -= 0.00001;
@@ -313,12 +312,8 @@ void Scene::renderToShadowMap(World& world){
     {
         std::cout<<"Framebuffer incomplete";
     }
-    render(*shadowMapShader, world);
-    //render(*shader, world);
-    //render(world);
-
+    world.renderChunks(*shadowMapShader, lightPos);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    //glViewport(0, 0, 1280, 720);  // Restore viewport
 }
 void Scene::renderWorld(World& world){
 
@@ -357,7 +352,8 @@ void Scene::renderWorld(World& world){
     screenQuad->renderQuad(*shader);
     fbo->Unbind();
     // 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
-    // ----------------------------------------------------------------------------------
+    // ----------------------------------
+    // ------------------------------------------------
     glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo->ID); // write to default framebuffer
     glBlitFramebuffer(0, 0, fbo->width, fbo->height, 0, 0, fbo->width, fbo->height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
@@ -431,6 +427,7 @@ void Scene::renderQuad(){
     frameShader->setBool("inWater", player.isHeadInWater());
     frameShader->setBool("inInventory", inventoryOpen);
 
+    //depthFBO->bindForRead();
     screenQuad->renderQuad(*frameShader);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

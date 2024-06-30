@@ -34,6 +34,8 @@ private:
     glm::ivec3 lastOutlinePos;
     glm::vec3 fogColor = glm::vec3(0.55f, 0.75f, 1.0f);
 
+    glm::vec3 lightPos = glm::vec3(0,0,0);
+
     VAO* outlineVAO = nullptr;
     VBO* outlineVBO = nullptr;
     IBO* outlineIBO = nullptr;
