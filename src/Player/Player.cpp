@@ -40,7 +40,7 @@ void Player::updateShifting() {
     }
 }
 void Player::checkIfSwimming(glm::ivec3 pos){
-    glm::ivec3 posInChunk = positionInChunk();
+    glm::vec3 posInChunk = positionInChunk();
     unsigned char playerBlockID = world->GetChunk(chunkPosition.x, chunkPosition.y)->GetBlockID(glm::round(glm::vec3(posInChunk.x, pos.y - 1, posInChunk.z)));
     if(playerBlockID == 5 || playerBlockID == 67){ //water or lava, TODO change to block id map to be clearer
         isSwimming = true;
@@ -422,8 +422,8 @@ bool Player::checkCollisionWithBlockLocal(glm::ivec3 localPos){
 }
 
 bool Player::isHeadInWater(){
-    glm::ivec3 posInChunk = positionInChunk();
-    if(world->GetChunk(chunkPosition.x, chunkPosition.y)->GetBlockID(posInChunk) == 5){
+    glm::vec3 posInChunk = positionInChunk();
+    if(world->GetChunk(chunkPosition.x, chunkPosition.y)->GetBlockID(glm::round(posInChunk)) == 5){
         return true;
     }
     else
