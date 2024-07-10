@@ -1,3 +1,4 @@
+#include <unordered_set>
 #include "Chunk.h"
 #include "World.h"
 #include "Input/Input.h"
@@ -42,7 +43,7 @@ void World::GenerateChunkThread()
                 chunk->inThread = false;
                 {
                     std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
-                    loadedChunks.push(std::ref(chunk->chunkPosition));
+                    loadedChunks.push(chunk->chunkPosition);
                 }
                 chunk->chunkDeleteMutex.unlock();
             }
@@ -61,10 +62,10 @@ void World::GenerateWorldThread()
             {
                 std::lock_guard<std::mutex> lock(mutexChunksToGenerate);
                 chunk = GetChunk(chunksToGenerate.back());
-                chunksToGenerate.pop_back();
             }
             if(chunk == nullptr){
 
+                chunksToGenerate.pop_back();
                 continue;
             }
             if(chunk->chunkDeleteMutex.try_lock()) {
@@ -75,6 +76,8 @@ void World::GenerateWorldThread()
 
                 mutexChunksToLoadData.lock();
                 chunksToLoadData.insert(chunksToLoadData.begin(), chunk->chunkPosition);
+
+                chunksToGenerate.pop_back();
                 mutexChunksToLoadData.unlock();
                 chunk->chunkDeleteMutex.unlock();
             }
@@ -137,15 +140,24 @@ void World::UpdateViewDistance(glm::ivec2& cameraChunkPos)
             if (chunks[x + SIZE * z] == nullptr || (!chunks[x + SIZE * z]->generatedBlockData && !chunks[x + SIZE * z]->inThread))
             {
                 chunks[x + SIZE * z] = new Chunk(glm::vec2(x, z), *this);
-                generateChunks.push_back(std::ref(chunks[x + SIZE * z]->chunkPosition));
+                generateChunks.push_back((chunks[x + SIZE * z]->chunkPosition));
+                if(glm::ivec2(x, z) == player.chunkPosition){
+                    std::cout<<"creating chunk\n";
+                }
             }
-            else if(!chunks[x + SIZE * z]->inThread && chunks[x + SIZE * z]->generatedBuffData)
+            else if(chunks[x + SIZE * z]->generatedBuffData && !chunks[x + SIZE * z]->inThread)
             {
-                newActiveChunks.push_back(std::ref(chunks[x + SIZE * z]->chunkPosition));
+                newActiveChunks.push_back((chunks[x + SIZE * z]->chunkPosition));
+                if(glm::ivec2(x, z) == player.chunkPosition){
+                    std::cout<<"new active chunk\n";
+                }
             }
-            else if(!chunks[x + SIZE * z]->generatedBuffData)
+            else
             {
-                chunksLoading.push_back(std::ref(chunks[x + SIZE * z]->chunkPosition));
+                chunksLoading.push_back((chunks[x + SIZE * z]->chunkPosition));
+                if(glm::ivec2(x, z) == player.chunkPosition){
+                    std::cout<<"loading chunk\n";
+                }
             }
 
         }
@@ -153,30 +165,33 @@ void World::UpdateViewDistance(glm::ivec2& cameraChunkPos)
     }
     //All chunks which are not in chunksLoading but in chunksToLoadData to be deleted
     //All chunks which are in activeChunk list but not in new active chunk
-    for(glm::ivec2 chunkPos : chunksToLoadData)
     {
-        Chunk* chunk = GetChunk(chunkPos);
-        if(chunk == nullptr){
-            continue;
+        std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
+        std::lock_guard<std::mutex> _lock(mutexChunksToGenerate);
+        // Create a set of chunks that should not be deleted
+        std::unordered_set<glm::ivec2, ChunkPosHash> chunksToKeep(chunksLoading.begin(), chunksLoading.end());
+        chunksToKeep.insert(newActiveChunks.begin(), newActiveChunks.end());
+
+        for (glm::ivec2 chunkPos : chunksToLoadData) {
+            Chunk* chunk = GetChunk(chunkPos);
+            if (chunk == nullptr) {
+                continue;
+            }
+            if (chunksToKeep.find(chunkPos) == chunksToKeep.end() && !chunk->inThread) {
+                delete chunks[chunkPos.x + SIZE * chunkPos.y];
+                chunks[chunkPos.x + SIZE * chunkPos.y] = nullptr;
+            }
         }
-        if(std::find(chunksLoading.begin(), chunksLoading.end(), chunkPos) == chunksLoading.end() && !chunk->inThread)
-        {
-            delete chunks[chunkPos.x + SIZE * chunkPos.y];
-            chunks[chunkPos.x + SIZE * chunkPos.y] = nullptr;
-           // std::cout<<"deleting chunk at: "<<chunkPos.x<<"x "<<chunkPos.y<<"z \n";
-        }
-    }
-    for(glm::ivec2 chunkPos : activeChunks)
-    {
-        Chunk* chunk = GetChunk(chunkPos);
-        if(chunk == nullptr){
-            continue;
-        }
-        if(std::find(newActiveChunks.begin(), newActiveChunks.end(), chunkPos) == newActiveChunks.end() && !chunk->inThread)
-        {
-            delete chunks[chunkPos.x + SIZE * chunkPos.y];
-            chunks[chunkPos.x + SIZE * chunkPos.y] = nullptr;
-           // std::cout<<"deleting chunk at: "<<chunkPos.x<<"x "<<chunkPos.y<<"z \n";
+
+        for (glm::ivec2 chunkPos : activeChunks) {
+            Chunk* chunk = GetChunk(chunkPos);
+            if (chunk == nullptr) {
+                continue;
+            }
+            if (chunksToKeep.find(chunkPos) == chunksToKeep.end() && !chunk->inThread) {
+                delete chunks[chunkPos.x + SIZE * chunkPos.y];
+                chunks[chunkPos.x + SIZE * chunkPos.y] = nullptr;
+            }
         }
     }
     std::sort(generateChunks.begin(), generateChunks.end(), compareChunks);
@@ -204,8 +219,9 @@ void World::GenerateChunkBuffers(std::vector<Chunk*>& addedChunks)
 {
     for (Chunk* chunk : addedChunks)
     {
-        if (!chunk->inThread)
+        if(!chunk->inThread)
         {
+            //std::lock_guard<std::mutex> lock(chunk->chunkMeshMutex);
             //todo fix this race condition
             //chunk->chunkHasMeshes = false;
             chunk->generatedBuffData = false;
@@ -213,10 +229,9 @@ void World::GenerateChunkBuffers(std::vector<Chunk*>& addedChunks)
             chunk->generatedBuffData = true;
             if(!chunk->chunkHasMeshes)
             {
-                mutexChunksToLoadData.lock();
+                std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
                 chunk->chunkHasMeshes = true;
                 activeChunks.push_back(chunk->chunkPosition);
-                mutexChunksToLoadData.unlock();
             }
 
 
@@ -318,7 +333,8 @@ void World::PlaceBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
         if(currentChunk->generatedBlockData) {
             currentChunk->SetBlock(lastEmptyPos, player.getBlockID());
             std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
-            currentChunk->generatedBuffData = false;
+            //std::lock_guard<std::mutex> _lock(currentChunk->chunkMeshMutex);
+            //currentChunk->generatedBuffData = false;
             chunksToLoadData.push_back(currentChunk->chunkPosition);
         }
     }
@@ -333,7 +349,8 @@ void World::BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
         //if block broken was on border, check and update neighbouring chunk mesh
         {
             std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
-            currentChunk->generatedBuffData = false;
+            //std::lock_guard<std::mutex> _lock(currentChunk->chunkMeshMutex);
+            //currentChunk->generatedBuffData = false;
             chunksToLoadData.push_back(currentChunk->chunkPosition);
         }
         int tempChunkX = currentChunk->chunkPosition.x;
@@ -354,13 +371,15 @@ void World::BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
         if(tempChunk1 != nullptr && tempChunk1->generatedBlockData)
         {
             std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
-            tempChunk1->generatedBuffData = false;
+            //std::lock_guard<std::mutex> _lock(tempChunk1->chunkMeshMutex);
+            //tempChunk1->generatedBuffData = false;
             chunksToLoadData.push_back(tempChunk1->chunkPosition);
         }
         if(tempChunk2 != nullptr && tempChunk2->generatedBlockData)
         {
             std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
-            tempChunk2->generatedBuffData = false;
+            //std::lock_guard<std::mutex> _lock(tempChunk2->chunkMeshMutex);
+            //tempChunk2->generatedBuffData = false;
             chunksToLoadData.push_back(tempChunk2->chunkPosition);
         }
     }
@@ -519,7 +538,7 @@ void World::renderChunks(Shader& shader, glm::vec3 lightPos)
 }
 void World::update()
 {
-    sortTransparentFaces();
+    //sortTransparentFaces();
 
     scene.updateShaders();
     //changes global texture every second that passes

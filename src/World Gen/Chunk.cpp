@@ -12,26 +12,28 @@ Chunk::Chunk(glm::ivec2 Position, World& _world) : world(_world)
 
 unsigned char Chunk::GetBlockID(glm::ivec3 pos)
 {
-    if(pos.x < 0 || pos.x > SIZE - 1 || pos.y < 0 || pos.y > HEIGHT - 1 || pos.z < 0 || pos.z > SIZE - 1)
-    {
+
+    if (pos.x < 0 || pos.x > SIZE - 1 || pos.y < 0 || pos.y > HEIGHT - 1 || pos.z < 0 || pos.z > SIZE - 1) {
         //std::cout<<"invalid block position at: "<<pos.x<<"x "<<pos.y<<"y "<<pos.z<<"z ";
         return 0;
-    }
-    else {
+    } else {
         return blockIDs[pos.x + SIZE * (pos.y + HEIGHT * pos.z)];
     }
+        //chunkDeleteMutex.unlock();
 }
 
 void Chunk::SetBlock(glm::ivec3 pos, unsigned char id)
 {
-    if(pos.x < 0 || pos.x > SIZE - 1 || pos.y < 0 || pos.y > HEIGHT - 1 || pos.z < 0 || pos.z > SIZE - 1)
     {
-        std::cout<<"invalid block position at: "<<pos.x<<"x "<<pos.y<<"y "<<pos.z<<"z ";
+        std::lock_guard<std::mutex> lock(chunkMeshMutex);
+        if (pos.x < 0 || pos.x > SIZE - 1 || pos.y < 0 || pos.y > HEIGHT - 1 || pos.z < 0 || pos.z > SIZE - 1) {
+            std::cout << "invalid block position at: " << pos.x << "x " << pos.y << "y " << pos.z << "z ";
+        } else {
+            blockIDs[pos.x + SIZE * (pos.y + HEIGHT * pos.z)] = id;
+        }
     }
-    else {
-        blockIDs[pos.x + SIZE * (pos.y + HEIGHT * pos.z)] = id;
-        saveData();
-    }
+
+    saveData();
 }
 
 void Chunk::GenBlocks()
@@ -252,7 +254,7 @@ Chunk::~Chunk()
 
 bool Chunk::getIsAllSidesUpdated() {
     //
-     std::lock_guard<std::mutex> lock(chunkMeshMutex);
+    // std::lock_guard<std::mutex> lock(chunkMeshMutex);
     return chunkBools.rightSideUpdated && chunkBools.leftSideUpdated && chunkBools.frontUpdated && chunkBools.backUpdated;
 }
 

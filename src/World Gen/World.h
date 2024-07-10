@@ -43,6 +43,11 @@ private:
 			return distance1 > distance2;
 		}
 	};
+    struct ChunkPosHash {
+        std::size_t operator()(const glm::ivec2& pos) const {
+            return std::hash<int>()(pos.x) ^ std::hash<int>()(pos.y);
+        }
+    };
 
     bool CheckForBlocksToBeAdded(Chunk* chunk);
 	void GenerateChunkBuffers(std::vector<Chunk*>& addedChunks);

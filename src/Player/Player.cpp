@@ -423,7 +423,11 @@ bool Player::checkCollisionWithBlockLocal(glm::ivec3 localPos){
 
 bool Player::isHeadInWater(){
     glm::vec3 posInChunk = positionInChunk();
-    if(world->GetChunk(chunkPosition.x, chunkPosition.y)->GetBlockID(glm::round(posInChunk)) == 5){
+    Chunk* chunk = world->GetChunk(chunkPosition.x, chunkPosition.y);
+    if(chunk == nullptr){
+        return false;
+    }
+    if(chunk->GetBlockID(glm::round(posInChunk)) == 5){
         return true;
     }
     else

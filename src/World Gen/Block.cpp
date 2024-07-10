@@ -3,6 +3,10 @@
 
 FaceData Block::GetFace(Faces face, BlockType type, glm::vec3 position)
 {
+    if(type == CraftMine::EMPTY)
+    {
+        std::cout<<"empty block \n";
+    }
 	return FaceData{ AddTransformedVertices(FaceDataRaw::rawVertexData.at(face), position, type), TextureData::GetBlockTypeUV(type, face),
                      CraftMine::brightnessMap.at(face), CraftMine::normalsMap.at(face) };
 }
