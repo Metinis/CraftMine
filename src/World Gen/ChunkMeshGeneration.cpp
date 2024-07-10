@@ -5,6 +5,9 @@
 #include "ChunkMeshGeneration.h"
 bool ChunkMeshGeneration::CheckFace(int x, int y, int z, bool isSolid, unsigned char originalID, Chunk& chunk)
 {
+    if(&chunk == nullptr){
+        return false;
+    }
     if (x >= 0 && x < Chunk::SIZE && y <= Chunk::HEIGHT && y >= 0 && z >= 0 && z < Chunk::SIZE)
     {
         //TODO fix culled faces overlapping non culled ones
@@ -31,7 +34,11 @@ bool ChunkMeshGeneration::CheckFace(int x, int y, int z, bool isSolid, unsigned 
 
 void ChunkMeshGeneration::GenFaces(Chunk& chunk)
 {
-    //std::lock_guard<std::mutex> lock(chunk.chunkMutex);
+    if(&chunk == nullptr)
+    {
+        return;
+    }
+    //std::lock_guard<std::mutex> lock(chunk.chunkMeshMutex);
     int numFaces = 0;
     int numTransparentFaces = 0;
     for (int x = 0; x < Chunk::SIZE; x++)
@@ -62,6 +69,9 @@ void ChunkMeshGeneration::GenFaces(Chunk& chunk)
 }
 void ChunkMeshGeneration::AddFaces(int x, int y, int z, int &numFaces, bool isSolid, Chunk& chunk) //checks the isSolid faces and adds them
 {
+    if(&chunk == nullptr){
+        return;
+    }
     unsigned char id = chunk.GetBlockID(glm::ivec3(x,y,z));
     BlockType type = BlockIDMap[id];
 
@@ -115,7 +125,10 @@ void ChunkMeshGeneration::AddFaces(int x, int y, int z, int &numFaces, bool isSo
 
 void ChunkMeshGeneration::UpdateSide(CraftMine::Faces face, Chunk& chunk)
 {
-    //std::lock_guard<std::mutex> lock(chunk.chunkMutex);
+    if(&chunk == nullptr){
+        return;
+    }
+    //std::lock_guard<std::mutex> lock(chunk.chunkMeshMutex);
     Chunk* tempChunk = nullptr;
     int numFaces = 0;
     int numTransparentFaces = 0;
@@ -227,7 +240,11 @@ void ChunkMeshGeneration::AddEdgeFaces(glm::ivec3 localBlockPos, int &numFaces, 
 
 void ChunkMeshGeneration::UpdateNeighbours(Chunk& chunk)
 {
+    //std::lock_guard<std::mutex> lock(chunk.chunkMeshMutex);
     //update the right side of the left chunk
+    if(&chunk == nullptr){
+        return;
+    }
     if (chunk.chunkPosition.x > 0)
     {
         Chunk* tempChunk = chunk.world.GetChunk(chunk.chunkPosition.x - 1, chunk.chunkPosition.y);
@@ -243,7 +260,7 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk& chunk)
                 tempChunk->inThread = false;
 
                 chunk.world.mutexChunksToLoadData.lock();
-                chunk.world.loadedChunks.push(tempChunk);
+                chunk.world.loadedChunks.push(tempChunk->chunkPosition);
                 chunk.world.mutexChunksToLoadData.unlock();
             }
         }
@@ -270,7 +287,7 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk& chunk)
                 tempChunk->inThread = false;
 
                 chunk.world.mutexChunksToLoadData.lock();
-                chunk.world.loadedChunks.push(tempChunk);
+                chunk.world.loadedChunks.push(tempChunk->chunkPosition);
                 chunk.world.mutexChunksToLoadData.unlock();
             }
         }
@@ -296,7 +313,7 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk& chunk)
                 UpdateSide(CraftMine::BACK, *tempChunk);
                 tempChunk->inThread = false;
                 chunk.world.mutexChunksToLoadData.lock();
-                chunk.world.loadedChunks.push(tempChunk);
+                chunk.world.loadedChunks.push(tempChunk->chunkPosition);
                 chunk.world.mutexChunksToLoadData.unlock();
             }
         }
@@ -323,7 +340,7 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk& chunk)
                 UpdateSide(CraftMine::FRONT, *tempChunk);
                 tempChunk->inThread = false;
                 chunk.world.mutexChunksToLoadData.lock();
-                chunk.world.loadedChunks.push(tempChunk);
+                chunk.world.loadedChunks.push(tempChunk->chunkPosition);
                 chunk.world.mutexChunksToLoadData.unlock();
             }
         }
@@ -339,7 +356,8 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk& chunk)
 void ChunkMeshGeneration::IntegrateFace(FaceData faceData, bool isTransparent, Chunk& chunk)
 {
     //FaceData faceData = block.GetFace(face);
-    if(!isTransparent) {
+    //chunk.chunkMeshMutex.lock();
+    if(!isTransparent && &chunk != nullptr) {
         chunk.chunkData.chunkVerts.insert(chunk.chunkData.chunkVerts.end(), faceData.vertices.begin(), faceData.vertices.end());
         chunk.chunkData.chunkUVs.insert(chunk.chunkData.chunkUVs.end(), faceData.texCoords.begin(), faceData.texCoords.end());
         chunk.chunkData.chunkNormals.insert(chunk.chunkData.chunkNormals.end(), faceData.normals.begin(), faceData.normals.end());
@@ -349,7 +367,7 @@ void ChunkMeshGeneration::IntegrateFace(FaceData faceData, bool isTransparent, C
             chunk.chunkData.chunkBrightnessFloats.push_back(faceData.brightness);
         }
     }
-    else
+    else if(&chunk != nullptr)
     {
 
         chunk.chunkData.transparentVerts.insert(chunk.chunkData.transparentVerts.end(), faceData.vertices.begin(), faceData.vertices.end());
@@ -361,6 +379,7 @@ void ChunkMeshGeneration::IntegrateFace(FaceData faceData, bool isTransparent, C
         }
 
     }
+    //chunk.chunkMeshMutex.unlock();
 }
 void ChunkMeshGeneration::AddIndices(int amtFaces, std::vector<GLuint> &indices, GLsizei &_indexCount)
 {

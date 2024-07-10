@@ -16,6 +16,7 @@
 #include <random>
 #include "BlockData.h"
 #include <mutex>
+#include "zlib.h"
 
 class Player;
 
@@ -69,7 +70,9 @@ public:
     ChunkData chunkData;
     ChunkBools chunkBools;
 
-    std::mutex chunkMutex;
+    std::mutex chunkMeshMutex;
+    std::mutex chunkBlockMutex;
+    std::mutex chunkDeleteMutex;
 
     Mesh* mesh = nullptr;
     Mesh* transparentMesh = nullptr;
@@ -78,6 +81,7 @@ public:
 	bool generatedBuffData = false;
     bool chunkHasMeshes = false;
 	bool inThread = false;
+    bool toBeDeleted = false;
 
     World& world;
 
@@ -96,6 +100,8 @@ public:
 	//OpenGL stuff
 	void LoadChunkData();
 	void LoadBufferData();
+    void saveData();
+    bool loadData();
 	//void RenderChunk();
     //void RenderShadowChunk(Shader& _shader);
 	void Delete();

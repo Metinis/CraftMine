@@ -11,6 +11,7 @@
 #include <cmath>
 #include <iostream>
 #include <filesystem>
+#include <unordered_map>
 
 class Player;
 
@@ -32,11 +33,11 @@ private:
     struct CompareChunks {
         glm::ivec2 _playerChunkPos = glm::ivec2(50,50);
 
-		bool operator()(Chunk* chunk1, Chunk* chunk2){
-			int x1 = _playerChunkPos.x - chunk1->chunkPosition.x;
-			int y1 = _playerChunkPos.y - chunk1->chunkPosition.y;
-			int x2 = _playerChunkPos.x - chunk2->chunkPosition.x;
-			int y2 = _playerChunkPos.y - chunk2->chunkPosition.y;
+		bool operator()(glm::ivec2 chunkPos1, glm::ivec2 chunkPos2 ){
+			int x1 = _playerChunkPos.x - chunkPos1.x;
+			int y1 = _playerChunkPos.y - chunkPos1.y;
+			int x2 = _playerChunkPos.x - chunkPos2.x;
+			int y2 = _playerChunkPos.y - chunkPos2.y;
 			double distance1 = sqrt(x1 * x1 + y1 * y1);
 			double distance2 = sqrt(x2 * x2 + y2 * y2);
 			return distance1 > distance2;
@@ -46,7 +47,6 @@ private:
     bool CheckForBlocksToBeAdded(Chunk* chunk);
 	void GenerateChunkBuffers(std::vector<Chunk*>& addedChunks);
     void LoadThreadDataToMain();
-
 
 public:
     Player& player;
@@ -58,16 +58,18 @@ public:
 	std::thread chunkThread;
 	std::thread worldGenThread;
 
-	std::vector<Chunk*> chunksToGenerate;  //used for world gen for chunks that haven't been generated yet -> generates blocks
-	std::vector<Chunk*> chunksToLoadData; //used to load faces
-	std::queue<Chunk*> loadedChunks;	 //sent to main thread to be assigned buffers
-	std::vector<Chunk*> chunksToDelete;
-	std::vector<Chunk*> activeChunks;	 //chunks that are currently being rendered, any loaded chunks need to be sent from thread to here
-    std::vector<Chunk*> chunksToSortFaces;
+	std::vector<glm::ivec2> chunksToGenerate;  //used for world gen for chunks that haven't been generated yet -> generates blocks
+	std::vector<glm::ivec2> chunksToLoadData; //used to load faces
+	std::queue<glm::ivec2> loadedChunks;	 //sent to main thread to be assigned buffers
+	std::vector<glm::ivec2> chunksToDelete;
+	std::vector<glm::ivec2> activeChunks;	 //chunks that are currently being rendered, any loaded chunks need to be sent from thread to here
+    std::vector<glm::ivec2> chunksToSortFaces;
+
     std::vector<BlocksToBeAdded> blocksToBeAddedList;
 
     std::mutex mutexBlocksToBeAddedList;
     std::mutex mutexChunksToLoadData;
+    std::mutex mutexDeleteChunk;
 
     Chunk* chunks[SIZE*SIZE] = {nullptr};
 
@@ -80,6 +82,8 @@ public:
 	void UpdateViewDistance(glm::ivec2& cameraPos);
 
 	Chunk* GetChunk(int x, int y);
+
+    Chunk* GetChunk(glm::ivec2 pos);
 
     bool RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, glm::ivec3& result, Chunk*& chunk);
 
@@ -106,6 +110,7 @@ public:
     void sortChunks(glm::vec3 pos);
 
     void renderChunks(Shader &shader, glm::vec3 lightPos);
+
 };
 
 

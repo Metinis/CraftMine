@@ -30,19 +30,25 @@ void Chunk::SetBlock(glm::ivec3 pos, unsigned char id)
     }
     else {
         blockIDs[pos.x + SIZE * (pos.y + HEIGHT * pos.z)] = id;
+        saveData();
     }
 }
 
 void Chunk::GenBlocks()
 {
-    //std::lock_guard<std::mutex> lock(chunkMutex);
-    ChunkGeneration::GenBlocks(*this);
-    generatedBlockData = true;
+    {
+        //std::lock_guard<std::mutex> lock(chunkMeshMutex);
+        if (!loadData()) {
+            ChunkGeneration::GenBlocks(*this);
+        }
+        generatedBlockData = true;
+    }
+    saveData();
 }
 
 void Chunk::ClearVertexData()
 {
-    //std::lock_guard<std::mutex> lock(chunkMutex);
+    //std::lock_guard<std::mutex> lock(chunkMeshMutex);
     chunkData.indexCount = 0;
     chunkData.chunkVerts.clear();
     chunkData.chunkUVs.clear();
@@ -66,24 +72,17 @@ bool Chunk::compareDistanceToPlayer(const ChunkDataPair& pair1, const ChunkDataP
     glm::vec3 center1 = (glm::vec3(((pair1.vertices[0]) + (pair1.vertices[1]) + (pair1.vertices[2]) + (pair1.vertices[3]))));
     glm::vec3 center2 = (glm::vec3(((pair2.vertices[0]) + (pair2.vertices[1]) + (pair2.vertices[2]) + (pair2.vertices[3]))));
 
-
-    //if(glm::distance(playerPos, center1) < glm::distance((playerPos), center2))
-        //std::cout<<playerPos.x<<"x "<<playerPos.y<<"y "<<playerPos.z<<"z \n";
-        //std::cout<<glm::distance(playerPos, center1)<<"\n"<<glm::distance(playerPos, center2)<<"\n";
-
     return glm::distance(playerPos, center1) > glm::distance((playerPos), center2);
 }
 struct Chunk::CompareFaces{
+
     glm::vec3 playerPos;
 
     bool operator()(ChunkDataPair pair1, ChunkDataPair pair2){
-        //return compareDistanceToPlayer(pair1, pair2, playerPos);
 
         glm::vec3 center1 = glm::vec3((pair1.vertices[0]) + (pair1.vertices[1]) + (pair1.vertices[2]) + (pair1.vertices[3]))/4.0f;
         glm::vec3 center2 = glm::vec3((pair2.vertices[0]) + (pair2.vertices[1]) + (pair2.vertices[2]) + (pair2.vertices[3]))/4.0f;
 
-        //glm::vec3 normalized1 = glm::normalize(playerPos - center1);
-        //glm::vec3 normalized2 = glm::normalize(playerPos - center2);
         double squaredDistance1 = glm::distance((playerPos), (center1));
         double squaredDistance2 = glm::distance((playerPos), (center2));
         return squaredDistance1 > squaredDistance2;
@@ -91,52 +90,53 @@ struct Chunk::CompareFaces{
     }
 };
 
-
 void Chunk::sortTransparentMeshData() {
-    std::lock_guard<std::mutex> lock(chunkMutex);
-    // Sort transparent mesh data based on distance to player
-    CompareFaces compareFaces{};
-    glm::vec3 cameraPos = world.camera.position;
-    compareFaces.playerPos = cameraPos;
-    std::vector<ChunkDataPair> combinedData;
-    int k = 0;
-    for (int i = 0; i < chunkData.transparentVerts.size(); i += 4) {
-        ChunkDataPair pair{};
-        for (int j = 0; j < 4; j++) {
-            pair.vertices[j] = chunkData.transparentVerts[i + j];
-            pair.normals[j] = chunkData.transparentNormals[i + j];
-            pair.brightnessFloats[j] = chunkData.transparentBrightnessFloats[i+j];
-            pair.uvs[j] = chunkData.transparentUVs[i + j];
+    if(!inThread && !toBeDeleted) {
+        std::lock_guard<std::mutex> lock(chunkMeshMutex);
+        // Sort transparent mesh data based on distance to player
+        CompareFaces compareFaces{};
+        glm::vec3 cameraPos = world.camera.position;
+        compareFaces.playerPos = cameraPos;
+        std::vector<ChunkDataPair> combinedData;
+        int k = 0;
+        for (int i = 0; i < chunkData.transparentVerts.size(); i += 4) {
+            ChunkDataPair pair{};
+            for (int j = 0; j < 4; j++) {
+                pair.vertices[j] = chunkData.transparentVerts[i + j];
+                pair.normals[j] = chunkData.transparentNormals[i + j];
+                pair.brightnessFloats[j] = chunkData.transparentBrightnessFloats[i + j];
+                pair.uvs[j] = chunkData.transparentUVs[i + j];
+            }
+            for (int j = 0; j < 6; j++) {
+                pair.indices[j] = chunkData.transparentIndices[k + j];
+            }
+            combinedData.push_back(pair);
+            k += 6;
         }
-        for(int j = 0; j < 6; j++)
-        {
-            pair.indices[j] = chunkData.transparentIndices[k + j];
+        std::sort(combinedData.begin(), combinedData.end(), compareFaces);
+
+        chunkData.transparentVerts.clear();
+        chunkData.transparentUVs.clear();
+        chunkData.transparentBrightnessFloats.clear();
+        chunkData.transparentIndices.clear();
+        chunkData.transparentNormals.clear();
+
+        for (int i = 0; i < combinedData.size(); i++) {
+            for (int j = 0; j < 4; j++) {
+
+                chunkData.transparentVerts.push_back(combinedData[i].vertices[j]);
+                chunkData.transparentNormals.push_back(combinedData[i].normals[j]);
+                chunkData.transparentUVs.push_back(combinedData[i].uvs[j]);
+                chunkData.transparentBrightnessFloats.push_back(combinedData[i].brightnessFloats[j]);
+            }
         }
-        combinedData.push_back(pair);
-        k+=6;
+        chunkData.transparentIndexCount = 0;
+        ChunkMeshGeneration::AddIndices(combinedData.size(), chunkData.transparentIndices,
+                                        chunkData.transparentIndexCount);
     }
-    std::sort(combinedData.begin(), combinedData.end(), compareFaces);
-
-    chunkData.transparentVerts.clear();
-    chunkData.transparentUVs.clear();
-    chunkData.transparentBrightnessFloats.clear();
-    chunkData.transparentIndices.clear();
-    chunkData.transparentNormals.clear();
-
-    for (int i = 0; i < combinedData.size(); i++) {
-        for (int j = 0; j < 4; j++) {
-
-            chunkData.transparentVerts.push_back(combinedData[i].vertices[j]);
-            chunkData.transparentNormals.push_back(combinedData[i].normals[j]);
-            chunkData.transparentUVs.push_back(combinedData[i].uvs[j]);
-            chunkData.transparentBrightnessFloats.push_back(combinedData[i].brightnessFloats[j]);
-        }
-    }
-    chunkData.transparentIndexCount = 0;
-    ChunkMeshGeneration::AddIndices(combinedData.size(), chunkData.transparentIndices, chunkData.transparentIndexCount);
 }
 void Chunk::sortTransparentMeshData(glm::vec3 position) {
-    std::lock_guard<std::mutex> lock(chunkMutex);
+    std::lock_guard<std::mutex> lock(chunkMeshMutex);
     // Sort transparent mesh data based on distance to player
     CompareFaces compareFaces{};
     compareFaces.playerPos = position;
@@ -180,27 +180,49 @@ void Chunk::sortTransparentMeshData(glm::vec3 position) {
 }
 void Chunk::LoadBufferData()
 {
-    std::lock_guard<std::mutex> lock(chunkMutex);
+
+    std::lock_guard<std::mutex> lock(chunkMeshMutex);
+    generatedBuffData = false;
+
     if(!chunkHasMeshes){
-        mesh = new Mesh();
-        transparentMesh = new Mesh();
-    }
-    if(mesh != nullptr && !inThread && transparentMesh != nullptr)
-    {
-        mesh->loadedData = false;
-        transparentMesh->loadedData = false;
-        mesh->setData(chunkData.chunkVerts, chunkData.chunkNormals, chunkData.chunkUVs, chunkData.chunkIndices, chunkData.chunkBrightnessFloats);
-        mesh->loadData(*world.scene.geometryShader);
-        transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentNormals, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);
-        transparentMesh->loadData(*world.scene.geometryShader);
-        mesh->loadedData = true;
-        transparentMesh->loadedData = true;
+        if(mesh == nullptr){
+            mesh = new Mesh();
+        }
+        if(transparentMesh == nullptr){
+            transparentMesh = new Mesh();
+        }
+        //chunkHasMeshes = true;
     }
 
+    if(mesh != nullptr && !inThread && transparentMesh != nullptr)
+    {
+        //mesh->loadedData = false;
+        //transparentMesh->loadedData = false;
+
+        // Add further checks to ensure sizes are within expected ranges
+        if (chunkData.chunkVerts.size() >= 0 && chunkData.chunkNormals.size() >= 0 &&
+            chunkData.chunkUVs.size() >= 0 && chunkData.chunkIndices.size() >= 0 &&
+            chunkData.chunkBrightnessFloats.size() >= 0 &&
+            chunkData.transparentVerts.size() >= 0 && chunkData.transparentNormals.size() >= 0 &&
+            chunkData.transparentUVs.size() >= 0 && chunkData.transparentIndices.size() >= 0 &&
+            chunkData.transparentBrightnessFloats.size() >= 0) {
+
+            mesh->setData(chunkData.chunkVerts, chunkData.chunkNormals, chunkData.chunkUVs, chunkData.chunkIndices, chunkData.chunkBrightnessFloats);
+            mesh->loadData(*world.scene.geometryShader);
+            transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentNormals, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);
+            transparentMesh->loadData(*world.scene.geometryShader);
+
+            //mesh->loadedData = true;
+            //transparentMesh->loadedData = true;
+        } else {
+            return;
+        }
+    }
+    generatedBuffData = true;
 }
 
 void Chunk::LoadChunkData() {
-    std::lock_guard<std::mutex> lock(chunkMutex);
+    std::lock_guard<std::mutex> lock(chunkMeshMutex);
     ClearVertexData();
     ChunkMeshGeneration::GenFaces(*this);
     ChunkMeshGeneration::UpdateNeighbours(*this);
@@ -208,24 +230,94 @@ void Chunk::LoadChunkData() {
 
 void Chunk::Delete()
 {
-    std::lock_guard<std::mutex> lock(chunkMutex);
+    if(mesh != nullptr){
+        delete mesh;
+        mesh = nullptr;
+    }
+    if(transparentMesh != nullptr) {
 
-    chunkHasMeshes = false;
-    //generatedBuffData = false;
-    ClearVertexData();
-    delete mesh;
-    mesh = nullptr;
-
-    delete transparentMesh;
-    transparentMesh = nullptr;
-
+        delete transparentMesh;
+        transparentMesh = nullptr;
+    }
 }
 
 Chunk::~Chunk()
 {
-    Delete();
+    {
+        std::lock_guard<std::mutex> lock(chunkMeshMutex);
+        std::lock_guard<std::mutex> _lock(chunkDeleteMutex);
+        Delete();
+    }
 }
 
 bool Chunk::getIsAllSidesUpdated() {
+    //
+     std::lock_guard<std::mutex> lock(chunkMeshMutex);
     return chunkBools.rightSideUpdated && chunkBools.leftSideUpdated && chunkBools.frontUpdated && chunkBools.backUpdated;
+}
+
+void Chunk::saveData() {
+
+    std::lock_guard<std::mutex> lock(chunkMeshMutex);
+    if(generatedBlockData){
+        uLongf compressedSize = compressBound(sizeof(blockIDs));
+        unsigned char* compressedData = new unsigned char[compressedSize];
+
+        int result = compress(compressedData, &compressedSize, blockIDs, sizeof(blockIDs));
+        if (result != Z_OK) {
+            std::cerr << "Failed to compress data" << std::endl;
+            delete[] compressedData;
+            return;
+        }
+
+        std::string filename = "../save/chunkData/" + std::to_string(chunkPosition.x) + "-" + std::to_string(chunkPosition.y) + ".bin";
+        std::ofstream outfile(filename, std::ios::binary | std::ios::trunc);
+        if (!outfile) {
+            std::cerr << "Failed to open file for writing: " << filename << std::endl;
+            delete[] compressedData;
+            return;
+        }
+        else{
+            outfile.write(reinterpret_cast<const char*>(compressedData), compressedSize);
+            outfile.close();
+            delete[] compressedData;
+        }
+
+    }
+}
+bool Chunk::loadData(){
+
+    std::lock_guard<std::mutex> lock(chunkMeshMutex);
+    // Read the compressed data from the file
+    std::string filename = "../save/chunkData/" + std::to_string(chunkPosition.x) + "-" + std::to_string(chunkPosition.y) + ".bin";
+    std::ifstream infile(filename, std::ios::binary);
+    if (!infile) {
+        //std::cerr << "Failed to open file for reading: " << filename << std::endl;
+        return false;
+    }
+
+    infile.seekg(0, std::ios::end);
+    std::streampos fileSize = infile.tellg();
+    infile.seekg(0, std::ios::beg);
+
+    unsigned char* compressedData = new unsigned char[fileSize];
+    infile.read(reinterpret_cast<char*>(compressedData), fileSize);
+    infile.close();
+
+    // Decompress the data
+    uLongf decompressedSize = sizeof(blockIDs);
+    int result = uncompress(blockIDs, &decompressedSize, compressedData, fileSize);
+    delete[] compressedData;
+
+    if (result != Z_OK) {
+        std::cerr << "Failed to decompress data" << std::endl;
+        return false;
+    }
+
+    if (decompressedSize != sizeof(blockIDs)) {
+        std::cerr << "Decompressed data size does not match expected size" << std::endl;
+        return false;
+    }
+
+    return true;
 }

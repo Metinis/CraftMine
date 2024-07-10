@@ -146,7 +146,7 @@ void ChunkGeneration::generateLeaves(int startX, int endX, int startZ, int endZ,
                     {
                         if(tempChunk.GetBlockID(glm::ivec3(tempChunkLocalX,y,tempChunkLocalZ)) == 0) {
                             tempChunk.SetBlock(glm::ivec3(tempChunkLocalX,y,tempChunkLocalZ), 8);
-                            chunk.world.chunksToLoadData.push_back(&tempChunk);
+                            chunk.world.chunksToLoadData.push_back(tempChunk.chunkPosition);
                         }
                     }
                     else if(&tempChunk != nullptr && tempChunk.generatedBlockData && !tempChunk.inThread && !tempChunk.generatedBuffData)

@@ -10,6 +10,10 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 set(CMAKE_BUILD_PARALLEL_LEVEL 4)
 
+# Find zlib
+find_package(ZLIB REQUIRED)
+
+
 add_subdirectory(include/glfw)
 
 include_directories(include)
@@ -506,5 +510,8 @@ add_executable(CraftMine
         src/Graphics/CursorBlock.cpp
         src/Graphics/CursorBlock.h)
 
-target_link_libraries(CraftMine PRIVATE glfw)
+target_link_libraries(CraftMine PRIVATE
+        glfw
+        ZLIB::ZLIB
+)
 target_compile_definitions(CraftMine PRIVATE SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")

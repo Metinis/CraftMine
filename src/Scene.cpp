@@ -140,10 +140,14 @@ void Scene::updateShadowProjection(){
 }
 
 void Scene::renderMesh(Mesh& mesh, Shader& _shader){
-    if(mesh.loadedData){
+    if(&mesh == nullptr || &_shader == nullptr){
+        return;
+    }
+
+    //if(mesh.loadedData){
         _shader.use();
         mesh.render(_shader);
-    }
+    //}
 
 }
 
@@ -312,7 +316,9 @@ void Scene::renderToShadowMap(World& world){
     {
         std::cout<<"Framebuffer incomplete";
     }
+    //glCullFace(GL_BACK);
     world.renderChunks(*shadowMapShader, lightPos);
+    //glCullFace(GL_FRONT);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 void Scene::renderWorld(World& world){
