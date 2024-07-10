@@ -93,8 +93,8 @@ struct Chunk::CompareFaces{
 };
 
 void Chunk::sortTransparentMeshData() {
+    std::lock_guard<std::mutex> lock(chunkMeshMutex);
     if(!inThread && !toBeDeleted) {
-        std::lock_guard<std::mutex> lock(chunkMeshMutex);
         // Sort transparent mesh data based on distance to player
         CompareFaces compareFaces{};
         glm::vec3 cameraPos = world.camera.position;

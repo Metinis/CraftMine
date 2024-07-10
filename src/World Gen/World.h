@@ -74,7 +74,6 @@ public:
 
     std::mutex mutexBlocksToBeAddedList;
     std::mutex mutexChunksToLoadData;
-    std::mutex mutexDeleteChunk;
 
     Chunk* chunks[SIZE*SIZE] = {nullptr};
 
@@ -116,6 +115,9 @@ public:
 
     void renderChunks(Shader &shader, glm::vec3 lightPos);
 
+    void saveDataToFile();
+
+    void loadDataFromFile();
 };
 
 

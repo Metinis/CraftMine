@@ -119,5 +119,7 @@ namespace CraftMine {	//using namespace since it conflicts with some cameraMovem
         unsigned char blockID;
 
         BlocksToBeAdded(const glm::ivec2& chunkPos, const glm::ivec3& localPos, unsigned char id);
+        BlocksToBeAdded()
+                : chunkPosition(0, 0), localPosition(0, 0, 0), blockID(0) {}
     };
 }
