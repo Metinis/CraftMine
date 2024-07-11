@@ -62,6 +62,8 @@ public:
     bool isFlying{};
 
     void checkIfSwimming(glm::ivec3 pos);
+    void loadPlayerPosFromFile();
+    void savePosToFile();
 };
 
 

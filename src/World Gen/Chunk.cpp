@@ -25,7 +25,8 @@ unsigned char Chunk::GetBlockID(glm::ivec3 pos)
 void Chunk::SetBlock(glm::ivec3 pos, unsigned char id)
 {
     {
-        std::lock_guard<std::mutex> lock(chunkMeshMutex);
+
+        std::lock_guard<std::mutex> lock(chunkBlockMutex);
         if (pos.x < 0 || pos.x > SIZE - 1 || pos.y < 0 || pos.y > HEIGHT - 1 || pos.z < 0 || pos.z > SIZE - 1) {
             std::cout << "invalid block position at: " << pos.x << "x " << pos.y << "y " << pos.z << "z ";
         } else {
@@ -39,7 +40,6 @@ void Chunk::SetBlock(glm::ivec3 pos, unsigned char id)
 void Chunk::GenBlocks()
 {
     {
-        //std::lock_guard<std::mutex> lock(chunkMeshMutex);
         if (!loadData()) {
             ChunkGeneration::GenBlocks(*this);
         }
@@ -248,19 +248,20 @@ Chunk::~Chunk()
     {
         std::lock_guard<std::mutex> lock(chunkMeshMutex);
         std::lock_guard<std::mutex> _lock(chunkDeleteMutex);
+        std::lock_guard<std::mutex> alock(chunkBlockMutex);
         Delete();
     }
 }
 
 bool Chunk::getIsAllSidesUpdated() {
     //
-    // std::lock_guard<std::mutex> lock(chunkMeshMutex);
+     std::lock_guard<std::mutex> lock(chunkMeshMutex);
     return chunkBools.rightSideUpdated && chunkBools.leftSideUpdated && chunkBools.frontUpdated && chunkBools.backUpdated;
 }
 
 void Chunk::saveData() {
 
-    std::lock_guard<std::mutex> lock(chunkMeshMutex);
+    std::lock_guard<std::mutex> lock(chunkBlockMutex);
     if(generatedBlockData){
         uLongf compressedSize = compressBound(sizeof(blockIDs));
         unsigned char* compressedData = new unsigned char[compressedSize];
@@ -289,7 +290,9 @@ void Chunk::saveData() {
 }
 bool Chunk::loadData(){
 
-    std::lock_guard<std::mutex> lock(chunkMeshMutex);
+    //std::lock_guard<std::mutex> lock(chunkMeshMutex);
+
+    std::lock_guard<std::mutex> lock(chunkBlockMutex);
     // Read the compressed data from the file
     std::string filename = "../save/chunkData/" + std::to_string(chunkPosition.x) + "-" + std::to_string(chunkPosition.y) + ".bin";
     std::ifstream infile(filename, std::ios::binary);

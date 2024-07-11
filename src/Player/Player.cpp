@@ -1,12 +1,15 @@
 #include "Player.h"
 Player::Player(){
+
     movementSpeed = 5.0f;
     position = glm::vec3((World::SIZE / 2) * Chunk::SIZE, Chunk::HEIGHT, (World::SIZE / 2) * Chunk::SIZE);
+    loadPlayerPosFromFile();
     camera.position = position;
     chunkPosition = glm::vec2(position.x / Chunk::SIZE, position.z / Chunk::SIZE);
 }
 void Player::Update(float deltaTime){
 
+    savePosToFile();
     checkIfSwimming(glm::round(position));
     lastPosition = position;
     glm::vec3 newPosition = position + playerVelocity * deltaTime;
@@ -434,6 +437,56 @@ bool Player::isHeadInWater(){
     {
         return false;
     }
+}
+
+void Player::savePosToFile() {
+    // Serialize position and camera.front
+    size_t dataSize = sizeof(position) + sizeof(camera.Front);
+    unsigned char* serializedData = new unsigned char[dataSize];
+
+    // Copy position data
+    memcpy(serializedData, &position, sizeof(position));
+
+    // Copy camera.front data
+    memcpy(serializedData + sizeof(position), &camera.Front, sizeof(camera.Front));
+
+    // Write the serialized data to a file
+    std::string filename = "../save/playerData.bin";
+    std::ofstream outfile(filename, std::ios::binary | std::ios::trunc);
+    if (!outfile) {
+        std::cerr << "Failed to open file for writing: " << filename << std::endl;
+        delete[] serializedData;
+        return;
+    }
+
+    outfile.write(reinterpret_cast<const char*>(serializedData), dataSize);
+    outfile.close();
+
+    delete[] serializedData;
+}
+
+
+void Player::loadPlayerPosFromFile() {
+    std::string filename = "../save/playerData.bin";
+    std::ifstream infile(filename, std::ios::binary);
+    if (!infile) {
+        std::cerr << "Failed to open file for reading: " << filename << std::endl;
+        return;
+    }
+
+    // Read the serialized data from the file
+    size_t dataSize = sizeof(position) + sizeof(camera.Front);
+    unsigned char* serializedData = new unsigned char[dataSize];
+    infile.read(reinterpret_cast<char*>(serializedData), dataSize);
+    infile.close();
+
+    // Deserialize position
+    memcpy(&position, serializedData, sizeof(position));
+
+    // Deserialize camera.front
+    memcpy(&camera.Front, serializedData + sizeof(position), sizeof(camera.Front));
+
+    delete[] serializedData;
 }
 
 

@@ -25,28 +25,39 @@ void World::GenerateChunkThread()
     volatile bool keepRunning = true;
     while (keepRunning)
     {
+        std::unique_lock<std::mutex> lock(mutexChunksToLoadData);
         if (!chunksToLoadData.empty())
         {
             Chunk* chunk;
             {
-                std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
                 chunk = GetChunk(chunksToLoadData.back());
-                chunksToLoadData.pop_back();
             }
             if(chunk == nullptr){
+
+                chunksToLoadData.pop_back();
+
+                lock.unlock();
                 continue;
             }
             if(chunk->chunkDeleteMutex.try_lock()) {
+
+                chunksToLoadData.pop_back();
+
+                lock.unlock();
+
                 chunk->inThread = true;
 
                 CheckForBlocksToBeAdded(chunk);
                 chunk->LoadChunkData();
                 chunk->inThread = false;
                 {
-                    std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
+                    std::lock_guard<std::mutex> _lock(mutexLoadedChunks);
                     loadedChunks.push(chunk->chunkPosition);
                 }
                 chunk->chunkDeleteMutex.unlock();
+            }
+            else{
+                lock.unlock();
             }
         }
     }
@@ -57,30 +68,37 @@ void World::GenerateWorldThread()
     volatile bool keepRunning = true;
     while (keepRunning)
     {
+        std::unique_lock<std::mutex> lock(mutexChunksToGenerate);
         if (!chunksToGenerate.empty())
         {
             Chunk* chunk;
             {
-                std::lock_guard<std::mutex> lock(mutexChunksToGenerate);
                 chunk = GetChunk(chunksToGenerate.back());
             }
             if(chunk == nullptr){
 
                 chunksToGenerate.pop_back();
+                lock.unlock();
                 continue;
             }
             if(chunk->chunkDeleteMutex.try_lock()) {
 
+                chunksToGenerate.pop_back();
+                lock.unlock();
                 chunk->inThread = true;
                 chunk->GenBlocks();
                 CheckForBlocksToBeAdded(chunk);
 
-                mutexChunksToLoadData.lock();
-                chunksToLoadData.insert(chunksToLoadData.begin(), chunk->chunkPosition);
+                {
+                    std::lock_guard<std::mutex> _lock(mutexChunksToLoadData);
 
-                chunksToGenerate.pop_back();
-                mutexChunksToLoadData.unlock();
+                    chunksToLoadData.insert(chunksToLoadData.begin(), chunk->chunkPosition);
+                }
+
                 chunk->chunkDeleteMutex.unlock();
+            }
+            else{
+                lock.unlock();
             }
         }
     }
@@ -88,7 +106,7 @@ void World::GenerateWorldThread()
 bool World::CheckForBlocksToBeAdded(Chunk* chunk)
 {
     bool hasBlocksToBeAdded = false;
-    mutexBlocksToBeAddedList.lock();
+    //mutexBlocksToBeAddedList.lock();
 
     std::vector<BlocksToBeAdded> newBlocksToBeAddedList;
     for(int i = 0; i < blocksToBeAddedList.size(); i++)
@@ -112,7 +130,7 @@ bool World::CheckForBlocksToBeAdded(Chunk* chunk)
         blocksToBeAddedList.push_back(_blocksToBeAdded);
     }
 
-    mutexBlocksToBeAddedList.unlock();
+    //mutexBlocksToBeAddedList.unlock();
     return hasBlocksToBeAdded;
 }
 void World::UpdateViewDistance(glm::ivec2& cameraChunkPos)
@@ -160,6 +178,8 @@ void World::UpdateViewDistance(glm::ivec2& cameraChunkPos)
     //All chunks which are in activeChunk list but not in new active chunk
     {
         std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
+
+        std::lock_guard<std::mutex> _lock(mutexLoadedChunks);
         // Create a set of chunks that should not be deleted
         std::unordered_set<glm::ivec2, ChunkPosHash> chunksToKeep(chunksLoading.begin(), chunksLoading.end());
         chunksToKeep.insert(newActiveChunks.begin(), newActiveChunks.end());
@@ -203,7 +223,8 @@ void World::UpdateViewDistance(glm::ivec2& cameraChunkPos)
     activeChunks.clear();
     activeChunks = newActiveChunks;
 
-
+    saveBlocksToBeAddedToFile();
+    //player.savePosToFile();
 }
 
 
@@ -384,12 +405,14 @@ void World::LoadThreadDataToMain()
         {
             Chunk* chunk;
             {
-                std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
+
+                std::lock_guard<std::mutex> lock(mutexLoadedChunks);
                 chunk = GetChunk(loadedChunks.front());
             }
             if(chunk == nullptr){
                 {
-                    std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
+
+                    std::lock_guard<std::mutex> lock(mutexLoadedChunks);
                     loadedChunks.pop();
                 }
                 continue;
@@ -398,7 +421,9 @@ void World::LoadThreadDataToMain()
                 chunk->sortTransparentMeshData(); //sort transparent faces before rendering
                 if (CheckForBlocksToBeAdded(chunk)){
                     {
-                        std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
+
+                        std::lock_guard<std::mutex> lock(mutexLoadedChunks);
+                        std::lock_guard<std::mutex> _lock(mutexChunksToLoadData);
                         loadedChunks.pop();
                         chunksToLoadData.push_back(chunk->chunkPosition);
                     }
@@ -406,17 +431,19 @@ void World::LoadThreadDataToMain()
                 else if(!chunk->getIsAllSidesUpdated()){
                     {
                         {
-                            std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
+
+                            std::lock_guard<std::mutex> lock(mutexLoadedChunks);
                             loadedChunks.pop();
                         }
-                        std::lock_guard<std::mutex> lock(chunk->chunkMeshMutex);
+                        //std::lock_guard<std::mutex> lock(chunk->chunkMeshMutex);
                         ChunkMeshGeneration::UpdateNeighbours(*chunk);
                         addedChunks.push_back(chunk);
                     }
                 }
                 else{
                     addedChunks.push_back(chunk);
-                    std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
+
+                    std::lock_guard<std::mutex> lock(mutexLoadedChunks);
                     loadedChunks.pop();
                 }
 
@@ -454,7 +481,7 @@ void World::sortTransparentFaces() {
                         if (currentChunkToSort != nullptr && !currentChunkToSort->inThread &&
                             currentChunkToSort->generatedBuffData) {
 
-                            std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
+                           // std::lock_guard<std::mutex> lock(mutexLoadedChunks);
                             loadedChunks.push(currentChunkToSort->chunkPosition); //loadedchunks sorts each chunk transparent face
                         }
                     }
@@ -468,7 +495,7 @@ void World::sortTransparentFaces() {
                     //only sort if block pos has changes hence round
                 {
 
-                    std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
+                   // std::lock_guard<std::mutex> lock(mutexLoadedChunks);
                     loadedChunks.push(currentChunk->chunkPosition); //loadedchunks sorts each chunk transparent face
                 }
             }
@@ -549,8 +576,6 @@ void World::update()
     LoadThreadDataToMain();
 
     sortChunks();
-
-   // saveDataToFile();
 }
 
 void World::renderSolidMeshes(Shader &shader) {
@@ -594,8 +619,8 @@ void World::loadDataFromFile() {
     std::cout << "Data successfully loaded from file" << std::endl;
 }
 
-void World::saveDataToFile() {
-    std::lock_guard<std::mutex> lock(mutexBlocksToBeAddedList);
+void World::saveBlocksToBeAddedToFile() {
+    //std::lock_guard<std::mutex> lock(mutexBlocksToBeAddedList);
 
     // Calculate the size of the serialized data
     size_t dataSize = blocksToBeAddedList.size() * sizeof(BlocksToBeAdded);
