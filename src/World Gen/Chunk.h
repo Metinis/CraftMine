@@ -59,10 +59,6 @@ private:
         std::array<float, 4> brightnessFloats;
         std::array<glm::vec3, 4> normals;
     };
-
-
-
-
 	
 public:
 	static const int SIZE = 16;

@@ -76,7 +76,7 @@ Game::Game(){
 }
 void Game::run() {
     // Disable VSync
-    glfwSwapInterval(0);
+    //glfwSwapInterval(0);
 
     // Variables for FPS calculation
     int frames = 0;

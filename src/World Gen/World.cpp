@@ -111,9 +111,9 @@ void World::GenerateWorldThread()
 }
 bool World::CheckForBlocksToBeAdded(Chunk* chunk)
 {
-    bool hasBlocksToBeAdded = false;
-    mutexBlocksToBeAddedList.lock();
 
+    std::lock_guard<std::mutex> lock(mutexBlocksToBeAddedList);
+    bool hasBlocksToBeAdded = false;
     std::vector<BlocksToBeAdded> newBlocksToBeAddedList;
     for(int i = 0; i < blocksToBeAddedList.size(); i++)
     {
@@ -135,8 +135,6 @@ bool World::CheckForBlocksToBeAdded(Chunk* chunk)
     {
         blocksToBeAddedList.push_back(_blocksToBeAdded);
     }
-
-    mutexBlocksToBeAddedList.unlock();
     return hasBlocksToBeAdded;
 }
 void World::UpdateViewDistance(glm::ivec2& cameraChunkPos)
@@ -577,11 +575,13 @@ void World::renderSolidMeshes(Shader &shader) {
     }
 }
 void World::loadDataFromFile() {
-    if(mutexBlocksToBeAddedList.try_lock()){
+
+    std::lock_guard<std::mutex> lock(mutexBlocksToBeAddedList);
+    //if(mutexBlocksToBeAddedList.try_lock()){
     std::string filename = "../save/blocksToBeAdded.bin";
     std::ifstream infile(filename, std::ios::binary | std::ios::ate);
     if (!infile) {
-        std::cerr << "Failed to open file for reading: " << filename << std::endl;
+        //std::cerr << "Failed to open file for reading: " << filename << std::endl;
         return;
     }
 
@@ -590,7 +590,7 @@ void World::loadDataFromFile() {
 
     unsigned char* serializedData = new unsigned char[dataSize];
     if (!infile.read(reinterpret_cast<char*>(serializedData), dataSize)) {
-        std::cerr << "Failed to read data" << std::endl;
+        //std::cerr << "Failed to read data" << std::endl;
         delete[] serializedData;
         return;
     }
@@ -604,12 +604,14 @@ void World::loadDataFromFile() {
     delete[] serializedData;
     std::cout << "Data successfully loaded from file" << std::endl;
 
-    mutexBlocksToBeAddedList.unlock();
-    }
+    //mutexBlocksToBeAddedList.unlock();
+    //}
 }
 
 void World::saveBlocksToBeAddedToFile() {
     std::lock_guard<std::mutex> lock(mutexBlocksToBeAddedList);
+
+    //if(mutexBlocksToBeAddedList.try_lock()){
 
     // Calculate the size of the serialized data
     size_t dataSize = blocksToBeAddedList.size() * sizeof(BlocksToBeAdded);
@@ -622,7 +624,7 @@ void World::saveBlocksToBeAddedToFile() {
     std::string filename = "../save/blocksToBeAdded.bin";
     std::ofstream outfile(filename, std::ios::binary | std::ios::trunc);
     if (!outfile) {
-        std::cerr << "Failed to open file for writing: " << filename << std::endl;
+        //std::cerr << "Failed to open file for writing: " << filename << std::endl;
         delete[] serializedData;
         return;
     }
@@ -631,5 +633,7 @@ void World::saveBlocksToBeAddedToFile() {
     outfile.close();
 
     delete[] serializedData;
+    //    mutexBlocksToBeAddedList.unlock();
+    //}
 }
 
