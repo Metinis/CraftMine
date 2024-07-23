@@ -13,6 +13,9 @@ Chunk::Chunk(glm::ivec2 Position, World& _world) : world(_world)
 unsigned char Chunk::GetBlockID(glm::ivec3 pos)
 {
 
+        //std::lock_guard<std::mutex> lock(chunkBlockMutex);
+
+        //std::lock_guard<std::mutex> _lock(chunkDeleteMutex);
     if (pos.x < 0 || pos.x > SIZE - 1 || pos.y < 0 || pos.y > HEIGHT - 1 || pos.z < 0 || pos.z > SIZE - 1) {
         //std::cout<<"invalid block position at: "<<pos.x<<"x "<<pos.y<<"y "<<pos.z<<"z ";
         return 0;

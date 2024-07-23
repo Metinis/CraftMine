@@ -74,21 +74,30 @@ Game::Game(){
     updateingInt = 1;
     world->UpdateViewDistance(newChunkPos);
 }
-void Game::run(){
-    //render loop
+void Game::run() {
+    // Disable VSync
+    glfwSwapInterval(0);
 
-    while(!glfwWindowShouldClose(window)) {
-        if(!window)
-        {
+    // Variables for FPS calculation
+    int frames = 0;
+    double fpsTime = 0.0;
+
+    // Render loop
+    while (!glfwWindowShouldClose(window)) {
+        if (!window) {
             break;
         }
+
         currentTime = glfwGetTime();
         deltaTime = currentTime - lastFrame;
         lastFrame = currentTime;
 
         accumulator += deltaTime;
-        while(accumulator >= timeStep){
+        while (accumulator >= timeStep) {
+            // Update player physics
             player->Update(timeStep);
+
+            // Handle chunk position update
             newChunkPos = (glm::vec2(glm::round(player->position.x) / Chunk::SIZE, glm::round(player->position.z) / Chunk::SIZE));
 
             if (std::abs(newChunkPos.x - lastChunkPos.x) >= updateingInt ||
@@ -99,49 +108,62 @@ void Game::run(){
             }
             accumulator -= timeStep;
         }
+
+        // Interpolation factor for smooth rendering
         const double alpha = accumulator / timeStep;
 
-        //interpolate player pos and camera pos for smooth movement
+        // Interpolate camera position based on physics update and alpha
         camera->updatePosition(player->lastPosition, player->position, alpha);
 
+        // Process user input
         Input::processInput(window, &wireframe, &keyProcessed, &isFullscreen, *player, *world, deltaTime, *scene);
 
-        if(deltaTime >= tickSpeed){
-
+        if (deltaTime >= tickSpeed) {
+            // Update sun offset for shadows
             scene->sunXOffset -= 1 * deltaTime / 2;
-
-            if(scene->sunXOffset < -800)
-            {
+            if (scene->sunXOffset < -800) {
                 scene->sunXOffset = 800;
             }
-
             scene->updateShadowProjection();
-
             scene->renderToShadowMap(*world);
         }
+
+        // Update world
         world->update();
 
-        //render normal world
+        // Get framebuffer size
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
         scene->setFBODimensions(width, height);
         scene->setGBufferDimensions(width, height);
 
+        // Render the world
         scene->renderWorld(*world);
 
+        // Set viewport and render quad
         glViewport(0, 0, width, height);
-        //finally output FBO to quad
         scene->renderQuad();
 
+        // Render GUI
         scene->renderGUI();
 
-
-
+        // Swap buffers and poll events
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        // FPS calculation
+        frames++;
+        fpsTime += deltaTime;
+        if (fpsTime >= 1.0) {
+            std::cout << "FPS: " << frames << std::endl;
+            frames = 0;
+            fpsTime = 0.0;
+        }
     }
     glfwTerminate();
 }
+
+
 void Game::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
