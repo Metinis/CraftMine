@@ -47,7 +47,7 @@ private:
     float tickSpeed = 0.002f;
     float currentTime = 0.0f; // Current time in seconds
     double accumulator = 0.0;
-    float timeStep = 1.0 / 50; // Fixed time step
+    float timeStep = 1.0 / 60; // Fixed time step
 
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 

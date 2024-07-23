@@ -262,68 +262,82 @@ bool Chunk::getIsAllSidesUpdated() {
     return chunkBools.rightSideUpdated && chunkBools.leftSideUpdated && chunkBools.frontUpdated && chunkBools.backUpdated;
 }
 
+
+
+std::string Chunk::getRegionFilename(int regionX, int regionY) {
+    return "../save/chunkData/" + std::to_string(regionX) + "-" + std::to_string(regionY) + ".bin";
+}
+
+int Chunk::getChunkOffset(int chunkX, int chunkY) {
+    return (chunkY % CHUNKS_PER_REGION) * CHUNKS_PER_REGION + (chunkX % CHUNKS_PER_REGION);
+}
+
 void Chunk::saveData() {
-
     std::lock_guard<std::mutex> lock(chunkBlockMutex);
-    if(generatedBlockData){
+    if (generatedBlockData) {
         uLongf compressedSize = compressBound(sizeof(blockIDs));
-        unsigned char* compressedData = new unsigned char[compressedSize];
+        std::vector<unsigned char> compressedData(compressedSize);
 
-        int result = compress(compressedData, &compressedSize, blockIDs, sizeof(blockIDs));
+        int result = compress(compressedData.data(), &compressedSize, blockIDs, sizeof(blockIDs));
         if (result != Z_OK) {
             std::cerr << "Failed to compress data" << std::endl;
-            delete[] compressedData;
             return;
         }
 
-        std::string filename = "../save/chunkData/" + std::to_string(chunkPosition.x) + "-" + std::to_string(chunkPosition.y) + ".bin";
-        std::ofstream outfile(filename, std::ios::binary | std::ios::trunc);
+        int regionX = chunkPosition.x / CHUNKS_PER_REGION;
+        int regionY = chunkPosition.y / CHUNKS_PER_REGION;
+        std::string filename = getRegionFilename(regionX, regionY);
+
+        std::ofstream outfile(filename, std::ios::binary | std::ios::in | std::ios::out);
         if (!outfile) {
-            std::cerr << "Failed to open file for writing: " << filename << std::endl;
-            delete[] compressedData;
-            return;
-        }
-        else{
-            outfile.write(reinterpret_cast<const char*>(compressedData), compressedSize);
+            // If the file doesn't exist, create it
+            outfile.open(filename, std::ios::binary | std::ios::out);
+            if (!outfile) {
+                std::cerr << "Failed to create region file: " << filename << std::endl;
+                return;
+            }
             outfile.close();
-            delete[] compressedData;
+            outfile.open(filename, std::ios::binary | std::ios::in | std::ios::out);
         }
 
+        int chunkOffset = getChunkOffset(chunkPosition.x, chunkPosition.y);
+        int dataOffset = chunkOffset * sizeof(blockIDs);
+        outfile.seekp(dataOffset);
+        outfile.write(reinterpret_cast<const char*>(compressedData.data()), compressedSize);
+        outfile.close();
     }
 }
-bool Chunk::loadData(){
 
-    //std::lock_guard<std::mutex> lock(chunkMeshMutex);
-
+bool Chunk::loadData() {
     std::lock_guard<std::mutex> lock(chunkBlockMutex);
-    // Read the compressed data from the file
-    std::string filename = "../save/chunkData/" + std::to_string(chunkPosition.x) + "-" + std::to_string(chunkPosition.y) + ".bin";
+
+    int regionX = chunkPosition.x / CHUNKS_PER_REGION;
+    int regionY = chunkPosition.y / CHUNKS_PER_REGION;
+    std::string filename = getRegionFilename(regionX, regionY);
+
     std::ifstream infile(filename, std::ios::binary);
     if (!infile) {
-        //std::cerr << "Failed to open file for reading: " << filename << std::endl;
         return false;
     }
 
-    infile.seekg(0, std::ios::end);
-    std::streampos fileSize = infile.tellg();
-    infile.seekg(0, std::ios::beg);
+    int chunkOffset = getChunkOffset(chunkPosition.x, chunkPosition.y);
+    int dataOffset = chunkOffset * sizeof(blockIDs);
+    infile.seekg(dataOffset);
 
-    unsigned char* compressedData = new unsigned char[fileSize];
-    infile.read(reinterpret_cast<char*>(compressedData), fileSize);
+    std::vector<unsigned char> compressedData(sizeof(blockIDs));
+    infile.read(reinterpret_cast<char*>(compressedData.data()), sizeof(blockIDs));
     infile.close();
 
-    // Decompress the data
     uLongf decompressedSize = sizeof(blockIDs);
-    int result = uncompress(blockIDs, &decompressedSize, compressedData, fileSize);
-    delete[] compressedData;
+    int result = uncompress(blockIDs, &decompressedSize, compressedData.data(), sizeof(blockIDs));
 
     if (result != Z_OK) {
-        std::cerr << "Failed to decompress data" << std::endl;
+       // std::cerr << "Failed to decompress data" << std::endl;
         return false;
     }
 
     if (decompressedSize != sizeof(blockIDs)) {
-        std::cerr << "Decompressed data size does not match expected size" << std::endl;
+      //  std::cerr << "Decompressed data size does not match expected size" << std::endl;
         return false;
     }
 

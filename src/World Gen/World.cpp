@@ -467,7 +467,7 @@ void World::sortTransparentFaces() {
                         if (currentChunkToSort != nullptr && !currentChunkToSort->inThread &&
                             currentChunkToSort->generatedBuffData) {
 
-                            std::lock_guard<std::mutex> lock(mutexLoadedChunks);
+                            //wstd::lock_guard<std::mutex> lock(mutexLoadedChunks);
                             loadedChunks.push(currentChunkToSort->chunkPosition); //loadedchunks sorts each chunk transparent face
                         }
                     }
@@ -480,7 +480,7 @@ void World::sortTransparentFaces() {
                     glm::round(player.lastPosition) != glm::round(player.position) && currentChunk->generatedBuffData)
                     //only sort if block pos has changes hence round
                 {
-                    std::lock_guard<std::mutex> lock(mutexLoadedChunks);
+                    //std::lock_guard<std::mutex> lock(mutexLoadedChunks);
                     loadedChunks.push(currentChunk->chunkPosition); //loadedchunks sorts each chunk transparent face
                 }
             }
@@ -552,7 +552,7 @@ void World::renderChunks(Shader& shader, glm::vec3 lightPos)
 }
 void World::update()
 {
-    //sortTransparentFaces();
+    sortTransparentFaces();
 
     scene.updateShaders();
     //changes global texture every second that passes

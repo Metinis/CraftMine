@@ -59,7 +59,9 @@ private:
         std::array<float, 4> brightnessFloats;
         std::array<glm::vec3, 4> normals;
     };
-	
+
+	static constexpr int CHUNKS_PER_REGION = 32;
+
 public:
 	static const int SIZE = 16;
 	static const int HEIGHT = 256;
@@ -101,6 +103,9 @@ public:
     bool loadData();
 	//void RenderChunk();
     //void RenderShadowChunk(Shader& _shader);
+	std::string getRegionFilename(int regionX, int regionY);
+	int getChunkOffset(int chunkX, int chunkY);
+
 	void Delete();
     struct CompareFaces;
 
