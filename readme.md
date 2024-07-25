@@ -30,6 +30,8 @@ shadow mapping.
 - In-water post-processing effect
 - Deferred Rendering
 - Creative Menu
+- Saving and loading
+- Custom Meshes (e.g) Flowers
 
 ![screenshot.png](screenshot.png)
 
@@ -41,8 +43,6 @@ shadow mapping.
 ## Features to implement
 
 - Water shader
-- Saving and loading Worlds
-- Flowers
 - Ores
 - Caves
 - Ambient occlusion
