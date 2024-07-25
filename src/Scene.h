@@ -120,4 +120,6 @@ public:
     void setGBufferDimensions(int width, int height);
 
     void renderGUI();
+
+    void updateOutlineBuffers(glm::ivec3 &globalPos, unsigned char blockID);
 };

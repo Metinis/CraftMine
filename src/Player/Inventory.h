@@ -82,6 +82,16 @@ public:
     void deleteItemBuffers();
 
     void addItemDataToBuffers(int i, int j);
+
+    void
+    loadBlockData(int i, std::vector<glm::vec3> &verts, std::vector<glm::vec2> &uvCoords,
+                  std::vector<float> &brightness,
+                  glm::vec3 &blockCenter);
+
+    void
+    loadCustomData(int i, std::vector<glm::vec3> &verts, std::vector<glm::vec2> &uvCoords,
+                   std::vector<float> &brightness,
+                   glm::vec3 &blockCenter);
 };
 
 

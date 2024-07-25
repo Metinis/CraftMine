@@ -32,6 +32,18 @@ void ChunkGeneration::GenBlocks(Chunk& chunk){
                     id = 2; //if there's tree above, make dirt block, not grass
                     genTree(glm::vec3(x, y+1, z), chunk);
                 }
+                else if(shouldGenFlower()){
+                    std::mt19937 rng(std::random_device{}());
+                    // Define the probability (1 in 250 chance)
+                    std::uniform_int_distribution<> dis(1, 2);
+                    if(dis(rng) == 1){
+
+                        chunk.SetBlock(glm::ivec3(x,y+1,z),70);
+                    }
+                    else{
+                        chunk.SetBlock(glm::ivec3(x,y+1,z),71);
+                    }
+                }
 
             }
             else if (y > columnHeight - 4 && y < columnHeight) {
@@ -53,6 +65,20 @@ bool ChunkGeneration::shouldGenTree()
     std::mt19937 rng(std::random_device{}());
     // Define the probability (1 in 250 chance)
     std::uniform_int_distribution<> dis(1, 250);
+
+    // Generate a random number
+    int randomNumber = dis(rng);
+
+    // Check if the random number falls within the desired range
+    return randomNumber == 1;
+}
+
+bool ChunkGeneration::shouldGenFlower()
+{
+
+    std::mt19937 rng(std::random_device{}());
+    // Define the probability (1 in 250 chance)
+    std::uniform_int_distribution<> dis(1, 100);
 
     // Generate a random number
     int randomNumber = dis(rng);

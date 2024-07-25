@@ -115,7 +115,7 @@ void Inventory::addItemDataToBuffers(int i, int j){
     if((i * 8 + j) < BlockIDMap.size()){
 
         inventorySlots[i][j-1] = i * 8 + j;
-        if(getItemAtSlot(i, j-1) != 0) {
+        if(getItemAtSlot(i, j-1) != 0 && !Block::hasCustomMesh(getItemAtSlot(i, j-1))) {
             FaceData faceDataFront = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[getItemAtSlot(i, j-1)],
                                                     blockCenter);
             FaceData faceDataRight = Block::GetFace(CraftMine::Faces::RIGHT, BlockIDMap[getItemAtSlot(i, j-1)],
@@ -155,49 +155,73 @@ void Inventory::addItemDataToBuffers(int i, int j){
             }
             ChunkMeshGeneration::AddIndices(3, indices, indexCount);
         }
-    }
-}
-void Inventory::loadItemsRenderingToolbar() {
-
-    for (int i = 0; i < 9; i++) {
-        if (BlockIDMap[toolbar.getID(i)] != 0) {
-            float firstSlotOffsetX = -0.3064f;
-            float offsetBetweenSlotX = 0.07655f;
-            float scaleXZ = 0.04f;
-            float scaleY = 0.065f;
-            glm::vec3 blockCenter = glm::vec3((firstSlotOffsetX + i * offsetBetweenSlotX) / scaleXZ, -0.645f / scaleY,
-                                              0.0f);
-
-            glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.04f, 0.065f, 0.04f));
-            glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(25.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-            glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-            FaceData faceDataFront = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[toolbar.getID(i)],
+        else if(Block::hasCustomMesh(getItemAtSlot(i, j-1))){
+            FaceData faceDataFront = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[getItemAtSlot(i, j-1)],
                                                     blockCenter);
-            FaceData faceDataRight = Block::GetFace(CraftMine::Faces::RIGHT, BlockIDMap[toolbar.getID(i)],
-                                                    blockCenter);
-            FaceData faceDataTop = Block::GetFace(CraftMine::Faces::TOP, BlockIDMap[toolbar.getID(i)],
-                                                  blockCenter);
             std::vector<glm::vec3> verts;
             verts.insert(verts.end(), faceDataFront.vertices.begin(), faceDataFront.vertices.end());
-            verts.insert(verts.end(), faceDataRight.vertices.begin(), faceDataRight.vertices.end());
-            verts.insert(verts.end(), faceDataTop.vertices.begin(), faceDataTop.vertices.end());
 
             std::vector<glm::vec2> uvCoords;
             uvCoords.insert(uvCoords.end(), faceDataFront.texCoords.begin(), faceDataFront.texCoords.end());
-            uvCoords.insert(uvCoords.end(), faceDataRight.texCoords.begin(), faceDataRight.texCoords.end());
-            uvCoords.insert(uvCoords.end(), faceDataTop.texCoords.begin(), faceDataTop.texCoords.end());
 
             std::vector<float> brightness;
             for (int i = 0; i < 4; i++) {
                 itemBrightness.push_back(faceDataFront.brightness);
             }
-            for (int i = 0; i < 4; i++) {
-                itemBrightness.push_back(faceDataRight.brightness);
+
+            for (glm::vec3 vert: verts) {
+                glm::mat4 translationToOrigin = glm::translate(glm::mat4(1.0f), -blockCenter);
+                glm::mat4 translationBack = glm::translate(glm::mat4(1.0f), blockCenter);
+                glm::vec3 rotatedVert = glm::vec3(
+                        scale * translationBack * rotationX * rotationY * translationToOrigin * glm::vec4(vert, 1.0f));
+                itemVertices.push_back(rotatedVert);
             }
-            for (int i = 0; i < 4; i++) {
-                itemBrightness.push_back(faceDataTop.brightness);
+            for (glm::vec2 uvCoord: uvCoords) {
+                itemUVCoords.push_back(uvCoord);
             }
+            ChunkMeshGeneration::AddIndices(1, indices, indexCount);
+        }
+    }
+}
+void Inventory::loadItemsRenderingToolbar() {
+    glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.04f, 0.065f, 0.04f));
+    glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(25.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+    float firstSlotOffsetX = -0.3064f;
+    float offsetBetweenSlotX = 0.07655f;
+    float scaleXZ = 0.04f;
+    float scaleY = 0.065f;
+    for (int i = 0; i < 9; i++) {
+        glm::vec3 blockCenter = glm::vec3((firstSlotOffsetX + i * offsetBetweenSlotX) / scaleXZ, -0.645f / scaleY,
+                                          0.0f);
+        std::vector<glm::vec3> verts;
+        std::vector<glm::vec2> uvCoords;
+        std::vector<float> brightness;
+
+        if (BlockIDMap[toolbar.getID(i)] != 0 && !Block::hasCustomMesh(toolbar.getID(i))) {
+
+            toolbar.getID(i);
+
+            loadBlockData(i, verts, uvCoords, brightness, blockCenter);
+
+            for (glm::vec3 vert: verts) {
+                glm::mat4 translationToOrigin = glm::translate(glm::mat4(1.0f), -blockCenter);
+                glm::mat4 translationBack = glm::translate(glm::mat4(1.0f), blockCenter);
+                glm::vec3 rotatedVert = glm::vec3(
+                        scale * translationBack * rotationX * rotationY * translationToOrigin * glm::vec4(vert, 1.0f));
+                itemVertices.push_back(rotatedVert);
+            }
+            for (glm::vec2 uvCoord: uvCoords) {
+                itemUVCoords.push_back(uvCoord);
+            }
+            ChunkMeshGeneration::AddIndices(3, indices, indexCount);
+
+        }
+        else if(Block::hasCustomMesh(toolbar.getID(i))){
+           toolbar.getID(i);
+
+            loadCustomData(i, verts, uvCoords, brightness, blockCenter);
 
             for (glm::vec3 vert: verts) {
                 glm::mat4 translationToOrigin = glm::translate(glm::mat4(1.0f), -blockCenter);
@@ -211,8 +235,49 @@ void Inventory::loadItemsRenderingToolbar() {
             }
             ChunkMeshGeneration::AddIndices(3, indices, indexCount);
         }
+
     }
 }
+void Inventory::loadBlockData(int i, std::vector<glm::vec3> &verts, std::vector<glm::vec2> &uvCoords, std::vector<float> &brightness, glm::vec3 &blockCenter){
+
+    FaceData faceDataFront = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[toolbar.getID(i)],
+                                            blockCenter);
+    FaceData faceDataRight = Block::GetFace(CraftMine::Faces::RIGHT, BlockIDMap[toolbar.getID(i)],
+                                            blockCenter);
+    FaceData faceDataTop = Block::GetFace(CraftMine::Faces::TOP, BlockIDMap[toolbar.getID(i)],
+                                          blockCenter);
+    verts.insert(verts.end(), faceDataFront.vertices.begin(), faceDataFront.vertices.end());
+    verts.insert(verts.end(), faceDataRight.vertices.begin(), faceDataRight.vertices.end());
+    verts.insert(verts.end(), faceDataTop.vertices.begin(), faceDataTop.vertices.end());
+
+    uvCoords.insert(uvCoords.end(), faceDataFront.texCoords.begin(), faceDataFront.texCoords.end());
+    uvCoords.insert(uvCoords.end(), faceDataRight.texCoords.begin(), faceDataRight.texCoords.end());
+    uvCoords.insert(uvCoords.end(), faceDataTop.texCoords.begin(), faceDataTop.texCoords.end());
+
+    for (int i = 0; i < 4; i++) {
+        itemBrightness.push_back(faceDataFront.brightness);
+    }
+    for (int i = 0; i < 4; i++) {
+        itemBrightness.push_back(faceDataRight.brightness);
+    }
+    for (int i = 0; i < 4; i++) {
+        itemBrightness.push_back(faceDataTop.brightness);
+    }
+
+}
+void Inventory::loadCustomData(int i, std::vector<glm::vec3> &verts, std::vector<glm::vec2> &uvCoords, std::vector<float> &brightness, glm::vec3 &blockCenter){
+
+    FaceData faceDataFront = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[toolbar.getID(i)],
+                                            blockCenter);
+    verts.insert(verts.end(), faceDataFront.vertices.begin(), faceDataFront.vertices.end());
+
+    uvCoords.insert(uvCoords.end(), faceDataFront.texCoords.begin(), faceDataFront.texCoords.end());
+
+    for (int i = 0; i < 4; i++) {
+        itemBrightness.push_back(faceDataFront.brightness);
+    }
+}
+
 void Inventory::renderItems() {
     itemShader->use();
     itemVAO->Bind();

@@ -17,6 +17,7 @@ namespace CraftMine {	//using namespace since it conflicts with some cameraMovem
         TOP,
         BOTTOM
 	};
+
 	enum BlockType {
 		EMPTY,
 		GRASS,
@@ -88,7 +89,9 @@ namespace CraftMine {	//using namespace since it conflicts with some cameraMovem
         LAVA,
         DARK_WOOD_LEAVES,
         BIRCK_WOOD_LEAVES,
-        WATERMELON
+        WATERMELON,
+        ROSE_FLOWER,
+        DANDELION_FLOWER
 	};
     enum Biome {
         MOUNTAIN,
@@ -98,6 +101,7 @@ namespace CraftMine {	//using namespace since it conflicts with some cameraMovem
     extern std::vector<int> transparentBlocks;
     extern std::vector<int> nonSolidBlocks;
 	extern std::map<unsigned char, BlockType> BlockIDMap;
+
     extern std::map<Faces, float> brightnessMap;
     extern std::map<Faces, std::vector<glm::vec3>> normalsMap;
 	struct FaceData
@@ -112,7 +116,9 @@ namespace CraftMine {	//using namespace since it conflicts with some cameraMovem
 	{
 	public:
 		static const std::map<Faces, std::vector<glm::vec3>> rawVertexData;
-	};
+        static const std::map<Faces, std::vector<glm::vec3>> rawVertexDataFlower;
+    };
+    extern std::map<unsigned char, std::map<Faces, std::vector<glm::vec3>>> customMeshDataMap;
     struct BlocksToBeAdded{
         glm::ivec2 chunkPosition;
         glm::ivec3 localPosition;
@@ -122,4 +128,6 @@ namespace CraftMine {	//using namespace since it conflicts with some cameraMovem
         BlocksToBeAdded()
                 : chunkPosition(0, 0), localPosition(0, 0, 0), blockID(0) {}
     };
+
+    glm::vec3 rotateVertex(const glm::vec3& vertex, float angle);
 }

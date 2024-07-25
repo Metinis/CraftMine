@@ -10,11 +10,9 @@ bool ChunkMeshGeneration::CheckFace(int x, int y, int z, bool isSolid, unsigned 
     }
     if (x >= 0 && x < Chunk::SIZE && y <= Chunk::HEIGHT && y >= 0 && z >= 0 && z < Chunk::SIZE)
     {
-        //TODO fix culled faces overlapping non culled ones
-        /*if(Block::transparent(originalID) && isSolid)
-        {
+        if(Block::hasCustomMesh(chunk.GetBlockID(glm::ivec3(x,y,z)))){
             return true;
-        }*/
+        }
         if (Block::transparent(chunk.GetBlockID(glm::ivec3(x,y,z))) && isSolid)
         {
             return true;
@@ -23,10 +21,6 @@ bool ChunkMeshGeneration::CheckFace(int x, int y, int z, bool isSolid, unsigned 
         {
             return true;
         }
-        /*else if(!Block::transparent(chunk.GetBlockID(glm::ivec3(x,y,z)) && !isSolid))
-        {
-            return true;
-        }*/
     }
 
     return false;
@@ -78,6 +72,14 @@ void ChunkMeshGeneration::AddFaces(int x, int y, int z, int &numFaces, bool isSo
     bool isTransparent = Block::transparent(id);
 
     glm::vec3 blockWorldPos = glm::vec3(x + chunk.chunkPosition.x * Chunk::SIZE, y, z + chunk.chunkPosition.y * Chunk::SIZE);
+
+    if(Block::hasCustomMesh(id)){
+        IntegrateFace(Block::GetFace(CraftMine::Faces::FRONT, type, blockWorldPos), isTransparent, chunk);
+
+        IntegrateFace(Block::GetFace(CraftMine::Faces::BACK, type, blockWorldPos), isTransparent, chunk);
+        numFaces+=2;
+        return;
+    }
 
     int leftXoffset = x - 1;
 
@@ -217,6 +219,9 @@ void ChunkMeshGeneration::AddEdgeFaces(glm::ivec3 localBlockPos, int &numFaces, 
     unsigned char blockID = chunk.GetBlockID(localBlockPos);
 
     unsigned char neighbourBlockID = tempChunk->GetBlockID(glm::ivec3(neighbourX, localBlockPos.y, neighbourZ));
+
+    if(Block::hasCustomMesh(blockID))
+        return;
 
     BlockType type = BlockIDMap[blockID];
 

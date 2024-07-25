@@ -32,6 +32,28 @@ namespace CraftMine {
 					 glm::vec3(0.5f, -0.5f, -0.5f), // bottomright vert
 					 glm::vec3(-0.5f, -0.5f, -0.5f)}} // bottomleft vert
 	};
+    glm::vec3 rotateVertex(const glm::vec3& vertex, float angle) {
+        glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::vec4 tempVertex = rotationMatrix * glm::vec4(vertex, 1.0f);
+        return glm::vec3(tempVertex);
+    }
+
+// Raw vertex data for the flower with rotated faces
+    const std::map<Faces, std::vector<glm::vec3>> FaceDataRaw::rawVertexDataFlower{
+            {FRONT, {
+                            rotateVertex(glm::vec3(-0.5f, 0.5f, 0.0f), 45.0f),
+                            rotateVertex(glm::vec3(0.5f, 0.5f, 0.0f), 45.0f),
+                            rotateVertex(glm::vec3(0.5f, -0.5f, 0.0f), 45.0f),
+                            rotateVertex(glm::vec3(-0.5f, -0.5f, 0.0f), 45.0f)
+                    }},
+            {BACK, {
+                            rotateVertex(glm::vec3(0.0f, 0.5f, -0.5f), 45.0f),
+                            rotateVertex(glm::vec3(0.0f, 0.5f, 0.5f), 45.0f),
+                            rotateVertex(glm::vec3(0.0f, -0.5f, 0.5f), 45.0f),
+                            rotateVertex(glm::vec3(0.0f, -0.5f, -0.5f), 45.0f)
+                    }}
+    };
+
     std::map<unsigned char, BlockType> BlockIDMap{
             {0, EMPTY},
             {1, GRASS},
@@ -102,7 +124,9 @@ namespace CraftMine {
             {66, NETHERBRICK},
             {67, LAVA},
             {68, DARK_WOOD_LEAVES},
-            {69, WATERMELON}
+            {69, WATERMELON},
+            {70, ROSE_FLOWER},
+            {71, DANDELION_FLOWER}
     };
     std::vector<int> transparentBlocks{
         0,
@@ -111,12 +135,16 @@ namespace CraftMine {
         9,
         68,
         67,
-        36
+        36,
+        70,
+        71
     };
     std::vector<int> nonSolidBlocks{
             0,
             5,
-            67
+            67,
+            70,
+            71
     };
     std::map<Faces, float> brightnessMap{
             {LEFT, 0.80f},
@@ -126,6 +154,12 @@ namespace CraftMine {
             {FRONT, 0.86f},
             {BACK, 0.86f}
     };
+
+    std::map<unsigned char, std::map<Faces, std::vector<glm::vec3>>> customMeshDataMap{
+            {70, FaceDataRaw::rawVertexDataFlower},
+            {71, FaceDataRaw::rawVertexDataFlower}
+    };
+
     std::map<Faces, std::vector<glm::vec3>> normalsMap{
             {FRONT, {glm::vec3(0.0f, 0.0f, 1.0f), // topleft vert
                             glm::vec3(0.0f, 0.0f, 1.0f),  // topright vert

@@ -225,7 +225,7 @@ void Scene::renderBlockOutline(World& world)
         glm::ivec3 globalPos = glm::vec3(result.x + currentChunk->chunkPosition.x * Chunk::SIZE, result.y, result.z + currentChunk->chunkPosition.y * Chunk::SIZE);
         if(globalPos != lastOutlinePos)
         {
-            updateOutlineBuffers(globalPos);
+            updateOutlineBuffers(globalPos, currentChunk->GetBlockID(result));
             drawOutline();
         }
         else
@@ -235,8 +235,8 @@ void Scene::renderBlockOutline(World& world)
         lastOutlinePos = globalPos;
     }
 }
-void Scene::updateOutlineBuffers(glm::ivec3& globalPos){
-    std::vector<glm::vec3> vertices = Block::GetOutline(globalPos);
+void Scene::updateOutlineBuffers(glm::ivec3& globalPos, unsigned char blockID){
+    std::vector<glm::vec3> vertices = Block::GetOutline(globalPos, blockID);
     std::vector<GLuint> indices;
 
     if(outlineVAO != nullptr)
@@ -371,7 +371,9 @@ void Scene::renderWorld(World& world){
     worldTexture->Bind();
 
     glDepthMask(GL_FALSE);
+    glDisable(GL_CULL_FACE);
     world.renderTransparentMeshes(*transparentShader);
+    glEnable(GL_CULL_FACE);
     glDepthMask(GL_TRUE);
     renderBlockOutline(world);
     //render toolbar to world frame buffer for post processing if inventory open

@@ -162,44 +162,58 @@ void Toolbar::loadItemsRendering() {
     deleteItemBuffers();
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 view = glm::mat4(1.0f);
+    glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.0375f, 0.065f, 0.0375f));
+    glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(25.0f), glm::vec3(1.0f,0.0f, 0.0f));
+    glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), glm::vec3(0.0f,1.0f, 0.0f));
     for(int i = 0; i < 9; i++){
         if(toolbarItems[i] != 0){
             toolbarCenterX = -halfToolbarWidth * 22.0f + (slotWidth) * 22.0f  / 2 + i * 1.2f * (slotWidth) * 22.0f ;
 
             glm::vec3 blockCenter = glm::vec3(toolbarCenterX - 1.47f, -13.5f, 0.0f);
 
-            glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.0375f, 0.065f, 0.0375f));
-            glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(25.0f), glm::vec3(1.0f,0.0f, 0.0f));
-            glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), glm::vec3(0.0f,1.0f, 0.0f));
-
-
-
-            FaceData faceDataFront = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[toolbarItems[i]],
-                                                    blockCenter);
-            FaceData faceDataRight = Block::GetFace(CraftMine::Faces::RIGHT, BlockIDMap[toolbarItems[i]],
-                                                    blockCenter);
-            FaceData faceDataTop = Block::GetFace(CraftMine::Faces::TOP, BlockIDMap[toolbarItems[i]],
-                                                  blockCenter);
             std::vector<glm::vec3> verts;
-            verts.insert(verts.end(), faceDataFront.vertices.begin(), faceDataFront.vertices.end());
-            verts.insert(verts.end(), faceDataRight.vertices.begin(), faceDataRight.vertices.end());
-            verts.insert(verts.end(), faceDataTop.vertices.begin(), faceDataTop.vertices.end());
 
             std::vector<glm::vec2> uvCoords;
-            uvCoords.insert(uvCoords.end(), faceDataFront.texCoords.begin(), faceDataFront.texCoords.end());
-            uvCoords.insert(uvCoords.end(), faceDataRight.texCoords.begin(), faceDataRight.texCoords.end());
-            uvCoords.insert(uvCoords.end(), faceDataTop.texCoords.begin(), faceDataTop.texCoords.end());
 
             std::vector<float> brightness;
-            for(int i = 0; i < 4; i++){
-                itemBrightness.push_back(faceDataFront.brightness);
+
+            if(!Block::hasCustomMesh(toolbarItems[i])){
+                FaceData faceDataFront = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[toolbarItems[i]],
+                                                        blockCenter);
+                FaceData faceDataRight = Block::GetFace(CraftMine::Faces::RIGHT, BlockIDMap[toolbarItems[i]],
+                                                        blockCenter);
+                FaceData faceDataTop = Block::GetFace(CraftMine::Faces::TOP, BlockIDMap[toolbarItems[i]],
+                                                      blockCenter);
+                verts.insert(verts.end(), faceDataFront.vertices.begin(), faceDataFront.vertices.end());
+                verts.insert(verts.end(), faceDataRight.vertices.begin(), faceDataRight.vertices.end());
+                verts.insert(verts.end(), faceDataTop.vertices.begin(), faceDataTop.vertices.end());
+
+                uvCoords.insert(uvCoords.end(), faceDataFront.texCoords.begin(), faceDataFront.texCoords.end());
+                uvCoords.insert(uvCoords.end(), faceDataRight.texCoords.begin(), faceDataRight.texCoords.end());
+                uvCoords.insert(uvCoords.end(), faceDataTop.texCoords.begin(), faceDataTop.texCoords.end());
+
+                for(int i = 0; i < 4; i++){
+                    itemBrightness.push_back(faceDataFront.brightness);
+                }
+                for(int i = 0; i < 4; i++){
+                    itemBrightness.push_back(faceDataRight.brightness);
+                }
+                for(int i = 0; i < 4; i++){
+                    itemBrightness.push_back(faceDataTop.brightness);
+                }
             }
-            for(int i = 0; i < 4; i++){
-                itemBrightness.push_back(faceDataRight.brightness);
+            else{
+                FaceData faceDataFront = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[toolbarItems[i]],
+                                                        blockCenter);
+                verts.insert(verts.end(), faceDataFront.vertices.begin(), faceDataFront.vertices.end());
+
+                uvCoords.insert(uvCoords.end(), faceDataFront.texCoords.begin(), faceDataFront.texCoords.end());
+
+                for(int i = 0; i < 4; i++){
+                    itemBrightness.push_back(faceDataFront.brightness);
+                }
             }
-            for(int i = 0; i < 4; i++){
-                itemBrightness.push_back(faceDataTop.brightness);
-            }
+
 
             for(glm::vec3 vert : verts){
                 glm::mat4 translationToOrigin = glm::translate(glm::mat4(1.0f), -blockCenter);

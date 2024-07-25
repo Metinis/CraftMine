@@ -280,7 +280,7 @@ bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDire
                 localPos.x = globalPos.x - currentChunk->chunkPosition.x * Chunk::SIZE;
                 localPos.y = globalPos.y;
                 localPos.z = globalPos.z - currentChunk->chunkPosition.y * Chunk::SIZE;
-                if (Block::isSolid(currentChunk->GetBlockID(localPos))) {
+                if (Block::isSolid(currentChunk->GetBlockID(localPos)) || Block::hasCustomMesh(currentChunk->GetBlockID(localPos))) {
                     result = localPos;
                     return true;
                 }

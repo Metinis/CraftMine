@@ -17,6 +17,8 @@ private:
     static void GenChunk(float* heightMap, Chunk& chunk);
 public:
     static void GenBlocks(Chunk& chunk);
+
+    static bool shouldGenFlower();
 };
 
 
