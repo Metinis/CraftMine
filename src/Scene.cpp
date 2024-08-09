@@ -210,8 +210,6 @@ void Scene::updateShaders(){
     view = camera.GetViewMatrix();
     outlineShader->use();
     outlineShader->setMat4("view", view);
-    //shader->use();
-    //shader->setMat4("view", view);
     transparentShader->use();
     transparentShader->setMat4("view", view);
     geometryShader->use();

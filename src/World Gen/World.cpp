@@ -265,24 +265,35 @@ bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDire
     float reach = 5.0f;
 
     while (step < reach) {
-        glm::ivec3 globalPos;
-        globalPos.x = static_cast<int>(std::round(rayOrigin.x + rayDirection.x * step));
-        globalPos.y = static_cast<int>(std::round(rayOrigin.y + rayDirection.y * step));
-        globalPos.z = static_cast<int>(std::round(rayOrigin.z + rayDirection.z * step));
+        glm::vec3 globalPos;
+        globalPos.x = rayOrigin.x + rayDirection.x * step;
+        globalPos.y = rayOrigin.y + rayDirection.y * step;
+        globalPos.z = rayOrigin.z + rayDirection.z * step;
 
-        glm::ivec2 posInChunks = glm::ivec2(globalPos.x / Chunk::SIZE, globalPos.z / Chunk::SIZE);
+        const glm::ivec3 roundedGlobalPos= glm::round(globalPos);
+
+        const auto posInChunks = glm::ivec2(roundedGlobalPos.x / Chunk::SIZE, roundedGlobalPos.z / Chunk::SIZE);
 
         if(posInChunks.x >= 0 && posInChunks.x < World::SIZE && posInChunks.y >= 0 && posInChunks.y < World::SIZE){
             currentChunk = GetChunk(posInChunks.x, posInChunks.y);
             if (currentChunk != nullptr && currentChunk->generatedBlockData) {
 
                 glm::ivec3 localPos;
-                localPos.x = globalPos.x - currentChunk->chunkPosition.x * Chunk::SIZE;
-                localPos.y = globalPos.y;
-                localPos.z = globalPos.z - currentChunk->chunkPosition.y * Chunk::SIZE;
-                if (Block::isSolid(currentChunk->GetBlockID(localPos)) || Block::hasCustomMesh(currentChunk->GetBlockID(localPos))) {
+                localPos.x = roundedGlobalPos.x - currentChunk->chunkPosition.x * Chunk::SIZE;
+                localPos.y = roundedGlobalPos.y;
+                localPos.z = roundedGlobalPos.z - currentChunk->chunkPosition.y * Chunk::SIZE;
+                if (Block::isSolid(currentChunk->GetBlockID(localPos))) {
                     result = localPos;
                     return true;
+                }
+                else if (Block::hasCustomMesh(currentChunk->GetBlockID(localPos))) {
+                    if(std::abs(roundedGlobalPos.x - globalPos.x) < 0.2f &&
+                        std::abs(roundedGlobalPos.y - globalPos.y) < 0.3f &&
+                        std::abs(roundedGlobalPos.z - globalPos.z) < 0.3f
+                    ) {
+                        result = localPos;
+                        return true;
+                    }
                 }
             }
         }
@@ -311,14 +322,18 @@ bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDire
             localPos.x = globalPos.x - tempCurrentChunk->chunkPosition.x * Chunk::SIZE;
             localPos.y = globalPos.y;
             localPos.z = globalPos.z - tempCurrentChunk->chunkPosition.y * Chunk::SIZE;
-            if (Block::isSolid(tempCurrentChunk->GetBlockID(localPos))){
+            unsigned char currentBlockID = tempCurrentChunk->GetBlockID(localPos);
+            if (Block::isSolid(currentBlockID)){
                 result = localPos;
                 return true;
             }
-            else
+            else if(!Block::hasCustomMesh(currentBlockID))
             {
                 lastEmptyPos = localPos;
                 currentChunk = GetChunk(globalPos.x / Chunk::SIZE, globalPos.z / Chunk::SIZE);
+            }
+            else {
+                return true;
             }
         }
         step+=0.01f;
