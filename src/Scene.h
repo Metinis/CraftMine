@@ -66,8 +66,7 @@ public:
 
     Player& player;
 
-    Toolbar* toolbar;
-    Inventory* inventory;
+
 
     float sunXOffset = 100;
     float sunYOffset = 50;

@@ -3,9 +3,17 @@ Player::Player(){
 
     movementSpeed = 5.0f;
     position = glm::vec3((World::SIZE / 2) * Chunk::SIZE, Chunk::HEIGHT, (World::SIZE / 2) * Chunk::SIZE);
-    loadPlayerPosFromFile();
+
     camera.position = position;
-    chunkPosition = glm::vec2(position.x / Chunk::SIZE, position.z / Chunk::SIZE);
+        chunkPosition = glm::vec2(position.x / Chunk::SIZE, position.z / Chunk::SIZE);
+        toolbar = new Toolbar();
+
+    toolbar->changeSlot(0);
+    if (loadPlayerPosFromFile()) {
+        toolbar->loadItemsRendering();
+    }
+
+    inventory = new Inventory(*toolbar);
 }
 void Player::Update(float deltaTime){
 
@@ -441,7 +449,7 @@ bool Player::isHeadInWater(){
 
 void Player::savePosToFile() {
     // Serialize position and camera.front
-    size_t dataSize = sizeof(position) + sizeof(camera.Front);
+    size_t dataSize = sizeof(position) + sizeof(camera.Front) + sizeof(toolbar->toolbarItems);
     unsigned char* serializedData = new unsigned char[dataSize];
 
     // Copy position data
@@ -449,6 +457,10 @@ void Player::savePosToFile() {
 
     // Copy camera.front data
     memcpy(serializedData + sizeof(position), &camera.Front, sizeof(camera.Front));
+
+    // Copy Toolbar Data
+
+    memcpy(serializedData + sizeof(position) + sizeof(camera.Front), &toolbar->toolbarItems, sizeof(toolbar->toolbarItems));
 
     // Write the serialized data to a file
     std::string filename = "../save/playerData.bin";
@@ -466,16 +478,16 @@ void Player::savePosToFile() {
 }
 
 
-void Player::loadPlayerPosFromFile() {
+bool Player::loadPlayerPosFromFile() {
     std::string filename = "../save/playerData.bin";
     std::ifstream infile(filename, std::ios::binary);
     if (!infile) {
         std::cerr << "Failed to open file for reading: " << filename << std::endl;
-        return;
+        return false;
     }
 
     // Read the serialized data from the file
-    size_t dataSize = sizeof(position) + sizeof(camera.Front);
+    size_t dataSize = sizeof(position) + sizeof(camera.Front) + sizeof(toolbar->toolbarItems);
     unsigned char* serializedData = new unsigned char[dataSize];
     infile.read(reinterpret_cast<char*>(serializedData), dataSize);
     infile.close();
@@ -486,7 +498,11 @@ void Player::loadPlayerPosFromFile() {
     // Deserialize camera.front
     memcpy(&camera.Front, serializedData + sizeof(position), sizeof(camera.Front));
 
+    memcpy(&toolbar->toolbarItems, serializedData + sizeof(position) + sizeof(camera.Front), sizeof(toolbar->toolbarItems));
+
     delete[] serializedData;
+
+    return true;
 }
 
 

@@ -5,9 +5,6 @@ Scene::Scene(Camera& _camera, Player& _player) : camera(_camera), player(_player
     initialiseShadowMap();
     initialiseGBuffer();
     ui = new Crosshair();
-    toolbar = new Toolbar();
-    toolbar->changeSlot(0);
-    inventory = new Inventory(*toolbar);
 }
 
 int Scene::SHADOW_DISTANCE = World::viewDistance;
@@ -379,11 +376,11 @@ void Scene::renderWorld(World& world){
         glDisable(GL_DEPTH_TEST);
 
         guiTexture->Bind();
-        toolbar->renderToolbar();
+        player.toolbar->renderToolbar();
         worldTexture->Bind();
-        toolbar->renderItems();
+        player.toolbar->renderItems();
         guiTexture->Bind();
-        toolbar->renderSlot();
+        player.toolbar->renderSlot();
         worldTexture->Bind();
 
         glEnable(GL_DEPTH_TEST);
@@ -397,19 +394,19 @@ void Scene::renderGUI(){
     guiTexture->Bind();
     ui->renderCrosshair();
     if(!inventoryOpen) {
-        toolbar->renderToolbar();
+        player.toolbar->renderToolbar();
         worldTexture->Bind();
-        toolbar->renderItems();
+        player.toolbar->renderItems();
         guiTexture->Bind();
-        toolbar->renderSlot();
+        player.toolbar->renderSlot();
         worldTexture->Bind();
     }
 
     if(inventoryOpen){
         inventoryTexture->Bind();
-        inventory->renderInventory();
+        player.inventory->renderInventory();
         worldTexture->Bind();
-        inventory->renderItems();
+        player.inventory->renderItems();
         if(cursorBlock->currentBlock != 0){
             cursorBlock->renderBlockOnCursor();
         }
@@ -439,7 +436,7 @@ void Scene::renderQuad(){
 }
 
 void Scene::changeSlotToolbar(int slot) {
-    toolbar->changeSlot(slot);
+    player.toolbar->changeSlot(slot);
 }
 
 void Scene::initialiseGBuffer() {

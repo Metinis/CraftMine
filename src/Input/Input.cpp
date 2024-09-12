@@ -69,7 +69,7 @@ void Input::mouseButtonCallback(GLFWwindow* window, int button, int action, int 
         glfwGetWindowSize(window, &width, &height);
         glfwGetCursorPos(window, &cursorX, &cursorY);
         if((cursorY / height) < 0.77f){
-            unsigned char blockID = scene.inventory->determineSlotBlockID(cursorX / width, cursorY / height);
+            unsigned char blockID = scene.player.inventory->determineSlotBlockID(cursorX / width, cursorY / height);
             if(scene.cursorBlock->currentBlock == 0) {
                 scene.cursorBlock->currentBlock = 0;
                 scene.cursorBlock->loadBlockRendering(blockID);
@@ -83,20 +83,20 @@ void Input::mouseButtonCallback(GLFWwindow* window, int button, int action, int 
         }
         else //if mouse under inventory
         {
-            int toolbarIndex = scene.inventory->determineToolbarIndex(cursorX / width, cursorY / height);
+            int toolbarIndex = scene.player.inventory->determineToolbarIndex(cursorX / width, cursorY / height);
             if(toolbarIndex != -1){
-                unsigned char blockID = scene.toolbar->getID(toolbarIndex);
-                scene.toolbar->setID(scene.cursorBlock->currentBlock, toolbarIndex);
-                scene.toolbar->loadItemsRendering();
-                player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
+                unsigned char blockID = scene.player.toolbar->getID(toolbarIndex);
+                scene.player.toolbar->setID(scene.cursorBlock->currentBlock, toolbarIndex);
+                scene.player.toolbar->loadItemsRendering();
+                player.setBlockID(scene.player.toolbar->getID(scene.player.toolbar->slot));
 
-                scene.inventory->loadItemsRendering();
+                scene.player.inventory->loadItemsRendering();
                 scene.cursorBlock->currentBlock = 0;
                 scene.cursorBlock->loadBlockRendering(blockID);
                 scene.cursorBlock->setScreenDimensions(width, height);
             }
             else{
-                scene.inventory->loadItemsRendering();
+                scene.player.inventory->loadItemsRendering();
                 scene.cursorBlock->currentBlock = 0;
                 scene.cursorBlock->loadBlockRendering(0);
                 scene.cursorBlock->setScreenDimensions(width, height);
@@ -115,11 +115,11 @@ void Input::mouseButtonCallback(GLFWwindow* window, int button, int action, int 
 void Input::scrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
     if(isCursorLocked) {
         if (yoffset > 0) {
-            scene.toolbar->changeSlotNegative();
-            scene.player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
+            scene.player.toolbar->changeSlotNegative();
+            scene.player.setBlockID(scene.player.toolbar->getID(scene.player.toolbar->slot));
         } else if (yoffset < 0) {
-            scene.toolbar->changeSlotPositive();
-            scene.player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
+            scene.player.toolbar->changeSlotPositive();
+            scene.player.setBlockID(scene.player.toolbar->getID(scene.player.toolbar->slot));
         }
     }
 }
@@ -183,39 +183,39 @@ void Input::processKey(int key, int action, GLFWwindow* window) {
     }
     if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS){
         scene.changeSlotToolbar(0);
-        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
+        player.setBlockID(scene.player.toolbar->getID(scene.player.toolbar->slot));
     }
     if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS){
         scene.changeSlotToolbar(1);
-        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
+        player.setBlockID(scene.player.toolbar->getID(scene.player.toolbar->slot));
     }
     if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS){
         scene.changeSlotToolbar(2);
-        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
+        player.setBlockID(scene.player.toolbar->getID(scene.player.toolbar->slot));
     }
     if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS){
         scene.changeSlotToolbar(3);
-        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
+        player.setBlockID(scene.player.toolbar->getID(scene.player.toolbar->slot));
     }
     if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS){
         scene.changeSlotToolbar(4);
-        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
+        player.setBlockID(scene.player.toolbar->getID(scene.player.toolbar->slot));
     }
     if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS){
         scene.changeSlotToolbar(5);
-        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
+        player.setBlockID(scene.player.toolbar->getID(scene.player.toolbar->slot));
     }
     if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS){
         scene.changeSlotToolbar(6);
-        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
+        player.setBlockID(scene.player.toolbar->getID(scene.player.toolbar->slot));
     }
     if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS){
         scene.changeSlotToolbar(7);
-        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
+        player.setBlockID(scene.player.toolbar->getID(scene.player.toolbar->slot));
     }
     if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS){
         scene.changeSlotToolbar(8);
-        player.setBlockID(scene.toolbar->getID(scene.toolbar->slot));
+        player.setBlockID(scene.player.toolbar->getID(scene.player.toolbar->slot));
     }
     if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS && isCursorLocked){
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);

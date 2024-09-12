@@ -6,6 +6,7 @@
 #include "Input/Camera.h"
 #include "Chunk.h"
 #include "World.h"
+#include "Inventory.h"
 
 class Player {
 private:
@@ -30,6 +31,9 @@ public:
     glm::vec3 position{};
     glm::vec3 lastPosition{};
     glm::ivec2 chunkPosition{};
+
+    Toolbar* toolbar;
+    Inventory* inventory;
 
     bool shiftChanged = false;
     bool isJumping{};
@@ -62,7 +66,8 @@ public:
     bool isFlying{};
 
     void checkIfSwimming(glm::ivec3 pos);
-    void loadPlayerPosFromFile();
+
+    bool loadPlayerPosFromFile();
     void savePosToFile();
 };
 
