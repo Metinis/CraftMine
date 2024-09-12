@@ -10,8 +10,15 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 set(CMAKE_BUILD_PARALLEL_LEVEL 4)
 
-# Find zlib
+if (WIN32)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+endif()
+
+
 find_package(ZLIB REQUIRED)
+
+include_directories(${ZLIB_ROOT})
 
 
 add_subdirectory(include/glfw)
