@@ -48,16 +48,6 @@ void CursorBlock::loadBlockRendering(unsigned char blockID) {
             for (int i = 0; i < 4; i++) {
                 itemBrightness.push_back(faceDataTop.brightness);
             }
-            for (glm::vec3 vert: verts) {
-                glm::mat4 translationToOrigin = glm::translate(glm::mat4(1.0f), -blockCenter);
-                glm::mat4 translationBack = glm::translate(glm::mat4(1.0f), blockCenter);
-                glm::vec3 rotatedVert = glm::vec3(
-                    scale * translationBack * rotationX * rotationY * translationToOrigin * glm::vec4(vert, 1.0f));
-                itemVertices.push_back(rotatedVert);
-            }
-            for (glm::vec2 uvCoord: uvCoords) {
-                itemUVCoords.push_back(uvCoord);
-            }
 
             ChunkMeshGeneration::AddIndices(3, indices, indexCount);
         } else {
@@ -71,7 +61,10 @@ void CursorBlock::loadBlockRendering(unsigned char blockID) {
             for (int i = 0; i < 4; i++) {
                 itemBrightness.push_back(faceDataFront.brightness);
             }
-            for (glm::vec3 vert: verts) {
+
+            ChunkMeshGeneration::AddIndices(1, indices, indexCount);
+        }
+        for (glm::vec3 vert: verts) {
                 glm::mat4 translationToOrigin = glm::translate(glm::mat4(1.0f), -blockCenter);
                 glm::mat4 translationBack = glm::translate(glm::mat4(1.0f), blockCenter);
                 glm::vec3 rotatedVert = glm::vec3(
@@ -81,8 +74,6 @@ void CursorBlock::loadBlockRendering(unsigned char blockID) {
             for (glm::vec2 uvCoord: uvCoords) {
                 itemUVCoords.push_back(uvCoord);
             }
-            ChunkMeshGeneration::AddIndices(1, indices, indexCount);
-        }
 
         itemShader = new Shader("../resources/shader/itemUI.vs", "../resources/shader/itemUI.fs");
         itemShader->use();

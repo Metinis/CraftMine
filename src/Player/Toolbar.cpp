@@ -201,6 +201,8 @@ void Toolbar::loadItemsRendering() {
                 for(int i = 0; i < 4; i++){
                     itemBrightness.push_back(faceDataTop.brightness);
                 }
+
+                ChunkMeshGeneration::AddIndices(3, indices, indexCount);
             }
             else{
                 FaceData faceDataFront = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[toolbarItems[i]],
@@ -212,6 +214,8 @@ void Toolbar::loadItemsRendering() {
                 for(int i = 0; i < 4; i++){
                     itemBrightness.push_back(faceDataFront.brightness);
                 }
+
+                ChunkMeshGeneration::AddIndices(3, indices, indexCount);
             }
 
 
@@ -224,7 +228,6 @@ void Toolbar::loadItemsRendering() {
             for(glm::vec2 uvCoord : uvCoords){
                 itemUVCoords.push_back(uvCoord);
             }
-            ChunkMeshGeneration::AddIndices(3, indices, indexCount);
         }
 
 
