@@ -64,9 +64,11 @@ private:
 
     std::vector<float> itemBrightness;
 
-    unsigned char toolbarItems[9] = {0};
 
 public:
+
+    unsigned char toolbarItems[9] = {0};
+
     int slot;
     Toolbar();
     void renderToolbar();
