@@ -215,7 +215,7 @@ void Toolbar::loadItemsRendering() {
                     itemBrightness.push_back(faceDataFront.brightness);
                 }
 
-                ChunkMeshGeneration::AddIndices(3, indices, indexCount);
+                ChunkMeshGeneration::AddIndices(1, indices, indexCount);
             }
 
 

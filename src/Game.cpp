@@ -15,7 +15,12 @@ Game::Game() {
     keyProcessed = false;
     isFullscreen = false;
 
-    window = glfwCreateWindow(1280, 720, "CraftMine", nullptr, nullptr);
+    int x, y, width, height;
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    glfwGetMonitorWorkarea(monitor, &x, &y, &width, &height);
+
+
+    window = glfwCreateWindow(width, height, "CraftMine", nullptr, nullptr);
 
     if (window == nullptr) {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -28,7 +33,7 @@ Game::Game() {
         glfwTerminate();
     }
 
-    glViewport(0, 0, 1280, 720);
+    glViewport(0, 0, width, height);
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 

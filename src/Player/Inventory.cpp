@@ -23,6 +23,12 @@ Inventory::Inventory(Toolbar& _toolbar) : toolbar(_toolbar){
             glm::vec2(0.6875f, 0.0f), // top right
             glm::vec2(0.6875f, 0.80859375f), // bottom right
     };
+     GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+
+    // Get the video mode of the primary monitor
+    //const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+    //float aspectRatio = (float)mode->width / (float)mode->height;
+    //glm::mat4 proj = glm::perspective(glm::radians(65.0f), aspectRatio, 0.1f, 100.0f);
 
     shader = new Shader("../resources/shader/UIShader.vs", "../resources/shader/UIShader.fs");
     vao = new VAO();
