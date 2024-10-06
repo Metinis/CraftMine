@@ -127,6 +127,12 @@ namespace CraftMine {	//using namespace since it conflicts with some cameraMovem
         BlocksToBeAdded(const glm::ivec2& chunkPos, const glm::ivec3& localPos, unsigned char id);
         BlocksToBeAdded()
                 : chunkPosition(0, 0), localPosition(0, 0, 0), blockID(0) {}
+
+    	bool operator==(const BlocksToBeAdded& other) const {
+        	return chunkPosition == other.chunkPosition &&
+				   localPosition == other.localPosition &&
+				   blockID == other.blockID;
+        }
     };
 
     glm::vec3 rotateVertex(const glm::vec3& vertex, float angle);

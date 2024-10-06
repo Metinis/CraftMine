@@ -1,6 +1,8 @@
 #include <unordered_set>
 #include "Chunk.h"
 #include "World.h"
+
+#include "ChunkGeneration.h"
 #include "Input/Input.h"
 #include "ChunkMeshGeneration.h"
 #include "Player/Player.h"
@@ -352,6 +354,9 @@ void World::PlaceBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
 
         if(currentChunk->generatedBlockData) {
             currentChunk->SetBlock(lastEmptyPos, player.getBlockID());
+            if(player.getBlockID() == 5) {
+                ChunkGeneration::UpdateWater(*currentChunk, lastEmptyPos);
+            }
             std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
             //std::lock_guard<std::mutex> _lock(currentChunk->chunkMeshMutex);
             if(std::find(chunksToLoadData.begin(), chunksToLoadData.end(), currentChunk->chunkPosition) == chunksToLoadData.end()) {
@@ -576,6 +581,32 @@ void World::update()
     LoadThreadDataToMain();
 
     sortChunks();
+}
+
+void World::updateTick() {
+    std::vector<BlocksToBeAdded> thisLiquidToBeChecked;
+    for(BlocksToBeAdded block : liquidToBeChecked){
+
+         thisLiquidToBeChecked.push_back(block);
+    }
+    liquidToBeChecked.clear();
+
+    if(!thisLiquidToBeChecked.empty()) {
+        for(BlocksToBeAdded block : thisLiquidToBeChecked) {
+            Chunk* currentChunk = GetChunk(block.chunkPosition);
+            if(currentChunk != nullptr && currentChunk->generatedBlockData) {
+
+                currentChunk->SetBlock(block.localPosition, block.blockID);
+                ChunkGeneration::UpdateWater(*currentChunk, block.localPosition);
+                std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
+
+                if(std::find(chunksToLoadData.begin(), chunksToLoadData.end(), currentChunk->chunkPosition) == chunksToLoadData.end()) {
+                    currentChunk->generatedBuffData = false;
+                    chunksToLoadData.push_back(currentChunk->chunkPosition);
+                }
+            }
+        }
+    }
 }
 
 void World::renderSolidMeshes(Shader &shader) {

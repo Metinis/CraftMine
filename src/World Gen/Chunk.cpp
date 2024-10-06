@@ -12,17 +12,11 @@ Chunk::Chunk(glm::ivec2 Position, World& _world) : world(_world)
 
 unsigned char Chunk::GetBlockID(glm::ivec3 pos)
 {
-
-        //std::lock_guard<std::mutex> lock(chunkBlockMutex);
-
-        //std::lock_guard<std::mutex> _lock(chunkDeleteMutex);
     if (pos.x < 0 || pos.x > SIZE - 1 || pos.y < 0 || pos.y > HEIGHT - 1 || pos.z < 0 || pos.z > SIZE - 1) {
-        //std::cout<<"invalid block position at: "<<pos.x<<"x "<<pos.y<<"y "<<pos.z<<"z ";
         return 0;
-    } else {
-        return blockIDs[pos.x + SIZE * (pos.y + HEIGHT * pos.z)];
     }
-        //chunkDeleteMutex.unlock();
+
+    return blockIDs[pos.x + SIZE * (pos.y + HEIGHT * pos.z)];
 }
 
 unsigned char Chunk::GetBlockNeighbourY(glm::ivec2 pos, Faces face) {
@@ -32,16 +26,12 @@ void Chunk::SetBlock(glm::ivec3 pos, unsigned char id)
 {
     {
 
-        std::lock_guard<std::mutex> lock(chunkBlockMutex);
+        //std::lock_guard<std::mutex> lock(chunkBlockMutex);
         if (pos.x < 0 || pos.x > SIZE - 1 || pos.y < 0 || pos.y > HEIGHT - 1 || pos.z < 0 || pos.z > SIZE - 1) {
             std::cout << "invalid block position at: " << pos.x << "x " << pos.y << "y " << pos.z << "z ";
         } else {
             blockIDs[pos.x + SIZE * (pos.y + HEIGHT * pos.z)] = id;
         }
-        if(id == 5 && generatedBlockData) {
-            //TODO send the block pos to a list to be updating water every tick
-        }
-            //ChunkGeneration::UpdateWater(*this, pos);
     }
 
     saveData();
@@ -60,7 +50,6 @@ void Chunk::GenBlocks()
 
 void Chunk::ClearVertexData()
 {
-    //std::lock_guard<std::mutex> lock(chunkMeshMutex);
     chunkData.indexCount = 0;
     chunkData.chunkVerts.clear();
     chunkData.chunkUVs.clear();
@@ -177,7 +166,6 @@ void Chunk::sortTransparentMeshData(glm::vec3 position) {
     chunkData.transparentIndices.clear();
     chunkData.transparentNormals.clear();
 
-    //k = 0;
     for (int i = 0; i < combinedData.size(); i++) {
         for (int j = 0; j < 4; j++) {
 
@@ -203,15 +191,10 @@ void Chunk::LoadBufferData()
         if(transparentMesh == nullptr){
             transparentMesh = new Mesh();
         }
-        //chunkHasMeshes = true;
     }
 
     if(mesh != nullptr && !inThread && transparentMesh != nullptr)
     {
-        //mesh->loadedData = false;
-        //transparentMesh->loadedData = false;
-
-        // Add further checks to ensure sizes are within expected ranges
         if (chunkData.chunkVerts.size() >= 0 && chunkData.chunkNormals.size() >= 0 &&
             chunkData.chunkUVs.size() >= 0 && chunkData.chunkIndices.size() >= 0 &&
             chunkData.chunkBrightnessFloats.size() >= 0 &&
@@ -223,9 +206,6 @@ void Chunk::LoadBufferData()
             mesh->loadData(*world.scene.geometryShader);
             transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentNormals, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);
             transparentMesh->loadData(*world.scene.geometryShader);
-
-            //mesh->loadedData = true;
-            //transparentMesh->loadedData = true;
         } else {
             return;
         }
@@ -264,8 +244,7 @@ Chunk::~Chunk()
 }
 
 bool Chunk::getIsAllSidesUpdated() {
-    //
-     std::lock_guard<std::mutex> lock(chunkMeshMutex);
+    std::lock_guard<std::mutex> lock(chunkMeshMutex);
     return chunkBools.rightSideUpdated && chunkBools.leftSideUpdated && chunkBools.frontUpdated && chunkBools.backUpdated;
 }
 
@@ -339,12 +318,10 @@ bool Chunk::loadData() {
     int result = uncompress(blockIDs, &decompressedSize, compressedData.data(), sizeof(blockIDs));
 
     if (result != Z_OK) {
-       // std::cerr << "Failed to decompress data" << std::endl;
         return false;
     }
 
     if (decompressedSize != sizeof(blockIDs)) {
-      //  std::cerr << "Decompressed data size does not match expected size" << std::endl;
         return false;
     }
 

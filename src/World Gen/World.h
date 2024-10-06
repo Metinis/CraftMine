@@ -71,10 +71,12 @@ public:
     std::vector<glm::ivec2> chunksToSortFaces;
 
     std::vector<BlocksToBeAdded> blocksToBeAddedList;
+	std::vector<BlocksToBeAdded> liquidToBeChecked;
 
     std::mutex mutexBlocksToBeAddedList;
     std::mutex mutexChunksToLoadData;
     std::mutex mutexLoadedChunks;
+	std::mutex mutexLiquidBlocks;
 
     Chunk* chunks[SIZE*SIZE] = {nullptr};
 
@@ -105,6 +107,8 @@ public:
     void renderTransparentMeshes(Shader& shader);
 
 	void update();
+
+	void updateTick();
 
     void sortChunks();
 

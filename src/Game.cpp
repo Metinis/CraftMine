@@ -78,6 +78,10 @@ Game::Game() {
 }
 
 void Game::run() {
+
+    const std::chrono::milliseconds TICK_DURATION(1000 / TICKS_PER_SECOND);
+    auto previous = std::chrono::high_resolution_clock::now();
+    std::chrono::milliseconds lag(0);
     // Disable VSync
     //glfwSwapInterval(0);
 
@@ -130,6 +134,17 @@ void Game::run() {
             }
             scene->updateShadowProjection();
             scene->renderToShadowMap(*world);
+        }
+        auto current = std::chrono::high_resolution_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(current - previous);
+        previous = current;
+        lag += elapsed;
+
+        // Handle updates at the fixed tick rate (20 ticks per second)
+        while (lag >= TICK_DURATION) {
+
+            world->updateTick();
+            lag -= TICK_DURATION;
         }
 
         // Update world

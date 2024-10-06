@@ -16,9 +16,9 @@ void ChunkGeneration::GenBlocks(Chunk &chunk) {
 
     int seaLevel = Chunk::HEIGHT / 2;
 
-    for(int y = Chunk::HEIGHT - 1; y>=0; y--) {
-        for(int z = 0; z < Chunk::SIZE; z++) {
-            for(int x = 0; x < Chunk::SIZE; x++) {
+    for (int y = Chunk::HEIGHT - 1; y >= 0; y--) {
+        for (int z = 0; z < Chunk::SIZE; z++) {
+            for (int x = 0; x < Chunk::SIZE; x++) {
                 float worldX = static_cast<float>(x) + (Chunk::SIZE * static_cast<float>(chunk.chunkPosition.x));
                 float worldZ = static_cast<float>(z) + (Chunk::SIZE * static_cast<float>(chunk.chunkPosition.y));
                 float worldY = static_cast<float>(y);
@@ -37,19 +37,15 @@ void ChunkGeneration::GenBlocks(Chunk &chunk) {
                         //last argument is the sea level
 
                         id = 5;
-                    }
-                    else if(noiseValue > 0.3f && y > 0) {
-                        if(y < Chunk::HEIGHT - 1 && chunk.GetBlockID(glm::ivec3(x,y+1,z)) == 5) {
+                    } else if (noiseValue > 0.3f && y > 0) {
+                        if (y < Chunk::HEIGHT - 1 && chunk.GetBlockID(glm::ivec3(x, y + 1, z)) == 5) {
                             //TODO check horizontal blocks for adding water, including neighbouring chunks
                             id = 5;
                             //UpdateWater(chunk, glm::ivec3(x,y,z));
+                        } else {
+                            id = 0;
                         }
-                        else {
-                            id=0;
-                        }
-
-                    }
-                    else if (y <= columnHeight - 1 && y >= columnHeight - 3 && y < seaLevel - 2) {
+                    } else if (y <= columnHeight - 1 && y >= columnHeight - 3 && y < seaLevel - 2) {
                         id = 6; //sand
                     } else if (y == columnHeight - 1) {
                         id = 1; //Refer to id map, grass layer
@@ -68,13 +64,11 @@ void ChunkGeneration::GenBlocks(Chunk &chunk) {
                             }
                         }
                     } else if (y > columnHeight - 4 && y < columnHeight) {
-
-                        if(y < Chunk::HEIGHT - 1 && chunk.GetBlockID(glm::ivec3(x,y+1,z)) == 0) {
+                        if (y < Chunk::HEIGHT - 1 && chunk.GetBlockID(glm::ivec3(x, y + 1, z)) == 0) {
                             id = 1;
-                            }
-                        else{
-                        id = 2; //dirt layer
-                            }
+                        } else {
+                            id = 2; //dirt layer
+                        }
                     } else if (y <= columnHeight - 4 && y > 0) {
                         id = 3; //stone layer
                     } else if (y == 0) {
@@ -86,7 +80,6 @@ void ChunkGeneration::GenBlocks(Chunk &chunk) {
         }
     }
 }
-
 
 
 bool ChunkGeneration::shouldGenTree() {
@@ -211,76 +204,107 @@ void ChunkGeneration::generateLeaves(int startX, int endX, int startZ, int endZ,
         }
     }
 }
+
 void ChunkGeneration::UpdateWater(Chunk &chunk, glm::ivec3 waterPos) {
-    //std::lock_guard<std::mutex> lock(chunk.world.mutexBlocksToBeAddedList);
     int left = waterPos.x - 1;
     int right = waterPos.x + 1;
     int front = waterPos.z - 1;
     int back = waterPos.z + 1;
     int down = waterPos.y - 1;
 
-    if(left >= 0) {
-       if(chunk.GetBlockID(glm::ivec3(left, waterPos.y, waterPos.z)) == 0) {
-           //chunk.world.mutexBlocksToBeAddedList.lock();
-           chunk.world.blocksToBeAddedList.push_back(BlocksToBeAdded{
-               chunk.chunkPosition, glm::ivec3(left, waterPos.y, waterPos.z), 5
-           });
-           //chunk.world.mutexBlocksToBeAddedList.unlock();
-       }
-    }
-    else {
-        //update neighbouring chunk
-    }
-    if(right < Chunk::SIZE) {
-        if(chunk.GetBlockID(glm::ivec3(right, waterPos.y, waterPos.z)) == 0) {
-            //chunk.world.mutexBlocksToBeAddedList.lock();
-            chunk.world.blocksToBeAddedList.push_back(BlocksToBeAdded{
-                chunk.chunkPosition, glm::ivec3(right, waterPos.y, waterPos.z), 5
-            });
-            //chunk.world.mutexBlocksToBeAddedList.unlock();
-       }
+    if (left >= 0) {
+        if (chunk.GetBlockID(glm::ivec3(left, waterPos.y, waterPos.z)) == 0) {
+            BlocksToBeAdded block = BlocksToBeAdded(chunk.chunkPosition, glm::ivec3(left, waterPos.y, waterPos.z), 5);
+            if (std::find(chunk.world.liquidToBeChecked.begin(), chunk.world.liquidToBeChecked.end(), block) == chunk.
+                world.liquidToBeChecked.end())
+                chunk.world.liquidToBeChecked.push_back(block);
+        }
+    } else {
+        glm::ivec3 blockPosInBorderingChunk = glm::ivec3(Chunk::SIZE - 1, waterPos.y, waterPos.z);
+        glm::ivec2 borderingChunkPosition = glm::ivec2(chunk.chunkPosition.x - 1, chunk.chunkPosition.y);
 
-    }
-    else {
-        //update neighbouring chunk
-    }
-    if(front >= 0) {
-        if(chunk.GetBlockID(glm::ivec3(waterPos.x, waterPos.y, front)) == 0) {
-            //chunk.world.mutexBlocksToBeAddedList.lock();
-            chunk.world.blocksToBeAddedList.push_back(BlocksToBeAdded{
-                chunk.chunkPosition, glm::ivec3(waterPos.x, waterPos.y, front), 5
-            });
-            //chunk.world.mutexBlocksToBeAddedList.unlock();
-       }
+        if (chunk.world.GetChunk(borderingChunkPosition)->GetBlockID(blockPosInBorderingChunk) == 0) {
 
-    }
-    else {
-        //update neighbouring chunk
-    }
-    if(back < Chunk::SIZE) {
-        if(chunk.GetBlockID(glm::ivec3(waterPos.x, waterPos.y, back)) == 0) {
-            //chunk.world.mutexBlocksToBeAddedList.lock();
-            chunk.world.blocksToBeAddedList.push_back(BlocksToBeAdded{
-                chunk.chunkPosition, glm::ivec3(waterPos.x, waterPos.y, back), 5
-            });
-            //chunk.world.mutexBlocksToBeAddedList.unlock();
-       }
+            BlocksToBeAdded block = BlocksToBeAdded(borderingChunkPosition, blockPosInBorderingChunk, 5);
 
+            if (std::find(chunk.world.liquidToBeChecked.begin(), chunk.world.liquidToBeChecked.end(), block) == chunk.
+                world.liquidToBeChecked.end())
+                chunk.world.liquidToBeChecked.push_back(block);
+        }
     }
-    else {
-        //update neighbouring chunk
-    }
-    if(down >= 0) {
-        if(chunk.GetBlockID(glm::ivec3(waterPos.x, down, waterPos.z)) == 0) {
-            //chunk.world.mutexBlocksToBeAddedList.lock();
-            chunk.world.blocksToBeAddedList.push_back(BlocksToBeAdded{
-                chunk.chunkPosition, glm::ivec3(waterPos.x, down, waterPos.z), 5
-            });
-            //chunk.world.mutexBlocksToBeAddedList.unlock();
-       }
+    if (right < Chunk::SIZE) {
+        if (chunk.GetBlockID(glm::ivec3(right, waterPos.y, waterPos.z)) == 0) {
+            BlocksToBeAdded block = BlocksToBeAdded(chunk.chunkPosition, glm::ivec3(right, waterPos.y, waterPos.z), 5);
+            if (std::find(chunk.world.liquidToBeChecked.begin(), chunk.world.liquidToBeChecked.end(), block) == chunk.
+                world.liquidToBeChecked.end())
+                chunk.world.liquidToBeChecked.push_back(block);
+        }
+    } else {
+        glm::ivec3 blockPosInBorderingChunk = glm::ivec3(0, waterPos.y, waterPos.z);
+        glm::ivec2 borderingChunkPosition = glm::ivec2(chunk.chunkPosition.x + 1, chunk.chunkPosition.y);
 
+        if (chunk.world.GetChunk(borderingChunkPosition)->GetBlockID(blockPosInBorderingChunk) == 0) {
+
+            BlocksToBeAdded block = BlocksToBeAdded(borderingChunkPosition, blockPosInBorderingChunk, 5);
+
+            if (std::find(chunk.world.liquidToBeChecked.begin(), chunk.world.liquidToBeChecked.end(), block) == chunk.
+                world.liquidToBeChecked.end())
+                chunk.world.liquidToBeChecked.push_back(block);
+        }
+    }
+    if (front >= 0) {
+        if (chunk.GetBlockID(glm::ivec3(waterPos.x, waterPos.y, front)) == 0) {
+            BlocksToBeAdded block = BlocksToBeAdded(chunk.chunkPosition, glm::ivec3(waterPos.x, waterPos.y, front), 5);
+            if (std::find(chunk.world.liquidToBeChecked.begin(), chunk.world.liquidToBeChecked.end(), block) == chunk.
+                world.liquidToBeChecked.end())
+                chunk.world.liquidToBeChecked.push_back(block);
+        }
+    } else {
+        glm::ivec3 blockPosInBorderingChunk = glm::ivec3(waterPos.x, waterPos.y, Chunk::SIZE - 1);
+        glm::ivec2 borderingChunkPosition = glm::ivec2(chunk.chunkPosition.x, chunk.chunkPosition.y - 1);
+
+        if (chunk.world.GetChunk(borderingChunkPosition)->GetBlockID(blockPosInBorderingChunk) == 0) {
+
+            BlocksToBeAdded block = BlocksToBeAdded(borderingChunkPosition, blockPosInBorderingChunk, 5);
+
+            if (std::find(chunk.world.liquidToBeChecked.begin(), chunk.world.liquidToBeChecked.end(), block) == chunk.
+                world.liquidToBeChecked.end())
+                chunk.world.liquidToBeChecked.push_back(block);
+        }
+    }
+    if (back < Chunk::SIZE) {
+        if (chunk.GetBlockID(glm::ivec3(waterPos.x, waterPos.y, back)) == 0) {
+            BlocksToBeAdded block = BlocksToBeAdded(chunk.chunkPosition, glm::ivec3(waterPos.x, waterPos.y, back), 5);
+            if (std::find(chunk.world.liquidToBeChecked.begin(), chunk.world.liquidToBeChecked.end(), block) == chunk.
+                world.liquidToBeChecked.end()) {
+                chunk.world.liquidToBeChecked.push_back(block);
+
+                // std::cout<<"\ntest2";
+            }
+        }
+    } else {
+        glm::ivec3 blockPosInBorderingChunk = glm::ivec3(waterPos.x, waterPos.y, 0);
+        glm::ivec2 borderingChunkPosition = glm::ivec2(chunk.chunkPosition.x, chunk.chunkPosition.y + 1);
+
+        if (chunk.world.GetChunk(borderingChunkPosition)->GetBlockID(blockPosInBorderingChunk) == 0) {
+
+            BlocksToBeAdded block = BlocksToBeAdded(borderingChunkPosition, blockPosInBorderingChunk, 5);
+
+            if (std::find(chunk.world.liquidToBeChecked.begin(), chunk.world.liquidToBeChecked.end(), block) == chunk.
+                world.liquidToBeChecked.end())
+                chunk.world.liquidToBeChecked.push_back(block);
+        }
+    }
+    if (down >= 0) {
+        if (chunk.GetBlockID(glm::ivec3(waterPos.x, down, waterPos.z)) == 0) {
+            BlocksToBeAdded block = BlocksToBeAdded(chunk.chunkPosition, glm::ivec3(waterPos.x, down, waterPos.z), 5);
+            if (std::find(chunk.world.liquidToBeChecked.begin(), chunk.world.liquidToBeChecked.end(), block) == chunk.
+                world.liquidToBeChecked.end())
+                chunk.world.liquidToBeChecked.push_back(block);
+        }
     }
 }
+
 float lerp(float a, float b, float t) {
     return a + t * (b - a);
 }

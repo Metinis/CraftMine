@@ -44,10 +44,11 @@ private:
     bool isFullscreen;
     float lastFrame = 0;
     int updateingInt;
-    float tickSpeed = 0.002f;
+    float tickSpeed = 0.005f;
     float currentTime = 0.0f; // Current time in seconds
     double accumulator = 0.0;
     float timeStep = 1.0 / 60; // Fixed time step
+    const int TICKS_PER_SECOND = 20;
 
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
