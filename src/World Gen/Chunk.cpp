@@ -25,6 +25,9 @@ unsigned char Chunk::GetBlockID(glm::ivec3 pos)
         //chunkDeleteMutex.unlock();
 }
 
+unsigned char Chunk::GetBlockNeighbourY(glm::ivec2 pos, Faces face) {
+}
+
 void Chunk::SetBlock(glm::ivec3 pos, unsigned char id)
 {
     {
@@ -35,6 +38,10 @@ void Chunk::SetBlock(glm::ivec3 pos, unsigned char id)
         } else {
             blockIDs[pos.x + SIZE * (pos.y + HEIGHT * pos.z)] = id;
         }
+        if(id == 5 && generatedBlockData) {
+            //TODO send the block pos to a list to be updating water every tick
+        }
+            //ChunkGeneration::UpdateWater(*this, pos);
     }
 
     saveData();

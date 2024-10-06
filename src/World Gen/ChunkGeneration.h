@@ -19,6 +19,8 @@ public:
     static void GenBlocks(Chunk& chunk);
 
     static bool shouldGenFlower();
+
+    static void UpdateWater(Chunk &chunk, glm::ivec3 waterPos);
 };
 
 

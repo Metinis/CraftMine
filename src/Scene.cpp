@@ -63,7 +63,10 @@ void Scene::initialiseShadowMap(){
 
     screenQuad = new ScreenQuad();
 
-    fbo = new FBO(1280, 720);
+    int x, y, width, height;
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    glfwGetMonitorWorkarea(monitor, &x, &y, &width, &height);
+    fbo = new FBO(width, height);
     fbo->bindForRender();
     fbo->initialiseTextureFBO();
 
@@ -211,6 +214,26 @@ void Scene::updateShaders(){
     transparentShader->setMat4("view", view);
     geometryShader->use();
     geometryShader->setMat4("view", view);
+    /* Get the primary monitor
+    GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+
+    // Get the video mode of the primary monitor
+    const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+    float aspectRatio = (float)mode->width / (float)mode->height;
+
+
+    model = glm::mat4(1.0f);
+    view = glm::mat4(1.0f);
+    proj = glm::perspective(glm::radians(65.0f), aspectRatio, 0.2f, 10000.0f);
+
+    outlineShader->use();
+    outlineShader->setMat4("model", model);
+    outlineShader->setMat4("projection", proj);
+
+    geometryShader->use();
+    geometryShader->setMat4("model", model);
+    geometryShader->setMat4("projection", proj);*/
+
 }
 void Scene::renderBlockOutline(World& world)
 {

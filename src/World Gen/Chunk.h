@@ -64,7 +64,7 @@ private:
 
 public:
 	static const int SIZE = 16;
-	static const int HEIGHT = 256;
+	static const int HEIGHT = 192;
 
     ChunkData chunkData;
     ChunkBools chunkBools;
@@ -90,6 +90,7 @@ public:
 	Chunk(glm::ivec2 Position, World& world);
 	~Chunk();
     unsigned char GetBlockID(glm::ivec3 pos);
+	unsigned char GetBlockNeighbourY(glm::ivec2 pos, Faces face);
     void SetBlock(glm::ivec3 pos, unsigned char id);
 	void GenBlocks();
 	void ClearVertexData();

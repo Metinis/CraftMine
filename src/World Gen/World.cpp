@@ -122,7 +122,7 @@ bool World::CheckForBlocksToBeAdded(Chunk* chunk)
         if(_blocksToBeAdded.chunkPosition == chunk->chunkPosition)
         {
             //TODO, make id more clear
-            chunk->SetBlock(glm::ivec3(_blocksToBeAdded.localPosition.x, _blocksToBeAdded.localPosition.y, _blocksToBeAdded.localPosition.z), 8);
+            chunk->SetBlock(glm::ivec3(_blocksToBeAdded.localPosition.x, _blocksToBeAdded.localPosition.y, _blocksToBeAdded.localPosition.z), _blocksToBeAdded.blockID);
             hasBlocksToBeAdded = true;
         }
         else
