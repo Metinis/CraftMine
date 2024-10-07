@@ -25,8 +25,7 @@ unsigned char Chunk::GetBlockNeighbourY(glm::ivec2 pos, Faces face) {
 void Chunk::SetBlock(glm::ivec3 pos, unsigned char id)
 {
     {
-
-        //std::lock_guard<std::mutex> lock(chunkBlockMutex);
+        std::lock_guard<std::mutex> lock(chunkBlockMutex);
         if (pos.x < 0 || pos.x > SIZE - 1 || pos.y < 0 || pos.y > HEIGHT - 1 || pos.z < 0 || pos.z > SIZE - 1) {
             std::cout << "invalid block position at: " << pos.x << "x " << pos.y << "y " << pos.z << "z ";
         } else {
@@ -57,12 +56,12 @@ void Chunk::ClearVertexData()
     chunkData.chunkBrightnessFloats.clear();
     chunkData.chunkNormals.clear();
 
-    chunkData.transparentVerts.clear();
-    chunkData.transparentUVs.clear();
-    chunkData.transparentIndices.clear();
-    chunkData.transparentIndexCount = 0;
-    chunkData.transparentBrightnessFloats.clear();
-    chunkData.transparentNormals.clear();
+    chunkData.nonSolidVerts.clear();
+    chunkData.nonSolidUVs.clear();
+    chunkData.nonSolidIndices.clear();
+    chunkData.nonSolidIndexCount = 0;
+    chunkData.nonSolidBrightnessFloats.clear();
+    chunkData.nonSolidNormals.clear();
 
     generatedBuffData = false;
 }
@@ -100,40 +99,40 @@ void Chunk::sortTransparentMeshData() {
         compareFaces.playerPos = cameraPos;
         std::vector<ChunkDataPair> combinedData;
         int k = 0;
-        for (int i = 0; i < chunkData.transparentVerts.size(); i += 4) {
+        for (int i = 0; i < chunkData.nonSolidVerts.size(); i += 4) {
             ChunkDataPair pair{};
             for (int j = 0; j < 4; j++) {
-                pair.vertices[j] = chunkData.transparentVerts[i + j];
-                pair.normals[j] = chunkData.transparentNormals[i + j];
-                pair.brightnessFloats[j] = chunkData.transparentBrightnessFloats[i + j];
-                pair.uvs[j] = chunkData.transparentUVs[i + j];
+                pair.vertices[j] = chunkData.nonSolidVerts[i + j];
+                pair.normals[j] = chunkData.nonSolidNormals[i + j];
+                pair.brightnessFloats[j] = chunkData.nonSolidBrightnessFloats[i + j];
+                pair.uvs[j] = chunkData.nonSolidUVs[i + j];
             }
             for (int j = 0; j < 6; j++) {
-                pair.indices[j] = chunkData.transparentIndices[k + j];
+                pair.indices[j] = chunkData.nonSolidIndices[k + j];
             }
             combinedData.push_back(pair);
             k += 6;
         }
         std::sort(combinedData.begin(), combinedData.end(), compareFaces);
 
-        chunkData.transparentVerts.clear();
-        chunkData.transparentUVs.clear();
-        chunkData.transparentBrightnessFloats.clear();
-        chunkData.transparentIndices.clear();
-        chunkData.transparentNormals.clear();
+        chunkData.nonSolidVerts.clear();
+        chunkData.nonSolidUVs.clear();
+        chunkData.nonSolidBrightnessFloats.clear();
+        chunkData.nonSolidIndices.clear();
+        chunkData.nonSolidNormals.clear();
 
         for (int i = 0; i < combinedData.size(); i++) {
             for (int j = 0; j < 4; j++) {
 
-                chunkData.transparentVerts.push_back(combinedData[i].vertices[j]);
-                chunkData.transparentNormals.push_back(combinedData[i].normals[j]);
-                chunkData.transparentUVs.push_back(combinedData[i].uvs[j]);
-                chunkData.transparentBrightnessFloats.push_back(combinedData[i].brightnessFloats[j]);
+                chunkData.nonSolidVerts.push_back(combinedData[i].vertices[j]);
+                chunkData.nonSolidNormals.push_back(combinedData[i].normals[j]);
+                chunkData.nonSolidUVs.push_back(combinedData[i].uvs[j]);
+                chunkData.nonSolidBrightnessFloats.push_back(combinedData[i].brightnessFloats[j]);
             }
         }
-        chunkData.transparentIndexCount = 0;
-        ChunkMeshGeneration::AddIndices(combinedData.size(), chunkData.transparentIndices,
-                                        chunkData.transparentIndexCount);
+        chunkData.nonSolidIndexCount = 0;
+        ChunkMeshGeneration::AddIndices(combinedData.size(), chunkData.nonSolidIndices,
+                                        chunkData.nonSolidIndexCount);
     }
 }
 void Chunk::sortTransparentMeshData(glm::vec3 position) {
@@ -143,40 +142,40 @@ void Chunk::sortTransparentMeshData(glm::vec3 position) {
     compareFaces.playerPos = position;
     std::vector<ChunkDataPair> combinedData;
     int k = 0;
-    for (int i = 0; i < chunkData.transparentVerts.size(); i += 4) {
+    for (int i = 0; i < chunkData.nonSolidVerts.size(); i += 4) {
         ChunkDataPair pair{};
         for (int j = 0; j < 4; j++) {
-            pair.vertices[j] = chunkData.transparentVerts[i + j];
-            pair.normals[j] = chunkData.transparentNormals[i + j];
-            pair.brightnessFloats[j] = chunkData.transparentBrightnessFloats[i+j];
-            pair.uvs[j] = chunkData.transparentUVs[i + j];
+            pair.vertices[j] = chunkData.nonSolidVerts[i + j];
+            pair.normals[j] = chunkData.nonSolidNormals[i + j];
+            pair.brightnessFloats[j] = chunkData.nonSolidBrightnessFloats[i+j];
+            pair.uvs[j] = chunkData.nonSolidUVs[i + j];
         }
         for(int j = 0; j < 6; j++)
         {
-            pair.indices[j] = chunkData.transparentIndices[k + j];
+            pair.indices[j] = chunkData.nonSolidIndices[k + j];
         }
         combinedData.push_back(pair);
         k+=6;
     }
     std::sort(combinedData.begin(), combinedData.end(), compareFaces);
 
-    chunkData.transparentVerts.clear();
-    chunkData.transparentUVs.clear();
-    chunkData.transparentBrightnessFloats.clear();
-    chunkData.transparentIndices.clear();
-    chunkData.transparentNormals.clear();
+    chunkData.nonSolidVerts.clear();
+    chunkData.nonSolidUVs.clear();
+    chunkData.nonSolidBrightnessFloats.clear();
+    chunkData.nonSolidIndices.clear();
+    chunkData.nonSolidNormals.clear();
 
     for (int i = 0; i < combinedData.size(); i++) {
         for (int j = 0; j < 4; j++) {
 
-            chunkData.transparentVerts.push_back(combinedData[i].vertices[j]);
-            chunkData.transparentNormals.push_back(combinedData[i].normals[j]);
-            chunkData.transparentUVs.push_back(combinedData[i].uvs[j]);
-            chunkData.transparentBrightnessFloats.push_back(combinedData[i].brightnessFloats[j]);
+            chunkData.nonSolidVerts.push_back(combinedData[i].vertices[j]);
+            chunkData.nonSolidNormals.push_back(combinedData[i].normals[j]);
+            chunkData.nonSolidUVs.push_back(combinedData[i].uvs[j]);
+            chunkData.nonSolidBrightnessFloats.push_back(combinedData[i].brightnessFloats[j]);
         }
     }
-    chunkData.transparentIndexCount = 0;
-    ChunkMeshGeneration::AddIndices(combinedData.size(), chunkData.transparentIndices, chunkData.transparentIndexCount);
+    chunkData.nonSolidIndexCount = 0;
+    ChunkMeshGeneration::AddIndices(combinedData.size(), chunkData.nonSolidIndices, chunkData.nonSolidIndexCount);
 }
 void Chunk::LoadBufferData()
 {
@@ -198,13 +197,13 @@ void Chunk::LoadBufferData()
         if (chunkData.chunkVerts.size() >= 0 && chunkData.chunkNormals.size() >= 0 &&
             chunkData.chunkUVs.size() >= 0 && chunkData.chunkIndices.size() >= 0 &&
             chunkData.chunkBrightnessFloats.size() >= 0 &&
-            chunkData.transparentVerts.size() >= 0 && chunkData.transparentNormals.size() >= 0 &&
-            chunkData.transparentUVs.size() >= 0 && chunkData.transparentIndices.size() >= 0 &&
-            chunkData.transparentBrightnessFloats.size() >= 0) {
+            chunkData.nonSolidVerts.size() >= 0 && chunkData.nonSolidNormals.size() >= 0 &&
+            chunkData.nonSolidUVs.size() >= 0 && chunkData.nonSolidIndices.size() >= 0 &&
+            chunkData.nonSolidBrightnessFloats.size() >= 0) {
 
             mesh->setData(chunkData.chunkVerts, chunkData.chunkNormals, chunkData.chunkUVs, chunkData.chunkIndices, chunkData.chunkBrightnessFloats);
             mesh->loadData(*world.scene.geometryShader);
-            transparentMesh->setData(chunkData.transparentVerts, chunkData.transparentNormals, chunkData.transparentUVs, chunkData.transparentIndices, chunkData.transparentBrightnessFloats);
+            transparentMesh->setData(chunkData.nonSolidVerts, chunkData.nonSolidNormals, chunkData.nonSolidUVs, chunkData.nonSolidIndices, chunkData.nonSolidBrightnessFloats);
             transparentMesh->loadData(*world.scene.geometryShader);
         } else {
             return;

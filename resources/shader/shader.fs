@@ -95,9 +95,6 @@ void main()
 
     vec3 finalColor = mix(lighting, fogColor, fogFactor);
 
-    
-
-    // Set the output color
     FragColor = vec4(finalColor, sampledColor.a);
 }
 

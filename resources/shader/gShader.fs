@@ -12,10 +12,13 @@ in vec3 Normal;
 uniform sampler2D ourTexture;
 
 void main()
-{ 
+{
+    if(texture(ourTexture, TexCoord).a < 0.5){
+        discard;
+    }
     gAlbedoSpec.rgb = texture(ourTexture, TexCoord).rgb * brightness;
     // store specular intensity in gAlbedoSpec's alpha component
-    gAlbedoSpec.a = texture(ourTexture, TexCoord).a;   
+    gAlbedoSpec.a = texture(ourTexture, TexCoord).a;
     // store the fragment position vector in the first gbuffer texture
     gPosition.rgb = FragPos;
     gPosition.a = 1.0;

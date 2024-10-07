@@ -129,9 +129,9 @@ namespace CraftMine {	//using namespace since it conflicts with some cameraMovem
                 : chunkPosition(0, 0), localPosition(0, 0, 0), blockID(0) {}
 
     	bool operator==(const BlocksToBeAdded& other) const {
-        	return chunkPosition == other.chunkPosition &&
-				   localPosition == other.localPosition &&
-				   blockID == other.blockID;
+            return chunkPosition == other.chunkPosition &&
+                   localPosition == other.localPosition &&
+                   blockID == other.blockID;
         }
     };
 

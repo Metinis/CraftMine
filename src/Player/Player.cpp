@@ -466,7 +466,6 @@ void Player::savePosToFile() {
     std::string filename = "../save/playerData.bin";
     std::ofstream outfile(filename, std::ios::binary | std::ios::trunc);
     if (!outfile) {
-        std::cerr << "Failed to open file for writing: " << filename << std::endl;
         delete[] serializedData;
         return;
     }
@@ -482,7 +481,6 @@ bool Player::loadPlayerPosFromFile() {
     std::string filename = "../save/playerData.bin";
     std::ifstream infile(filename, std::ios::binary);
     if (!infile) {
-        std::cerr << "Failed to open file for reading: " << filename << std::endl;
         return false;
     }
 

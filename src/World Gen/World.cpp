@@ -228,7 +228,6 @@ void World::UpdateViewDistance(glm::ivec2& cameraChunkPos)
     activeChunks = newActiveChunks;
 
     saveBlocksToBeAddedToFile();
-    //player.savePosToFile();
 }
 
 
@@ -238,7 +237,6 @@ void World::GenerateChunkBuffers(std::vector<Chunk*>& addedChunks)
     {
             chunk->LoadBufferData();
             {
-                //std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
                 chunk->chunkHasMeshes = true;
                 if(std::find(activeChunks.begin(), activeChunks.end(), chunk->chunkPosition) == activeChunks.end())
                     activeChunks.push_back(chunk->chunkPosition);
@@ -358,7 +356,6 @@ void World::PlaceBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
                 ChunkGeneration::UpdateWater(*currentChunk, lastEmptyPos);
             }
             std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
-            //std::lock_guard<std::mutex> _lock(currentChunk->chunkMeshMutex);
             if(std::find(chunksToLoadData.begin(), chunksToLoadData.end(), currentChunk->chunkPosition) == chunksToLoadData.end()) {
                 currentChunk->generatedBuffData = false;
                 chunksToLoadData.push_back(currentChunk->chunkPosition);
@@ -395,11 +392,9 @@ void World::BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
             tempChunkZ = (localPos.z == 0) ? currentChunk->chunkPosition.y-1 : currentChunk->chunkPosition.y+1;
             tempChunk2 = GetChunk(currentChunk->chunkPosition.x, tempChunkZ);
         }
-        //2 temp chunks just in case we are in corner
         if(tempChunk1 != nullptr && tempChunk1->generatedBlockData)
         {
             std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
-            //std::lock_guard<std::mutex> _lock(tempChunk1->chunkMeshMutex);
 
             if(std::find(chunksToLoadData.begin(), chunksToLoadData.end(), tempChunk1->chunkPosition) == chunksToLoadData.end()) {
                 tempChunk1->generatedBuffData = false;
@@ -409,7 +404,6 @@ void World::BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
         if(tempChunk2 != nullptr && tempChunk2->generatedBlockData)
         {
             std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
-            //std::lock_guard<std::mutex> _lock(tempChunk2->chunkMeshMutex);
 
             if(std::find(chunksToLoadData.begin(), chunksToLoadData.end(), tempChunk2->chunkPosition) == chunksToLoadData.end()) {
                 tempChunk2->generatedBuffData = false;
@@ -487,7 +481,6 @@ void World::sortTransparentFaces() {
                         if (currentChunkToSort != nullptr && !currentChunkToSort->inThread &&
                             currentChunkToSort->generatedBuffData) {
 
-                            //wstd::lock_guard<std::mutex> lock(mutexLoadedChunks);
                             loadedChunks.push(currentChunkToSort->chunkPosition); //loadedchunks sorts each chunk transparent face
                         }
                     }
@@ -500,7 +493,6 @@ void World::sortTransparentFaces() {
                     glm::round(player.lastPosition) != glm::round(player.position) && currentChunk->generatedBuffData)
                     //only sort if block pos has changes hence round
                 {
-                    //std::lock_guard<std::mutex> lock(mutexLoadedChunks);
                     loadedChunks.push(currentChunk->chunkPosition); //loadedchunks sorts each chunk transparent face
                 }
             }
@@ -574,6 +566,8 @@ void World::update()
 {
     sortTransparentFaces();
 
+    player.chunkPosition = glm::ivec2(playerChunkPos.x, playerChunkPos.y);
+
     scene.updateShaders();
     //changes global texture every second that passes
     scene.changeGlobalTexture();
@@ -584,26 +578,32 @@ void World::update()
 }
 
 void World::updateTick() {
-    std::vector<BlocksToBeAdded> thisLiquidToBeChecked;
-    for(BlocksToBeAdded block : liquidToBeChecked){
+    if(!liquidToBeChecked.empty()) {
+        std::vector<BlocksToBeAdded> thisLiquidToBeChecked;
+        std::vector<glm::ivec2> updatedChunks;
+        for(BlocksToBeAdded block : liquidToBeChecked){
 
-         thisLiquidToBeChecked.push_back(block);
-    }
-    liquidToBeChecked.clear();
+            thisLiquidToBeChecked.push_back(block);
+        }
+        liquidToBeChecked.clear();
 
-    if(!thisLiquidToBeChecked.empty()) {
         for(BlocksToBeAdded block : thisLiquidToBeChecked) {
             Chunk* currentChunk = GetChunk(block.chunkPosition);
             if(currentChunk != nullptr && currentChunk->generatedBlockData) {
 
                 currentChunk->SetBlock(block.localPosition, block.blockID);
                 ChunkGeneration::UpdateWater(*currentChunk, block.localPosition);
-                std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
-
-                if(std::find(chunksToLoadData.begin(), chunksToLoadData.end(), currentChunk->chunkPosition) == chunksToLoadData.end()) {
-                    currentChunk->generatedBuffData = false;
-                    chunksToLoadData.push_back(currentChunk->chunkPosition);
+                if(std::find(updatedChunks.begin(), updatedChunks.end(), currentChunk->chunkPosition) == updatedChunks.end()) {
+                    updatedChunks.push_back(currentChunk->chunkPosition);
                 }
+            }
+        }
+        for(glm::ivec2 chunkPos : updatedChunks) {
+            std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
+            if(std::find(chunksToLoadData.begin(), chunksToLoadData.end(), chunkPos) == chunksToLoadData.end()) {
+                Chunk* currentChunk = GetChunk(chunkPos);
+                currentChunk->generatedBuffData = false;
+                chunksToLoadData.push_back(currentChunk->chunkPosition);
             }
         }
     }
@@ -623,11 +623,9 @@ void World::renderSolidMeshes(Shader &shader) {
 void World::loadDataFromFile() {
 
     std::lock_guard<std::mutex> lock(mutexBlocksToBeAddedList);
-    //if(mutexBlocksToBeAddedList.try_lock()){
     std::string filename = "../save/blocksToBeAdded.bin";
     std::ifstream infile(filename, std::ios::binary | std::ios::ate);
     if (!infile) {
-        //std::cerr << "Failed to open file for reading: " << filename << std::endl;
         return;
     }
 
@@ -636,7 +634,6 @@ void World::loadDataFromFile() {
 
     unsigned char* serializedData = new unsigned char[dataSize];
     if (!infile.read(reinterpret_cast<char*>(serializedData), dataSize)) {
-        //std::cerr << "Failed to read data" << std::endl;
         delete[] serializedData;
         return;
     }
@@ -649,15 +646,10 @@ void World::loadDataFromFile() {
 
     delete[] serializedData;
     std::cout << "Data successfully loaded from file" << std::endl;
-
-    //mutexBlocksToBeAddedList.unlock();
-    //}
 }
 
 void World::saveBlocksToBeAddedToFile() {
     std::lock_guard<std::mutex> lock(mutexBlocksToBeAddedList);
-
-    //if(mutexBlocksToBeAddedList.try_lock()){
 
     // Calculate the size of the serialized data
     size_t dataSize = blocksToBeAddedList.size() * sizeof(BlocksToBeAdded);
@@ -670,7 +662,6 @@ void World::saveBlocksToBeAddedToFile() {
     std::string filename = "../save/blocksToBeAdded.bin";
     std::ofstream outfile(filename, std::ios::binary | std::ios::trunc);
     if (!outfile) {
-        //std::cerr << "Failed to open file for writing: " << filename << std::endl;
         delete[] serializedData;
         return;
     }
@@ -679,7 +670,5 @@ void World::saveBlocksToBeAddedToFile() {
     outfile.close();
 
     delete[] serializedData;
-    //    mutexBlocksToBeAddedList.unlock();
-    //}
 }
 

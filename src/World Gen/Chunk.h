@@ -37,14 +37,14 @@ private:
         std::vector<float> chunkBrightnessFloats;
         std::vector<glm::vec3> chunkNormals;
 
-        std::vector<glm::vec3> transparentVerts;
-        std::vector<glm::vec2> transparentUVs;
-        std::vector<GLuint> transparentIndices;
-        std::vector<float> transparentBrightnessFloats;
-        std::vector<glm::vec3> transparentNormals;
+        std::vector<glm::vec3> nonSolidVerts;
+        std::vector<glm::vec2> nonSolidUVs;
+        std::vector<GLuint> nonSolidIndices;
+        std::vector<float> nonSolidBrightnessFloats;
+        std::vector<glm::vec3> nonSolidNormals;
 
         GLsizei indexCount = 0;
-        GLsizei transparentIndexCount = 0;
+        GLsizei nonSolidIndexCount = 0;
     };
     struct ChunkBools{
         bool leftSideUpdated = false;
@@ -63,7 +63,7 @@ private:
 	static constexpr int CHUNKS_PER_REGION = 32;
 
 public:
-	static const int SIZE = 16;
+	static const int SIZE = 32;
 	static const int HEIGHT = 192;
 
     ChunkData chunkData;
