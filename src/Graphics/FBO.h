@@ -39,6 +39,8 @@ public:
 
     void bindForRead() const;
 
+    void bindRBO() const;
+
     static void Unbind();
 
     void Delete();

@@ -539,8 +539,9 @@ void World::renderChunks(Shader& shader)
         if(chunk != nullptr) {
             if (chunk->chunkHasMeshes && chunk->mesh != nullptr && chunk->mesh->loadedData &&
             !chunk->toBeDeleted) {
-                scene.renderMesh(*chunk->mesh, shader);
                 scene.renderMesh(*chunk->transparentMesh, shader);
+
+                scene.renderMesh(*chunk->mesh, shader);
             }
         }
     }
@@ -554,8 +555,9 @@ void World::renderChunks(Shader& shader, glm::vec3 lightPos)
             if (chunk->chunkHasMeshes && chunk->mesh != nullptr && chunk->mesh->loadedData &&
             !chunk->toBeDeleted)
             {
-                scene.renderMesh(*chunk->mesh, shader);
                 scene.renderMesh(*chunk->transparentMesh, shader);
+
+                scene.renderMesh(*chunk->mesh, shader);
             }
 
         }
@@ -566,7 +568,7 @@ void World::update()
 {
     sortTransparentFaces();
 
-    player.chunkPosition = glm::ivec2(playerChunkPos.x, playerChunkPos.y);
+    //player.chunkPosition = glm::ivec2(playerChunkPos.x, playerChunkPos.y);
 
     scene.updateShaders();
     //changes global texture every second that passes
@@ -589,7 +591,10 @@ void World::updateTick() {
 
         for(BlocksToBeAdded block : thisLiquidToBeChecked) {
             Chunk* currentChunk = GetChunk(block.chunkPosition);
-            if(currentChunk != nullptr && currentChunk->generatedBlockData) {
+            if(currentChunk == nullptr) {
+                continue;
+            }
+            if(currentChunk->generatedBlockData) {
 
                 currentChunk->SetBlock(block.localPosition, block.blockID);
                 ChunkGeneration::UpdateWater(*currentChunk, block.localPosition);

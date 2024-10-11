@@ -29,10 +29,11 @@ void ChunkMeshGeneration::GenFaces(Chunk &chunk) {
     for (int x = 0; x < Chunk::SIZE; x++) {
         for (int z = 0; z < Chunk::SIZE; z++) {
             for (int y = 0; y < Chunk::HEIGHT; y++) {
+                const unsigned char blockID = chunk.GetBlockID(glm::ivec3(x,y,z));
                 if (chunk.GetBlockID(glm::ivec3(x, y, z)) != 0) {
-                    if (Block::isSolid(chunk.GetBlockID(glm::ivec3(x, y, z)))) {
+                    if (Block::isSolid(blockID) || Block::hasCustomMesh(blockID)) {
                         AddFaces(x, y, z, numFaces, true, chunk);
-                    } else if (!Block::isSolid(chunk.GetBlockID(glm::ivec3(x, y, z)))) {
+                    } else if (!Block::isSolid(blockID)) {
                         AddFaces(x, y, z, numTransparentFaces, false, chunk);
                     }
                 }
@@ -52,7 +53,7 @@ void ChunkMeshGeneration::AddFaces(int x, int y, int z, int &numFaces, bool isSo
     unsigned char id = chunk.GetBlockID(glm::ivec3(x, y, z));
     BlockType type = BlockIDMap[id];
 
-    glm::vec3 blockWorldPos = glm::vec3(x + chunk.chunkPosition.x * Chunk::SIZE, y,
+    glm::vec3 blockWorldPos = glm::ivec3(x + chunk.chunkPosition.x * Chunk::SIZE, y,
                                         z + chunk.chunkPosition.y * Chunk::SIZE);
 
     if (Block::hasCustomMesh(id)) {
@@ -192,6 +193,10 @@ void ChunkMeshGeneration::AddEdgeFaces(glm::ivec3 localBlockPos, int &numFaces, 
         numFaces++;
     } else if (Block::isSolid(blockID) && blockID != 0 && neighbourBlockID == 0) {
         IntegrateFace(Block::GetFace(face, type, blockWorldPos), true, chunk);
+        numFaces++;
+    }
+    else if (!Block::isSolid(blockID) && blockID != 0 && neighbourBlockID == 0) {
+        IntegrateFace(Block::GetFace(face, type, blockWorldPos), false, chunk);
         numFaces++;
     }
 }

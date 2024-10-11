@@ -83,11 +83,16 @@ void Game::run() {
     auto previous = std::chrono::high_resolution_clock::now();
     std::chrono::milliseconds lag(0);
     // Disable VSync
-    //glfwSwapInterval(0);
+    glfwSwapInterval(1);
 
     // Variables for FPS calculation
     int frames = 0;
     double fpsTime = 0.0;
+    // Initial window size
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+    currentWidth = width;
+    currentHeight = height;
 
     // Render loop
     while (!glfwWindowShouldClose(window)) {
@@ -100,6 +105,9 @@ void Game::run() {
         lastFrame = currentTime;
 
         accumulator += deltaTime;
+
+
+
         while (accumulator >= timeStep) {
             // Update player physics
             player->Update(timeStep);
@@ -150,17 +158,26 @@ void Game::run() {
         // Update world
         world->update();
 
-        // Get framebuffer size
-        int width, height;
+        // Check if window size has changed
         glfwGetFramebufferSize(window, &width, &height);
-        scene->setFBODimensions(width, height);
-        scene->setGBufferDimensions(width, height);
 
+        if (width != currentWidth || height != currentHeight) {
+            currentWidth = width;
+            currentHeight = height;
+
+            // Resize FBO and G-buffer to match the new window size
+            scene->setFBODimensions(currentWidth, currentHeight);
+            scene->setGBufferDimensions(currentWidth, currentHeight);
+
+
+        }
+
+
+        //glViewport(0, 0, width, height);
         // Render the world
         scene->renderWorld(*world);
 
         // Set viewport and render quad
-        glViewport(0, 0, width, height);
         scene->renderQuad();
 
         // Render GUI
@@ -182,7 +199,11 @@ void Game::run() {
     glfwTerminate();
 }
 
+int Game::currentWidth = 0;
+int Game::currentHeight = 0;
 
 void Game::framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height);
+    currentWidth = width;
+    currentHeight = height;
 }

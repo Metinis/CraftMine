@@ -46,6 +46,6 @@ void Camera::updateCameraVectors()
 }
 
 void Camera::updatePosition(glm::vec3 lastPlayerPos, glm::vec3 playerPos, double alpha) {
-    glm::vec3 interpolatedPosition = glm::mix(lastPlayerPos, playerPos, static_cast<float>(alpha));
+    glm::vec3 interpolatedPosition = glm::mix(lastPlayerPos, playerPos, alpha);
     position = interpolatedPosition;
 }

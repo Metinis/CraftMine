@@ -35,6 +35,8 @@ public:
     World* world;
     Input* mouseInput;
     Scene* scene;
+    static int currentWidth;
+    static int currentHeight;
 private:
     GLFWwindow* window;
     glm::ivec2 lastChunkPos{};
@@ -48,7 +50,7 @@ private:
     float currentTime = 0.0f; // Current time in seconds
     double accumulator = 0.0;
     float timeStep = 1.0 / 60; // Fixed time step
-    const int TICKS_PER_SECOND = 20;
+    const int TICKS_PER_SECOND = 5;
 
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 

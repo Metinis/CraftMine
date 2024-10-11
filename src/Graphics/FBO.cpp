@@ -97,8 +97,15 @@ void FBO::bindForRender() const {
     glBindFramebuffer(GL_FRAMEBUFFER, ID);
 }
 void FBO::bindForRead() const {
+
+    //glViewport(0, 0, width, height);
+
     glBindTexture(GL_TEXTURE_2D, texture);
 }
+void FBO::bindRBO() const {
+
+}
+
 void FBO::Unbind(){
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

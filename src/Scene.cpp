@@ -107,6 +107,8 @@ void Scene::updateShadowProjection(){
     float zFar = glm::round(float(halfOrthoSize + 400 + std::abs(sunZOffset) + Chunk::HEIGHT));
 
     glm::mat4 orthgonalProjection = glm::ortho(-halfOrthoSize, halfOrthoSize, -halfOrthoSize, halfOrthoSize, 0.1f, zFar);
+
+    //glm::mat4 orthgonalProjection = glm::ortho(-halfOrthoSize, halfOrthoSize, -halfOrthoSize, halfOrthoSize, 0.1f, 16000.0f);
     glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(glm::round(camera.position.x), 50, glm::round(camera.position.z)), glm::vec3(0.0f,0.0f,-1.0f));
     glm::mat4 lightProjection = orthgonalProjection * lightView;
 
@@ -181,6 +183,7 @@ void Scene::changeGlobalTexture()
 }
 
 void Scene::updateShaders(){
+    float currentTime = (float)glfwGetTime();
     shader->use();
     glm::vec3 position = camera.position;
     shader->setVec3("cameraPos", position);
@@ -190,6 +193,7 @@ void Scene::updateShaders(){
         shader->setFloat("fogEnd", 8);
         shader->setVec3("fogColor", fogColor);
         transparentShader->use();
+
         transparentShader->setFloat("fogStart",  5);
         transparentShader->setFloat("fogEnd", 8);
         transparentShader->setVec3("fogColor", fogColor);
@@ -212,6 +216,7 @@ void Scene::updateShaders(){
     outlineShader->setMat4("view", view);
     transparentShader->use();
     transparentShader->setMat4("view", view);
+    transparentShader->setFloat("time",  currentTime);
     geometryShader->use();
     geometryShader->setMat4("view", view);
     /* Get the primary monitor
@@ -335,18 +340,26 @@ void Scene::renderToShadowMap(World& world){
         std::cout<<"Framebuffer incomplete";
     }
     //glCullFace(GL_BACK);
+
+    glDisable(GL_BLEND);
     world.renderChunks(*shadowMapShader, lightPos);
+    glEnable(GL_BLEND);
     //glCullFace(GL_FRONT);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 void Scene::renderWorld(World& world){
 
-    //glViewport(0, 0, 1280, 720);
+    setFBODimensions(Game::currentWidth,Game:: currentHeight);
+
+
+    setGBufferDimensions(Game::currentWidth,Game:: currentHeight);
+
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.55f, 0.75f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+    //glViewport(0, 0, Game::currentWidth, Game::currentHeight);  // Use the current window size or G-buffer size
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glActiveTexture(GL_TEXTURE0);
@@ -358,6 +371,7 @@ void Scene::renderWorld(World& world){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     fbo->bindForRender();
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     shader->use();
 
@@ -375,6 +389,7 @@ void Scene::renderWorld(World& world){
     depthFBO->bindForRead();
     screenQuad->renderQuad(*shader);
     fbo->Unbind();
+
     // 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
     // ----------------------------------
     // ------------------------------------------------
@@ -390,6 +405,8 @@ void Scene::renderWorld(World& world){
 
     glDepthMask(GL_FALSE);
     glDisable(GL_CULL_FACE);
+
+
     world.renderTransparentMeshes(*transparentShader);
     glEnable(GL_CULL_FACE);
     glDepthMask(GL_TRUE);
@@ -442,6 +459,7 @@ void Scene::setFBODimensions(int width, int height){
     fbo->setDimensionTexture(width, height);
 }
 void Scene::renderQuad(){
+
 
     glActiveTexture(GL_TEXTURE0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

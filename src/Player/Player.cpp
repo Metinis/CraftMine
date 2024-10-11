@@ -4,6 +4,9 @@ Player::Player(){
     movementSpeed = 5.0f;
     position = glm::vec3((World::SIZE / 2) * Chunk::SIZE, Chunk::HEIGHT, (World::SIZE / 2) * Chunk::SIZE);
 
+    //position = glm::vec3((World::SIZE) * Chunk::SIZE, Chunk::HEIGHT, (World::SIZE) * Chunk::SIZE);
+    //position = glm::vec3(Chunk::SIZE,200.0f,Chunk::SIZE);
+
     camera.position = position;
         chunkPosition = glm::vec2(position.x / Chunk::SIZE, position.z / Chunk::SIZE);
         toolbar = new Toolbar();
@@ -19,6 +22,7 @@ void Player::Update(float deltaTime){
 
     savePosToFile();
     checkIfSwimming(glm::round(position));
+
     lastPosition = position;
     glm::vec3 newPosition = position + playerVelocity * deltaTime;
 
@@ -34,6 +38,7 @@ void Player::Update(float deltaTime){
         UpdateDeceleration(deltaTime);
 
     updateShifting();
+
 }
 void Player::updateShifting() {
     if(isShifting && !shiftChanged && !isFlying){
@@ -111,6 +116,7 @@ void Player::applyNewPositionY(glm::vec3 &newPosition) {
         else if(!isGrounded || isJumping){
             position.y = newPosition.y;
         }
+
     }
     else if(!isGrounded){
         playerVelocity.y = 0;
