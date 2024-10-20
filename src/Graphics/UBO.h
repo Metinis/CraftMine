@@ -1,14 +1,19 @@
-//
-// Created by Denis Muraska on 12/10/2024.
-//
+
 
 #ifndef UBO_H
 #define UBO_H
 
+#include "glad.h"
+
 
 
 class UBO {
-
+private:
+    unsigned int matricesUBO;
+public:
+    UBO();
+    void bind() const;
+    void unbind() const;
 };
 
 

@@ -22,6 +22,8 @@ public:
 	//Constructor to build shader
 	Shader(const char* vertexPath, const char* fragmentPath);
 
+	Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath);
+
 	//use/activate shader
 	void use();
 

@@ -326,3 +326,20 @@ bool Chunk::loadData() {
 
     return true;
 }
+// Calculate min and max bounds of the chunk in world space
+glm::vec3 Chunk::getChunkMinBounds() const {
+    return glm::vec3(
+        chunkPosition.x * Chunk::SIZE,
+        0,
+        chunkPosition.y * Chunk::SIZE
+    );
+
+}
+
+glm::vec3 Chunk::getChunkMaxBounds() const {
+    return glm::vec3(
+        chunkPosition.x * Chunk::SIZE + Chunk::SIZE,
+        Chunk::HEIGHT,
+        chunkPosition.y * Chunk::SIZE + Chunk::SIZE
+    );
+}

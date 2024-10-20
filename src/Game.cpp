@@ -136,12 +136,14 @@ void Game::run() {
 
         if (deltaTime >= tickSpeed) {
             // Update sun offset for shadows
-            scene->sunXOffset -= 1 * deltaTime / 2;
-            if (scene->sunXOffset < -800) {
-                scene->sunXOffset = 800;
-            }
+            //scene->sunXOffset -= 1 * deltaTime / 2;
+            //if (scene->sunXOffset < -800) {
+            //    scene->sunXOffset = 800;
+            //}
+                        //std::cout<<"\n called";
             scene->updateShadowProjection();
             scene->renderToShadowMap(*world);
+
         }
         auto current = std::chrono::high_resolution_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(current - previous);
@@ -150,7 +152,7 @@ void Game::run() {
 
         // Handle updates at the fixed tick rate (20 ticks per second)
         while (lag >= TICK_DURATION) {
-
+            
             world->updateTick();
             lag -= TICK_DURATION;
         }

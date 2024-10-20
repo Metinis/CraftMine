@@ -21,11 +21,12 @@ class Camera
 {
 private:
     float MouseSensitivity;
-	glm::vec3 Up, WorldUp;
 	void updateCameraVectors();
 public:
     glm::vec3 Right;
     glm::vec3 Front;
+
+	glm::vec3 Up, WorldUp;
 	float Yaw;
 	float Pitch;
     glm::vec3 position;

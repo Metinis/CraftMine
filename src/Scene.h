@@ -13,14 +13,14 @@
 #include "Player/Inventory.h"
 #include "CursorBlock.h"
 
+class UBO;
+
 class Scene {
 private:
     static int SHADOW_RESOLUTION;
-    static int SHADOW_DISTANCE;
 
     glm::mat4 model{};
-    glm::mat4 view{};
-    glm::mat4 proj{};
+
 
     int lastTexture = 1;
     int lastTime = 0;
@@ -50,9 +50,18 @@ private:
     GLuint gPosition, gNormal, gAlbedoSpec;
     unsigned int rboDepth;
 
+
+
 public:
+    glm::mat4 view{};
+    glm::mat4 proj{};
+
+    static float cameraNearPlane;
+    static float cameraFarPlane;
+    static std::vector<float> shadowCascadeLevels;
 
     FBO* depthFBO;
+    UBO* ubo;
     Shader* shader;
     Shader* transparentShader;
     Shader* outlineShader;
@@ -121,4 +130,12 @@ public:
     void renderGUI();
 
     void updateOutlineBuffers(glm::ivec3 &globalPos, unsigned char blockID);
+
+    static std::vector<glm::vec4> getFrustumCornersWorldSpace(const glm::mat4& proj, const glm::mat4& view);
+
+
+    glm::mat4 getLightSpaceMatrix(const float nearPlane, const float farPlane);
+
+    std::vector<glm::mat4> getLightSpaceMatrices();
+
 };

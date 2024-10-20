@@ -515,7 +515,9 @@ add_executable(CraftMine
         src/Player/Inventory.cpp
         src/Player/Inventory.h
         src/Graphics/CursorBlock.cpp
-        src/Graphics/CursorBlock.h)
+        src/Graphics/CursorBlock.h
+        src/Graphics/UBO.cpp
+        src/Graphics/UBO.h)
 
 target_link_libraries(CraftMine PRIVATE
         glfw

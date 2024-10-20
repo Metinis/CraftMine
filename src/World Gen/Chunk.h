@@ -63,7 +63,7 @@ private:
 	static constexpr int CHUNKS_PER_REGION = 32;
 
 public:
-	static const int SIZE = 32;
+	static const int SIZE = 24;
 	static const int HEIGHT = 192;
 
     ChunkData chunkData;
@@ -111,5 +111,8 @@ public:
     struct CompareFaces;
 
     bool getIsAllSidesUpdated();
+
+	glm::vec3 getChunkMinBounds() const;
+	glm::vec3 getChunkMaxBounds() const;
 };
 

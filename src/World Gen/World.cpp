@@ -503,7 +503,7 @@ void World::sortTransparentFaces() {
 //default way to render
 void World::renderChunks()
 {
-    for (glm::ivec2 chunkPos : activeChunks) {
+    for (glm::ivec2 &chunkPos : activeChunks) {
         Chunk* chunk = GetChunk(chunkPos);
 
         if (chunk != nullptr) {
@@ -512,36 +512,43 @@ void World::renderChunks()
                 chunk->transparentMesh != nullptr && chunk->mesh->loadedData &&
                 chunk->transparentMesh->loadedData &&
                 !chunk->toBeDeleted) {
-                    scene.renderMesh(*chunk->mesh, *scene.shader);
-                    glDepthMask(GL_FALSE);
-                    scene.renderMesh(*chunk->transparentMesh, *scene.transparentShader);
-                    glDepthMask(GL_TRUE);
+                    if(isChunkInFrustum(*chunk, chunk->getChunkMinBounds(), chunk->getChunkMaxBounds())){
+                        scene.renderMesh(*chunk->mesh, *scene.shader);
+                        //glDepthMask(GL_FALSE);
+                        scene.renderMesh(*chunk->transparentMesh, *scene.transparentShader);
+                        //glDepthMask(GL_TRUE);
+                    }
                 }
             }
         }
     }
 }
 void World::renderTransparentMeshes(Shader& shader) {
-    for (glm::ivec2 chunkPos : activeChunks) {
+    for (glm::ivec2 &chunkPos : activeChunks) {
         Chunk* chunk = GetChunk(chunkPos);
         if(chunk != nullptr) {
             if (chunk->chunkHasMeshes && chunk->transparentMesh != nullptr &&
             chunk->transparentMesh->loadedData && !chunk->toBeDeleted) {
-                scene.renderMesh(*chunk->transparentMesh, shader);
+
+                if(isChunkInFrustum(*chunk, chunk->getChunkMinBounds(), chunk->getChunkMaxBounds()))
+                    scene.renderMesh(*chunk->transparentMesh, shader);
             }
         }
     }
 }
 void World::renderChunks(Shader& shader)
 {
-    for (glm::ivec2 chunkPos : activeChunks) {
+    for (glm::ivec2 &chunkPos : activeChunks) {
         Chunk* chunk = GetChunk(chunkPos);
         if(chunk != nullptr) {
             if (chunk->chunkHasMeshes && chunk->mesh != nullptr && chunk->mesh->loadedData &&
             !chunk->toBeDeleted) {
-                scene.renderMesh(*chunk->transparentMesh, shader);
+                if(isChunkInFrustum(*chunk, chunk->getChunkMinBounds(), chunk->getChunkMaxBounds())) {
+                    scene.renderMesh(*chunk->transparentMesh, shader);
 
-                scene.renderMesh(*chunk->mesh, shader);
+                    scene.renderMesh(*chunk->mesh, shader);
+                }
+
             }
         }
     }
@@ -549,15 +556,18 @@ void World::renderChunks(Shader& shader)
 
 void World::renderChunks(Shader& shader, glm::vec3 lightPos)
 {
-    for (glm::ivec2 chunkPos : activeChunks) {
+    for (glm::ivec2 &chunkPos : activeChunks) {
         Chunk* chunk = GetChunk(chunkPos);
         if(chunk != nullptr){
             if (chunk->chunkHasMeshes && chunk->mesh != nullptr && chunk->mesh->loadedData &&
             !chunk->toBeDeleted)
             {
-                scene.renderMesh(*chunk->transparentMesh, shader);
 
-                scene.renderMesh(*chunk->mesh, shader);
+                if(isChunkInFrustum(*chunk, chunk->getChunkMinBounds(), chunk->getChunkMaxBounds())) {
+                    scene.renderMesh(*chunk->transparentMesh, shader);
+
+                    scene.renderMesh(*chunk->mesh, shader);
+                }
             }
 
         }
@@ -566,9 +576,11 @@ void World::renderChunks(Shader& shader, glm::vec3 lightPos)
 }
 void World::update()
 {
-    sortTransparentFaces();
 
-    //player.chunkPosition = glm::ivec2(playerChunkPos.x, playerChunkPos.y);
+    frustum = createFrustumFromCamera(camera, (float)(16.0f/9.0f), 65.0f, 0.1f, 10000.0f);
+    //frustumCorners = Scene::getFrustumCornersWorldSpace(scene.proj, camera.GetViewMatrix());
+
+    sortTransparentFaces();
 
     scene.updateShaders();
     //changes global texture every second that passes
@@ -580,6 +592,8 @@ void World::update()
 }
 
 void World::updateTick() {
+
+
     if(!liquidToBeChecked.empty()) {
         std::vector<BlocksToBeAdded> thisLiquidToBeChecked;
         std::vector<glm::ivec2> updatedChunks;
@@ -620,7 +634,9 @@ void World::renderSolidMeshes(Shader &shader) {
         if(chunk != nullptr) {
                 if (chunk->chunkHasMeshes && chunk->mesh != nullptr && chunk->mesh->loadedData && 
                     !chunk->toBeDeleted) {
-                    scene.renderMesh(*chunk->mesh, shader);
+
+                    if(isChunkInFrustum(*chunk, chunk->getChunkMinBounds(), chunk->getChunkMaxBounds()))
+                        scene.renderMesh(*chunk->mesh, shader);
                 }
         }
     }
@@ -675,5 +691,72 @@ void World::saveBlocksToBeAddedToFile() {
     outfile.close();
 
     delete[] serializedData;
+}
+
+bool World::isChunkInFrustum(const Chunk& chunk, const glm::vec3& minCorner, const glm::vec3& maxCorner) {
+    std::array<glm::vec3, 8> corners = {
+        glm::vec3(minCorner.x, minCorner.y, minCorner.z), // Bottom-left-near
+        glm::vec3(maxCorner.x, minCorner.y, minCorner.z), // Bottom-right-near
+        glm::vec3(minCorner.x, maxCorner.y, minCorner.z), // Top-left-near
+        glm::vec3(maxCorner.x, maxCorner.y, minCorner.z), // Top-right-near
+        glm::vec3(minCorner.x, minCorner.y, maxCorner.z), // Bottom-left-far
+        glm::vec3(maxCorner.x, minCorner.y, maxCorner.z), // Bottom-right-far
+        glm::vec3(minCorner.x, maxCorner.y, maxCorner.z), // Top-left-far
+        glm::vec3(maxCorner.x, maxCorner.y, maxCorner.z)  // Top-right-far
+    };
+
+    // Check corners first
+    for (const auto& corner : corners) {
+        if (isPointInFrustum(corner, frustum)) {
+            return true; // Chunk is visible if any corner is inside
+        }
+    }
+
+
+    for (float x = minCorner.x; x <= maxCorner.x; x += 4.0f) { // Adjust step size for accuracy
+        for (float y = minCorner.y; y <= maxCorner.y; y += 4.0f) {
+            for (float z = minCorner.z; z <= maxCorner.z; z += 4.0f) {
+                glm::vec3 point(x, y, z);
+                if (isPointInFrustum(point, frustum)) {
+                    return true; // At least one point inside the chunk is visible
+                }
+            }
+        }
+    }
+
+    return false; // No points are visible
+}
+bool World::isPointInFrustum(const glm::vec3& point, const Frustum& frustum) {
+
+    if (frustum.topFace.getSignedDistanceToPlane(point) > 0 &&
+        frustum.bottomFace.getSignedDistanceToPlane(point) > 0 &&
+        frustum.rightFace.getSignedDistanceToPlane(point) > 0 &&
+        frustum.leftFace.getSignedDistanceToPlane(point) > 0 &&
+        frustum.farFace.getSignedDistanceToPlane(point) > 0 &&
+        frustum.nearFace.getSignedDistanceToPlane(point) > 0) {
+        return true;
+    }
+
+    return false;}
+World::Frustum World::createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
+                                                                float zNear, float zFar)
+{
+    Frustum     frustum;
+    const float halfVSide = zFar * tanf(fovY * .5f);
+    const float halfHSide = halfVSide * aspect;
+    const glm::vec3 frontMultFar = zFar * cam.Front;
+
+    frustum.nearFace = { cam.position + zNear * cam.Front, cam.Front };
+    frustum.farFace = { cam.position + frontMultFar, -cam.Front };
+    frustum.rightFace = { cam.position,
+                            glm::cross(frontMultFar - cam.Right * halfHSide, cam.Up) };
+    frustum.leftFace = { cam.position,
+                            glm::cross(cam.Up,frontMultFar + cam.Right * halfHSide) };
+    frustum.topFace = { cam.position,
+                            glm::cross(cam.Right, frontMultFar - cam.Up * halfVSide) };
+    frustum.bottomFace = { cam.position,
+                            glm::cross(frontMultFar + cam.Up * halfVSide, cam.Right) };
+
+    return frustum;
 }
 

@@ -2,10 +2,11 @@
 Player::Player(){
 
     movementSpeed = 5.0f;
-    position = glm::vec3((World::SIZE / 2) * Chunk::SIZE, Chunk::HEIGHT, (World::SIZE / 2) * Chunk::SIZE);
+    //position = glm::vec3((World::SIZE / 2) * Chunk::SIZE, Chunk::HEIGHT, (World::SIZE / 2) * Chunk::SIZE);
+    position = glm::vec3(500, Chunk::HEIGHT, 500);
 
     //position = glm::vec3((World::SIZE) * Chunk::SIZE, Chunk::HEIGHT, (World::SIZE) * Chunk::SIZE);
-    //position = glm::vec3(Chunk::SIZE,200.0f,Chunk::SIZE);
+//position = glm::vec3(Chunk::SIZE,200.0f,Chunk::SIZE);
 
     camera.position = position;
         chunkPosition = glm::vec2(position.x / Chunk::SIZE, position.z / Chunk::SIZE);

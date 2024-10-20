@@ -1,5 +1,4 @@
 #include "Camera.h"
-
 Camera::Camera()
 {
     MouseSensitivity = 0.1f;
@@ -13,7 +12,7 @@ Camera::Camera()
 }
 glm::mat4 Camera::GetViewMatrix()
 {
-	return glm::lookAt(position, position + Front, WorldUp);
+	return glm::lookAt(position, position + Front, Up);
 }
 void Camera::ProcessMouseMovement(float xoffset, float yoffset)
 {

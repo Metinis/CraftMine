@@ -1,5 +1,12 @@
 #include "Scene.h"
 
+#include "Chunk.h"
+#include "UBO.h"
+
+float Scene::cameraNearPlane = 0.1f;
+float Scene::cameraFarPlane = 500.0f;
+std::vector<float> Scene::shadowCascadeLevels{ Scene::cameraFarPlane / 50.0f, Scene::cameraFarPlane / 25.0f, Scene::cameraFarPlane / 10.0f, Scene::cameraFarPlane / 2.0f };
+
 Scene::Scene(Camera& _camera, Player& _player) : camera(_camera), player(_player){
     initialiseWorldShaders();
     initialiseShadowMap();
@@ -7,8 +14,9 @@ Scene::Scene(Camera& _camera, Player& _player) : camera(_camera), player(_player
     ui = new Crosshair();
 }
 
-int Scene::SHADOW_DISTANCE = World::viewDistance;
-int Scene::SHADOW_RESOLUTION = 1024 * SHADOW_DISTANCE;
+
+int Scene::SHADOW_RESOLUTION = 1024 * 4;
+
 
 void Scene::initialiseWorldShaders(){
     shader = new Shader("../resources/shader/shader.vs", "../resources/shader/shader.fs");
@@ -39,7 +47,7 @@ void Scene::initialiseWorldShaders(){
 
     model = glm::mat4(1.0f);
     view = glm::mat4(1.0f);
-    proj = glm::perspective(glm::radians(65.0f), aspectRatio, 0.2f, 10000.0f);
+    proj = glm::perspective(glm::radians(65.0f), aspectRatio, cameraNearPlane, cameraFarPlane);
 
     outlineShader->use();
     outlineShader->setMat4("model", model);
@@ -54,10 +62,36 @@ void Scene::initialiseWorldShaders(){
     shader->setInt("gPosition", 0);
     shader->setInt("gNormal", 1);
     shader->setInt("gAlbedoSpec", 2);
+    shader->setFloat("farPlane", cameraFarPlane);
+    for (size_t i = 0; i < shadowCascadeLevels.size(); ++i)
+    {
+        shader->setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", shadowCascadeLevels[i]);
+    }
+
+    shader->setInt("cascadeCount", shadowCascadeLevels.size());
+
+
     shader->setInt("depthMap", 3);
+    shader->setVec3("lightColor", glm::vec3(1.0f, 1.0f,1.0f));
+    transparentShader->use();
+     transparentShader->setFloat("farPlane", cameraFarPlane);
+    for (size_t i = 0; i < shadowCascadeLevels.size(); ++i)
+    {
+        transparentShader->setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", shadowCascadeLevels[i]);
+    }
+
+    transparentShader->setInt("cascadeCount", shadowCascadeLevels.size());
+
+
+    transparentShader->setInt("depthMap", 3);
+    transparentShader->setInt("ourTexture", 0);
+    transparentShader->setVec3("lightColor", glm::vec3(1.0f, 1.0f,1.0f));
+
 
     loadShader(*shader, World::viewDistance);
     loadShader(*transparentShader, World::viewDistance);
+
+    ubo = new UBO();
 }
 void Scene::initialiseShadowMap(){
 
@@ -76,8 +110,11 @@ void Scene::initialiseShadowMap(){
 
     glUniform1i(glGetUniformLocation(frameShader->ID, "sampledTexture"), 0);
 
-    shadowMapShader = new Shader("../resources/shader/shadowMap.vs", "../resources/shader/shadowMap.fs");
+    shadowMapShader = new Shader("../resources/shader/shadowMap.vs", "../resources/shader/shadowMap.fs", "../resources/shader/shadowMap.gs");
 
+    shadowMapShader->use();
+
+    shadowMapShader->setMat4("model", model);
 
     depthFBO = new FBO(SHADOW_RESOLUTION, SHADOW_RESOLUTION);
 
@@ -86,8 +123,7 @@ void Scene::initialiseShadowMap(){
     updateShadowProjection();
 }
 void Scene::updateShadowProjection(){
-    shadowMapShader->use();
-    lightPos = glm::vec3(glm::round(camera.position.x + sunXOffset), Chunk::HEIGHT + 100, glm::round(camera.position.z + sunZOffset));
+    //lightPos = glm::vec3(glm::round(camera.position.x + sunXOffset), Chunk::HEIGHT + 100, glm::round(camera.position.z + sunZOffset));
 
     if(std::abs(sunXOffset) > 400 && minBrightness > 0.3f){
         minBrightness -= 0.00001;
@@ -103,54 +139,42 @@ void Scene::updateShadowProjection(){
     }
 
 
-    float halfOrthoSize = SHADOW_DISTANCE * Chunk::SIZE;
-    float zFar = glm::round(float(halfOrthoSize + 400 + std::abs(sunZOffset) + Chunk::HEIGHT));
+    std::vector<glm::mat4> lightSpaceMats = getLightSpaceMatrices();
+    ubo->bind();
+    for (size_t i = 0; i < lightSpaceMats.size(); ++i) {
+        glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(glm::mat4x4), sizeof(glm::mat4x4), &lightSpaceMats[i]);
+    }
+    ubo->unbind();
 
-    glm::mat4 orthgonalProjection = glm::ortho(-halfOrthoSize, halfOrthoSize, -halfOrthoSize, halfOrthoSize, 0.1f, zFar);
-
-    //glm::mat4 orthgonalProjection = glm::ortho(-halfOrthoSize, halfOrthoSize, -halfOrthoSize, halfOrthoSize, 0.1f, 16000.0f);
-    glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(glm::round(camera.position.x), 50, glm::round(camera.position.z)), glm::vec3(0.0f,0.0f,-1.0f));
-    glm::mat4 lightProjection = orthgonalProjection * lightView;
-
-    glm::mat4 model = glm::mat4(1.0f);
-
-    shadowMapShader->setMat4("model", model);
-
-    glUniformMatrix4fv(glGetUniformLocation(shadowMapShader->ID, "lightProjection"), 1, GL_FALSE, glm::value_ptr(lightProjection));
-
-    glActiveTexture(GL_TEXTURE3);
-    depthFBO->bindForRead();
 
     shader->use();
-    shader->setMat4("lightSpaceMatrix", lightProjection);
-    shader->setVec3("lightPos", lightPos);
-    shader->setVec3("lightColor", glm::vec3(1.0f, 1.0f,1.0f));
+    view = camera.GetViewMatrix();
+    shader->setMat4("view", view);
+
+    //shader->setVec3("lightPos", lightPos);
     shader->setFloat("minBrightness", minBrightness);
     shader->setFloat("maxBrightnessFactor", maxBrightnessFactor);
-
-    glUniform1i(glGetUniformLocation(shader->ID, "depthMap"), 3);
+    glm::vec3 lightDir = glm::normalize(glm::vec3(10.0f, 200, 20.0f));
+    shader->setVec3("lightDir", lightDir);
 
     transparentShader->use();
-    transparentShader->setMat4("lightSpaceMatrix", lightProjection);
-    transparentShader->setVec3("lightPos", lightPos);
-    transparentShader->setVec3("lightColor", glm::vec3(1.0f, 1.0f,1.0f));
+    transparentShader->setMat4("view", view);
+
+    //shader->setVec3("lightPos", lightPos);
     transparentShader->setFloat("minBrightness", minBrightness);
     transparentShader->setFloat("maxBrightnessFactor", maxBrightnessFactor);
+    transparentShader->setVec3("lightDir", lightDir);
 
-    glUniform1i(glGetUniformLocation(transparentShader->ID, "depthMap"), 3);
-    glActiveTexture(GL_TEXTURE0);
+    //transparentShader->use();
+    //transparentShader->setMat4("lightSpaceMatrix", lightProjection);
+    //transparentShader->setVec3("lightPos", lightPos);
+    //transparentShader->setVec3("lightColor", glm::vec3(1.0f, 1.0f,1.0f));
+    //transparentShader->setFloat("minBrightness", minBrightness);
+    //transparentShader->setFloat("maxBrightnessFactor", maxBrightnessFactor);
 }
 
 void Scene::renderMesh(Mesh& mesh, Shader& _shader){
-    if(&mesh == nullptr || &_shader == nullptr){
-        return;
-    }
-
-    //if(mesh.loadedData){
-        _shader.use();
         mesh.render(_shader);
-    //}
-
 }
 
 void Scene::loadShader(Shader& _shader, int viewDistance) {
@@ -219,26 +243,6 @@ void Scene::updateShaders(){
     transparentShader->setFloat("time",  currentTime);
     geometryShader->use();
     geometryShader->setMat4("view", view);
-    /* Get the primary monitor
-    GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
-
-    // Get the video mode of the primary monitor
-    const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
-    float aspectRatio = (float)mode->width / (float)mode->height;
-
-
-    model = glm::mat4(1.0f);
-    view = glm::mat4(1.0f);
-    proj = glm::perspective(glm::radians(65.0f), aspectRatio, 0.2f, 10000.0f);
-
-    outlineShader->use();
-    outlineShader->setMat4("model", model);
-    outlineShader->setMat4("projection", proj);
-
-    geometryShader->use();
-    geometryShader->setMat4("model", model);
-    geometryShader->setMat4("projection", proj);*/
-
 }
 void Scene::renderBlockOutline(World& world)
 {
@@ -330,21 +334,22 @@ void Scene::render(World& world){
 void Scene::renderToShadowMap(World& world){
     glEnable(GL_DEPTH_TEST);
 
-    //glActiveTexture(GL_TEXTURE3);
     depthFBO->bindForRender();
     glClear(GL_DEPTH_BUFFER_BIT);
     shadowMapShader->use();
-    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if (status != GL_FRAMEBUFFER_COMPLETE)
-    {
-        std::cout<<"Framebuffer incomplete";
-    }
-    //glCullFace(GL_BACK);
+    //GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    //if (status != GL_FRAMEBUFFER_COMPLETE)
+    //{
+    //    std::cout<<"Framebuffer incomplete";
+    //}
 
-    glDisable(GL_BLEND);
-    world.renderChunks(*shadowMapShader, lightPos);
-    glEnable(GL_BLEND);
+    //glDisable(GL_BLEND);
+    //glActiveTexture(GL_TEXTURE0);
+    //worldTexture->Bind();
+    //glCullFace(GL_BACK);
+    world.renderChunks(*shadowMapShader);
     //glCullFace(GL_FRONT);
+    //glEnable(GL_BLEND);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 void Scene::renderWorld(World& world){
@@ -359,7 +364,6 @@ void Scene::renderWorld(World& world){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
-    //glViewport(0, 0, Game::currentWidth, Game::currentHeight);  // Use the current window size or G-buffer size
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glActiveTexture(GL_TEXTURE0);
@@ -386,15 +390,13 @@ void Scene::renderWorld(World& world){
     glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
 
     glActiveTexture(GL_TEXTURE3);
-    depthFBO->bindForRead();
+    depthFBO->bindForReadDepth();
     screenQuad->renderQuad(*shader);
-    fbo->Unbind();
+    FBO::UnbindDepth();
+    FBO::Unbind();
 
-    // 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
-    // ----------------------------------
-    // ------------------------------------------------
     glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo->ID); // write to default framebuffer
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo->ID);
     glBlitFramebuffer(0, 0, fbo->width, fbo->height, 0, 0, fbo->width, fbo->height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo->ID);
 
@@ -425,7 +427,7 @@ void Scene::renderWorld(World& world){
 
         glEnable(GL_DEPTH_TEST);
     }
-    fbo->Unbind();
+    FBO::Unbind();
 }
 void Scene::renderGUI(){
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -471,7 +473,8 @@ void Scene::renderQuad(){
     frameShader->setBool("inWater", player.isHeadInWater());
     frameShader->setBool("inInventory", inventoryOpen);
 
-    //depthFBO->bindForRead();
+    //depthFBO->bindForReadDepth();
+    //depthFBO->bindForRender();
     screenQuad->renderQuad(*frameShader);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -557,11 +560,122 @@ void Scene::setGBufferDimensions(int width, int height) {
 }
 
 void Scene::updateShadowResolution() {
-    Scene::SHADOW_DISTANCE = World::viewDistance;
-    Scene::SHADOW_RESOLUTION = 1024 * SHADOW_DISTANCE;
-    depthFBO->setDimensionDepthMap(SHADOW_RESOLUTION, SHADOW_RESOLUTION);
+    //Scene::SHADOW_RESOLUTION = 1024 * 4;
+    //depthFBO->setDimensionDepthMap(SHADOW_RESOLUTION, SHADOW_RESOLUTION);
 }
 
 void Scene::drawBlockOnCursor() {
 
 }
+std::vector<glm::vec4> Scene::getFrustumCornersWorldSpace(const glm::mat4& proj, const glm::mat4& view)
+{
+    const auto inv = glm::inverse(proj * view);
+
+    std::vector<glm::vec4> frustumCorners;
+    for (unsigned int x = 0; x < 2; ++x)
+    {
+        for (unsigned int y = 0; y < 2; ++y)
+        {
+            for (unsigned int z = 0; z < 2; ++z)
+            {
+                const glm::vec4 pt =
+                    inv * glm::vec4(
+                        2.0f * x - 1.0f,
+                        2.0f * y - 1.0f,
+                        2.0f * z - 1.0f,
+                        1.0f);
+                frustumCorners.push_back(pt / pt.w);
+            }
+        }
+    }
+
+    return frustumCorners;
+}
+glm::mat4 Scene::getLightSpaceMatrix(const float nearPlane, const float farPlane) {
+
+    //Get the primary monitor
+    GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+
+    // Get the video mode of the primary monitor
+    const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+    float aspectRatio = (float)mode->width / (float)mode->height;
+
+
+    const auto proj = glm::perspective(glm::radians(65.0f), aspectRatio, nearPlane, farPlane);
+
+    const auto corners = getFrustumCornersWorldSpace(proj, camera.GetViewMatrix());
+
+    glm::vec3 center = glm::vec3(0, 0, 0);
+    for (const auto& v : corners)
+    {
+        center += glm::vec3(v);
+    }
+    center /= corners.size();
+
+    glm::vec3 lightDir = glm::normalize(glm::vec3(5.0f, 200, 20.0f));
+    //glm::vec3 lightDir = glm::normalize(glm::vec3(-0.5f, -1.0f, -0.5f));  // A sample directional vector for sunlight
+    //glm::vec3 lightDir = center - lightPos;
+    const auto lightView = glm::lookAt(center + lightDir, center, glm::vec3(0.0f, 1.0f, 0.0f));
+
+    float minX = std::numeric_limits<float>::max();
+    float maxX = std::numeric_limits<float>::lowest();
+    float minY = std::numeric_limits<float>::max();
+    float maxY = std::numeric_limits<float>::lowest();
+    float minZ = std::numeric_limits<float>::max();
+    float maxZ = std::numeric_limits<float>::lowest();
+    for (const auto& v : corners)
+    {
+        const auto trf = lightView * v;
+        minX = std::min(minX, trf.x);
+        maxX = std::max(maxX, trf.x);
+        minY = std::min(minY, trf.y);
+        maxY = std::max(maxY, trf.y);
+        minZ = std::min(minZ, trf.z);
+        maxZ = std::max(maxZ, trf.z);
+    }
+
+    // Tune this parameter according to the scene
+    constexpr float zMult = 10.0f;
+    if (minZ < 0)
+    {
+        minZ *= zMult;
+    }
+    else
+    {
+        minZ /= zMult;
+    }
+    if (maxZ < 0)
+    {
+        maxZ /= zMult;
+    }
+    else
+    {
+        maxZ *= zMult;
+    }
+
+    const glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
+    return lightProjection * lightView;
+}
+std::vector<glm::mat4> Scene::getLightSpaceMatrices()
+{
+    std::vector<glm::mat4> ret;
+    for (size_t i = 0; i < shadowCascadeLevels.size() + 1; ++i)
+    {
+        if (i == 0)
+        {
+            ret.push_back(getLightSpaceMatrix(cameraNearPlane, shadowCascadeLevels[i]));
+        }
+        else if (i < shadowCascadeLevels.size())
+        {
+            ret.push_back(getLightSpaceMatrix(shadowCascadeLevels[i - 1], shadowCascadeLevels[i]));
+        }
+        else
+        {
+            ret.push_back(getLightSpaceMatrix(shadowCascadeLevels[i - 1], cameraFarPlane));
+        }
+    }
+    return ret;
+}
+
+
+

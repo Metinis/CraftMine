@@ -1,21 +1,19 @@
-#version 330 core
+#version 410 core
 
 layout(location = 0) out float FragDepth;
 
-in vec2 TexCoord;
-uniform sampler2D ourTexture;
 uniform float alphaThreshold = 0.2;
+uniform sampler2D ourTexture;
+in vec2 FragTexCoord;
 
 void main(){
 
-    vec4 texColor = texture(ourTexture, TexCoord);
+    vec4 texColor = texture(ourTexture, FragTexCoord);
 
-    // Perform alpha test
     if (texColor.a < alphaThreshold)
     {
-        discard; // Discard transparent fragments
+        discard;
     }
 
-    // Record the depth value
     FragDepth = gl_FragCoord.z;
 }

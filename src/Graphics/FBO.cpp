@@ -3,6 +3,9 @@
 //
 
 #include "FBO.h"
+
+#include "Scene.h"
+
 FBO::FBO(int _width, int _height){
     width = _width;
     height = _height;
@@ -55,7 +58,7 @@ void FBO::setDimensionDepthMap(int _width, int _height){
     height = _height;
     initialiseDepthMap();
 }
-void FBO::initialiseTexture(){
+void FBO::initialiseTexture() const{
 
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
@@ -65,25 +68,35 @@ void FBO::initialiseTexture(){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Prevents edge bleeding
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 }
-void FBO::initialiseDepthMap(){
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+void FBO::initialiseDepthMap() const{
+    glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
+    glTexImage3D(
+    GL_TEXTURE_2D_ARRAY,
+    0,
+    GL_DEPTH_COMPONENT32F,
+    width,
+    height,
+    int(Scene::shadowCascadeLevels.size()) + 1,
+    0,
+    GL_DEPTH_COMPONENT,
+    GL_FLOAT,
+    nullptr);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     // Prevents darkness outside the frustrum
     float clampColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, clampColor);
+    glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, clampColor);
     glBindFramebuffer(GL_FRAMEBUFFER, ID);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texture, 0);
 
     // Needed since we don't touch the color buffer
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
-void FBO::initialiseRBO(){
+void FBO::initialiseRBO() const{
     glBindRenderbuffer(GL_RENDERBUFFER, RBO);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, RBO);
@@ -102,12 +115,23 @@ void FBO::bindForRead() const {
 
     glBindTexture(GL_TEXTURE_2D, texture);
 }
+
+void FBO::bindForReadDepth() const {
+
+    //glViewport(0, 0, width, height);
+
+    glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
+}
 void FBO::bindRBO() const {
 
 }
 
 void FBO::Unbind(){
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+void FBO::UnbindDepth() {
+
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
 void FBO::Delete()
