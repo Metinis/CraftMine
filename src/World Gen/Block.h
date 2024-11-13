@@ -19,7 +19,7 @@ public:
     static std::vector<glm::vec3> GetOutline(glm::vec3 position);
     static std::vector<glm::vec3>
     AddOutlineVertices(std::vector<glm::vec3> vertices, glm::vec3 Position, bool hasCustomMesh);
-    static bool transparent(int id);
+    static bool isTransparent(int id);
     static bool isSolid(int id);
 
     static bool hasCustomMesh(unsigned char id);

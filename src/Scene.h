@@ -36,6 +36,8 @@ private:
 
     glm::vec3 lightPos = glm::vec3(0,0,0);
 
+    glm::vec3 lightDir = glm::vec3(20.0f, 200, 20.0f);
+
     VAO* outlineVAO = nullptr;
     VBO* outlineVBO = nullptr;
     IBO* outlineIBO = nullptr;
@@ -107,11 +109,11 @@ public:
 
     static void renderMesh(Mesh& mesh, Shader& _shader);
 
-    void render(Shader& _shader, World& world);
+    static void render(Shader& _shader, World& world);
 
-    void render(World& world);
+    static void render(World& world);
 
-    void renderToShadowMap(World& world);
+    void renderToShadowMap(World& world) const;
 
     void renderWorld(World& world);
 

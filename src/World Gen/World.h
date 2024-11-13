@@ -133,7 +133,7 @@ Frustum frustum;
 
     void BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirection);
 
-    void renderChunks();
+    void renderChunksToNormalShaders();
 
     void renderSolidMeshes(Shader& shader);
 
@@ -145,13 +145,13 @@ Frustum frustum;
 
     void sortChunks();
 
-    void renderChunks(Shader& shader);
+    void renderChunksToShader(Shader& shader);
+
+	void renderChunksToShadow(Shader& shader);
 
     void sortTransparentFaces();
 
     void sortChunks(glm::vec3 pos);
-
-    void renderChunks(Shader &shader, glm::vec3 lightPos);
 
     void saveBlocksToBeAddedToFile();
 

@@ -51,4 +51,5 @@ public:
     void Delete();
 
     void setDimensionDepthMap(int _width, int _height);
+    void bindFBOTextureLayer(int layer) const;
 };

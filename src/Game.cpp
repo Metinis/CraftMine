@@ -19,7 +19,6 @@ Game::Game() {
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
     glfwGetMonitorWorkarea(monitor, &x, &y, &width, &height);
 
-
     window = glfwCreateWindow(width, height, "CraftMine", nullptr, nullptr);
 
     if (window == nullptr) {
@@ -152,7 +151,7 @@ void Game::run() {
 
         // Handle updates at the fixed tick rate (20 ticks per second)
         while (lag >= TICK_DURATION) {
-            
+
             world->updateTick();
             lag -= TICK_DURATION;
         }

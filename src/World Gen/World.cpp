@@ -501,7 +501,7 @@ void World::sortTransparentFaces() {
     }
 }
 //default way to render
-void World::renderChunks()
+void World::renderChunksToNormalShaders()
 {
     for (glm::ivec2 &chunkPos : activeChunks) {
         Chunk* chunk = GetChunk(chunkPos);
@@ -514,9 +514,7 @@ void World::renderChunks()
                 !chunk->toBeDeleted) {
                     if(isChunkInFrustum(*chunk, chunk->getChunkMinBounds(), chunk->getChunkMaxBounds())){
                         scene.renderMesh(*chunk->mesh, *scene.shader);
-                        //glDepthMask(GL_FALSE);
                         scene.renderMesh(*chunk->transparentMesh, *scene.transparentShader);
-                        //glDepthMask(GL_TRUE);
                     }
                 }
             }
@@ -536,7 +534,7 @@ void World::renderTransparentMeshes(Shader& shader) {
         }
     }
 }
-void World::renderChunks(Shader& shader)
+void World::renderChunksToShader(Shader& shader)
 {
     for (glm::ivec2 &chunkPos : activeChunks) {
         Chunk* chunk = GetChunk(chunkPos);
@@ -553,15 +551,12 @@ void World::renderChunks(Shader& shader)
         }
     }
 }
-
-void World::renderChunks(Shader& shader, glm::vec3 lightPos)
-{
+void World::renderChunksToShadow(Shader& shader) {
     for (glm::ivec2 &chunkPos : activeChunks) {
         Chunk* chunk = GetChunk(chunkPos);
-        if(chunk != nullptr){
+        if(chunk != nullptr) {
             if (chunk->chunkHasMeshes && chunk->mesh != nullptr && chunk->mesh->loadedData &&
-            !chunk->toBeDeleted)
-            {
+            !chunk->toBeDeleted) {
 
                 if(isChunkInFrustum(*chunk, chunk->getChunkMinBounds(), chunk->getChunkMaxBounds())) {
                     scene.renderMesh(*chunk->transparentMesh, shader);
@@ -569,15 +564,14 @@ void World::renderChunks(Shader& shader, glm::vec3 lightPos)
                     scene.renderMesh(*chunk->mesh, shader);
                 }
             }
-
         }
-
     }
 }
+
 void World::update()
 {
 
-    frustum = createFrustumFromCamera(camera, (float)(16.0f/9.0f), 65.0f, 0.1f, 10000.0f);
+    frustum = createFrustumFromCamera(camera, (float)(16.0f/9.0f), 65.0f, 0.1f, 1000.0f);
     //frustumCorners = Scene::getFrustumCornersWorldSpace(scene.proj, camera.GetViewMatrix());
 
     sortTransparentFaces();

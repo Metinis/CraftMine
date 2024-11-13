@@ -51,6 +51,18 @@ namespace CraftMine {
                             rotateVertex(glm::vec3(0.0f, 0.5f, 0.5f), 45.0f),
                             rotateVertex(glm::vec3(0.0f, -0.5f, 0.5f), 45.0f),
                             rotateVertex(glm::vec3(0.0f, -0.5f, -0.5f), 45.0f)
+                    }},
+    		{RIGHT, {
+                            rotateVertex(glm::vec3(-0.5f, 0.5f, 0.0f), -135.0f),
+                            rotateVertex(glm::vec3(0.5f, 0.5f, 0.0f), -135.0f),
+                            rotateVertex(glm::vec3(0.5f, -0.5f, 0.0f), -135.0f),
+                            rotateVertex(glm::vec3(-0.5f, -0.5f, 0.0f), -135.0f)
+                    }},
+    		{LEFT, {
+                            rotateVertex(glm::vec3(-0.5f, 0.5f, 0.0f), -225.0f),
+                            rotateVertex(glm::vec3(0.5f, 0.5f, 0.0f), -225.0f),
+                            rotateVertex(glm::vec3(0.5f, -0.5f, 0.0f), -225.0f),
+                            rotateVertex(glm::vec3(-0.5f, -0.5f, 0.0f), -225.0f)
                     }}
     };
 

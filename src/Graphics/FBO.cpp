@@ -108,6 +108,11 @@ void FBO::initialiseRBO() const{
 void FBO::bindForRender() const {
     glViewport(0, 0, width, height);
     glBindFramebuffer(GL_FRAMEBUFFER, ID);
+
+}
+void FBO::bindFBOTextureLayer(const int layer) const {
+
+    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texture, 0, layer);
 }
 void FBO::bindForRead() const {
 

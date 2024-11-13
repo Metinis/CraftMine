@@ -154,8 +154,19 @@ void Scene::updateShadowProjection(){
     //shader->setVec3("lightPos", lightPos);
     shader->setFloat("minBrightness", minBrightness);
     shader->setFloat("maxBrightnessFactor", maxBrightnessFactor);
-    glm::vec3 lightDir = glm::normalize(glm::vec3(10.0f, 200, 20.0f));
-    shader->setVec3("lightDir", lightDir);
+    //lightDir = glm::vec3(lightDir.x - 0.1f, 200, lightDir.x - 0.1f);
+    float radius = 500.0f;
+    float theta = glm::radians(45.0f); // Angle in the XY plane
+    float phi = glm::radians(30.0f);   // Angle from the Y axis
+
+    float x = radius * sin(phi) * cos(theta);
+    float y = radius * cos(phi);
+    float z = radius * sin(phi) * sin(theta);
+
+    glm::vec3 lightDir = glm::vec3(x, y, z);
+
+    glm::vec3 normalizedLightDir = glm::normalize(lightDir);
+    shader->setVec3("lightDir", normalizedLightDir);
 
     transparentShader->use();
     transparentShader->setMat4("view", view);
@@ -163,7 +174,7 @@ void Scene::updateShadowProjection(){
     //shader->setVec3("lightPos", lightPos);
     transparentShader->setFloat("minBrightness", minBrightness);
     transparentShader->setFloat("maxBrightnessFactor", maxBrightnessFactor);
-    transparentShader->setVec3("lightDir", lightDir);
+    transparentShader->setVec3("lightDir", normalizedLightDir);
 
     //transparentShader->use();
     //transparentShader->setMat4("lightSpaceMatrix", lightProjection);
@@ -326,30 +337,18 @@ void Scene::drawOutline()
 
 void Scene::render(Shader& _shader, World& world){
     //calls render function to world which provides it with chunk meshes and uses scene.renderMesh
-    world.renderChunks(_shader);
+    world.renderChunksToShader(_shader);
 }
 void Scene::render(World& world){
-    world.renderChunks();
+    world.renderChunksToNormalShaders();
 }
-void Scene::renderToShadowMap(World& world){
+void Scene::renderToShadowMap(World& world) const{
     glEnable(GL_DEPTH_TEST);
 
     depthFBO->bindForRender();
     glClear(GL_DEPTH_BUFFER_BIT);
-    shadowMapShader->use();
-    //GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    //if (status != GL_FRAMEBUFFER_COMPLETE)
-    //{
-    //    std::cout<<"Framebuffer incomplete";
-    //}
+    world.renderChunksToShadow(*shadowMapShader);
 
-    //glDisable(GL_BLEND);
-    //glActiveTexture(GL_TEXTURE0);
-    //worldTexture->Bind();
-    //glCullFace(GL_BACK);
-    world.renderChunks(*shadowMapShader);
-    //glCullFace(GL_FRONT);
-    //glEnable(GL_BLEND);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 void Scene::renderWorld(World& world){

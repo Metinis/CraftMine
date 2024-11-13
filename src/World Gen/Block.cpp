@@ -71,7 +71,7 @@ std::vector<glm::vec3> Block::AddTransformedVertices(std::vector<glm::vec3> vert
 	}
 	return newVerts;
 }
-bool Block::transparent(int id)
+bool Block::isTransparent(int id)
 {
     if(std::find(transparentBlocks.begin(), transparentBlocks.end(), id) == transparentBlocks.end())
     {

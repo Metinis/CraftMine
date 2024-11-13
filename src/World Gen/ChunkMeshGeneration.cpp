@@ -8,9 +8,10 @@ bool ChunkMeshGeneration::CheckFace(int x, int y, int z, bool isSolid, unsigned 
         if (Block::hasCustomMesh(chunk.GetBlockID(glm::ivec3(x, y, z)))) {
             return true;
         }
-        if (Block::transparent(chunk.GetBlockID(glm::ivec3(x, y, z))) && isSolid) {
+        if (Block::isTransparent(chunk.GetBlockID(glm::ivec3(x, y, z))) && isSolid) {
             return true;
-        } else if (Block::transparent(chunk.GetBlockID(glm::ivec3(x, y, z))) && !isSolid && chunk.
+        }
+        if (Block::isTransparent(chunk.GetBlockID(glm::ivec3(x, y, z))) && !isSolid && chunk.
                    GetBlockID(glm::ivec3(x, y, z)) == 0) //empty
         {
             return true;
@@ -60,7 +61,11 @@ void ChunkMeshGeneration::AddFaces(int x, int y, int z, int &numFaces, bool isSo
         IntegrateFace(Block::GetFace(CraftMine::Faces::FRONT, type, blockWorldPos), isSolid, chunk);
 
         IntegrateFace(Block::GetFace(CraftMine::Faces::BACK, type, blockWorldPos), isSolid, chunk);
-        numFaces += 2;
+
+        IntegrateFace(Block::GetFace(CraftMine::Faces::RIGHT, type, blockWorldPos), isSolid, chunk);
+
+        IntegrateFace(Block::GetFace(CraftMine::Faces::LEFT, type, blockWorldPos), isSolid, chunk);
+        numFaces += 4;
         return;
     }
 
@@ -184,19 +189,27 @@ void ChunkMeshGeneration::AddEdgeFaces(glm::ivec3 localBlockPos, int &numFaces, 
 
     unsigned char neighbourBlockID = tempChunk->GetBlockID(glm::ivec3(neighbourX, localBlockPos.y, neighbourZ));
 
-    if (Block::hasCustomMesh(blockID))
+    if (Block::hasCustomMesh(blockID) || blockID == 0)
         return;
 
     BlockType type = BlockIDMap[blockID];
     if (Block::isSolid(blockID) && !Block::isSolid(neighbourBlockID)) {
         IntegrateFace(Block::GetFace(face, type, blockWorldPos), true, chunk);
         numFaces++;
-    } else if (Block::isSolid(blockID) && blockID != 0 && neighbourBlockID == 0) {
+    } else if (Block::isSolid(blockID) && neighbourBlockID == 0) {
         IntegrateFace(Block::GetFace(face, type, blockWorldPos), true, chunk);
         numFaces++;
     }
-    else if (!Block::isSolid(blockID) && blockID != 0 && neighbourBlockID == 0) {
+    else if (!Block::isSolid(blockID) && neighbourBlockID == 0) {
         IntegrateFace(Block::GetFace(face, type, blockWorldPos), false, chunk);
+        numFaces++;
+    }
+    else if(Block::isSolid(blockID) && !Block::isTransparent(blockID) && Block::isTransparent(neighbourBlockID)) {
+        IntegrateFace(Block::GetFace(face, type, blockWorldPos), true, chunk);
+        numFaces++;
+    }
+    else if(Block::isSolid(blockID) && Block::isTransparent(blockID) && !Block::isTransparent(neighbourBlockID)) {
+        IntegrateFace(Block::GetFace(face, type, blockWorldPos), true, chunk);
         numFaces++;
     }
 }
