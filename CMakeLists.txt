@@ -519,7 +519,9 @@ add_executable(CraftMine
         src/Graphics/UBO.cpp
         src/Graphics/UBO.h
         "src/World Gen/WorldThreading.cpp"
-        "src/World Gen/WorldThreading.h")
+        "src/World Gen/WorldThreading.h"
+        "src/World Gen/Frustum.cpp"
+        "src/World Gen/Frustum.h")
 
 target_link_libraries(CraftMine PRIVATE
         glfw

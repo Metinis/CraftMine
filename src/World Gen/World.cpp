@@ -5,6 +5,7 @@
 #include "ChunkGeneration.h"
 #include "Input/Input.h"
 #include "ChunkMeshGeneration.h"
+#include "Frustum.h"
 
 #include "Player/Player.h"
 
@@ -191,7 +192,7 @@ bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDire
 
     return false;
 }
-void World::PlaceBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirection) {
+void World::PlaceBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirection) const{
     glm::ivec3 localPos;
     glm::ivec3 lastEmptyPos;
     Chunk* currentChunk;
@@ -263,7 +264,7 @@ void World::sortChunks(const glm::vec3 pos){
     compareChunks._playerChunkPos = pos;
     std::sort(activeChunks.begin(), activeChunks.end(), compareChunks);
 }
-void World::sortTransparentFaces() {
+void World::sortTransparentFaces() const{
     if(player.chunkPosition.x > 0 && player.chunkPosition.x < World::SIZE && player.chunkPosition.y > 0 && player.chunkPosition.y < World::SIZE) {
         const Chunk *currentChunk = GetChunk(static_cast<int>(playerChunkPos.x),static_cast<int>(playerChunkPos.y));
         if(currentChunk != nullptr) {
@@ -309,7 +310,7 @@ void World::renderChunksToNormalShaders() const
                 chunk->transparentMesh != nullptr && chunk->mesh->loadedData &&
                 chunk->transparentMesh->loadedData &&
                 !chunk->toBeDeleted) {
-                    if(isChunkInFrustum(chunk->getChunkMinBounds(), chunk->getChunkMaxBounds())){
+                    if(Frustum::isChunkInFrustum(chunk->getChunkMinBounds(), chunk->getChunkMaxBounds(), frustum)){
                         Scene::renderMesh(*chunk->mesh, *scene.shader);
                         Scene::renderMesh(*chunk->transparentMesh, *scene.transparentShader);
                     }
@@ -325,7 +326,7 @@ void World::renderTransparentMeshes(Shader& shader) const{
             if (chunk->chunkHasMeshes && chunk->transparentMesh != nullptr &&
             chunk->transparentMesh->loadedData && !chunk->toBeDeleted) {
 
-                if(isChunkInFrustum(chunk->getChunkMinBounds(), chunk->getChunkMaxBounds()))
+                if(Frustum::isChunkInFrustum(chunk->getChunkMinBounds(), chunk->getChunkMaxBounds(), frustum))
                     Scene::renderMesh(*chunk->transparentMesh, shader);
             }
         }
@@ -338,7 +339,7 @@ void World::renderChunksToShader(Shader& shader) const
         if(chunk != nullptr) {
             if (chunk->chunkHasMeshes && chunk->mesh != nullptr && chunk->mesh->loadedData &&
             !chunk->toBeDeleted) {
-                if(isChunkInFrustum(chunk->getChunkMinBounds(), chunk->getChunkMaxBounds())) {
+                if(Frustum::isChunkInFrustum(chunk->getChunkMinBounds(), chunk->getChunkMaxBounds(), frustum)) {
                     Scene::renderMesh(*chunk->transparentMesh, shader);
 
                     Scene::renderMesh(*chunk->mesh, shader);
@@ -355,7 +356,7 @@ void World::renderChunksToShadow(Shader& shader) const {
             if (chunk->chunkHasMeshes && chunk->mesh != nullptr && chunk->mesh->loadedData &&
             !chunk->toBeDeleted) {
 
-                if(isChunkInFrustum(chunk->getChunkMinBounds(), chunk->getChunkMaxBounds())) {
+                if(Frustum::isChunkInFrustum(chunk->getChunkMinBounds(), chunk->getChunkMaxBounds(), frustum)) {
                     Scene::renderMesh(*chunk->transparentMesh, shader);
 
                     Scene::renderMesh(*chunk->mesh, shader);
@@ -367,7 +368,7 @@ void World::renderChunksToShadow(Shader& shader) const {
 
 void World::update()
 {
-    frustum = createFrustumFromCamera(camera, (float)(16.0f/9.0f), 65.0f, 0.1f, 1000.0f);
+    frustum = Frustum::createFrustumFromCamera(camera, (float)(16.0f/9.0f), 65.0f, 0.1f, 1000.0f);
 
     sortTransparentFaces();
 
@@ -423,7 +424,7 @@ void World::renderSolidMeshes(Shader &shader) const{
                 if (chunk->chunkHasMeshes && chunk->mesh != nullptr && chunk->mesh->loadedData && 
                     !chunk->toBeDeleted) {
 
-                    if(isChunkInFrustum(chunk->getChunkMinBounds(), chunk->getChunkMaxBounds()))
+                    if(Frustum::isChunkInFrustum(chunk->getChunkMinBounds(), chunk->getChunkMaxBounds(), frustum))
                         Scene::renderMesh(*chunk->mesh, shader);
                 }
         }
@@ -481,70 +482,5 @@ void World::saveBlocksToBeAddedToFile() {
     delete[] serializedData;
 }
 
-bool World::isChunkInFrustum(const glm::vec3& minCorner, const glm::vec3& maxCorner) const {
-    const std::array<glm::vec3, 8> corners = {
-        glm::vec3(minCorner.x, minCorner.y, minCorner.z), // Bottom-left-near
-        glm::vec3(maxCorner.x, minCorner.y, minCorner.z), // Bottom-right-near
-        glm::vec3(minCorner.x, maxCorner.y, minCorner.z), // Top-left-near
-        glm::vec3(maxCorner.x, maxCorner.y, minCorner.z), // Top-right-near
-        glm::vec3(minCorner.x, minCorner.y, maxCorner.z), // Bottom-left-far
-        glm::vec3(maxCorner.x, minCorner.y, maxCorner.z), // Bottom-right-far
-        glm::vec3(minCorner.x, maxCorner.y, maxCorner.z), // Top-left-far
-        glm::vec3(maxCorner.x, maxCorner.y, maxCorner.z)  // Top-right-far
-    };
 
-    // Check corners first
-    for (const auto& corner : corners) {
-        if (isPointInFrustum(corner, frustum)) {
-            return true; // Chunk is visible if any corner is inside
-        }
-    }
-
-
-    for (int x = static_cast<int>(minCorner.x); x <= static_cast<int>(maxCorner.x); x += 4) { // Adjust step size for accuracy
-        for (int y = static_cast<int>(minCorner.y); y <= static_cast<int>(maxCorner.y); y += 4) {
-            for (int z = static_cast<int>(minCorner.z); z <= static_cast<int>(maxCorner.z); z += 4) {
-                glm::vec3 point(x, y, z);
-                if (isPointInFrustum(point, frustum)) {
-                    return true; // At least one point inside the chunk is visible
-                }
-            }
-        }
-    }
-
-    return false; // No points are visible
-}
-bool World::isPointInFrustum(const glm::vec3& point, const Frustum& frustum) {
-
-    if (frustum.topFace.getSignedDistanceToPlane(point) > 0 &&
-        frustum.bottomFace.getSignedDistanceToPlane(point) > 0 &&
-        frustum.rightFace.getSignedDistanceToPlane(point) > 0 &&
-        frustum.leftFace.getSignedDistanceToPlane(point) > 0 &&
-        frustum.farFace.getSignedDistanceToPlane(point) > 0 &&
-        frustum.nearFace.getSignedDistanceToPlane(point) > 0) {
-        return true;
-    }
-
-    return false;}
-World::Frustum World::createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
-                                                                float zNear, float zFar)
-{
-    Frustum     frustum;
-    const float halfVSide = zFar * tanf(fovY * .5f);
-    const float halfHSide = halfVSide * aspect;
-    const glm::vec3 frontMultFar = zFar * cam.Front;
-
-    frustum.nearFace = { cam.position + zNear * cam.Front, cam.Front };
-    frustum.farFace = { cam.position + frontMultFar, -cam.Front };
-    frustum.rightFace = { cam.position,
-                            glm::cross(frontMultFar - cam.Right * halfHSide, cam.Up) };
-    frustum.leftFace = { cam.position,
-                            glm::cross(cam.Up,frontMultFar + cam.Right * halfHSide) };
-    frustum.topFace = { cam.position,
-                            glm::cross(cam.Right, frontMultFar - cam.Up * halfVSide) };
-    frustum.bottomFace = { cam.position,
-                            glm::cross(frontMultFar + cam.Up * halfVSide, cam.Right) };
-
-    return frustum;
-}
 

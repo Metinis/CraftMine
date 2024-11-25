@@ -1,17 +1,11 @@
 #pragma once
-#include <glad/glad.h>
 #include"Shader.h"
 #include<glm/vec3.hpp>
 #include"Input/Camera.h"
 #include "Scene.h"
 #include <thread>
-#include <future>
-#include <queue>
-#include <stack>
 #include <cmath>
-#include <iostream>
-#include <filesystem>
-#include <unordered_map>
+#include "Frustum.h"
 #include "WorldThreading.h"
 
 class Player;
@@ -29,8 +23,6 @@ class World
 private:
     glm::vec2 playerChunkPos{};
 
-
-
     struct CompareChunks {
         glm::ivec2 _playerChunkPos = glm::ivec2(50,50);
 
@@ -45,46 +37,10 @@ private:
 		}
 	};
 
-
-
-
-
-struct Plane
-{
-    glm::vec3 normal = { 0.f, 1.f, 0.f }; // unit vector
-	float     distance = 0.f;        // Distance with origin
-
-	Plane() = default;
-
-	Plane(const glm::vec3& p1, const glm::vec3& norm)
-		: normal(glm::normalize(norm)),
-		distance(glm::dot(normal, p1))
-	{}
-
-	float getSignedDistanceToPlane(const glm::vec3& point) const
-	{
-		return glm::dot(normal, point) - distance;
-	}  };
-struct Frustum
-{
-    Plane topFace;
-    Plane bottomFace;
-
-    Plane rightFace;
-    Plane leftFace;
-
-    Plane farFace;
-    Plane nearFace;
-};
-
-    bool isChunkInFrustum(const glm::vec3& minCorner, const glm::vec3& maxCorner) const;
-    static Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
-                                                                float zNear, float zFar);
-    static bool isPointInFrustum(const glm::vec3& point, const Frustum& frustum);
 	void LoadThreadDataToMain();
 
 public:
-Frustum frustum;
+	Frustum::FrustumPlanes frustum{};
     Player& player;
     Camera& camera;
     Scene& scene;
@@ -119,7 +75,7 @@ Frustum frustum;
 
     bool RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, glm::ivec3& result, Chunk*& currentChunk, glm::ivec3& lastEmptyPos) const;
 
-    void PlaceBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirection);
+    void PlaceBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirection) const;
 
     void BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirection) const;
 
@@ -139,7 +95,7 @@ Frustum frustum;
 
 	void renderChunksToShadow(Shader& shader) const;
 
-    void sortTransparentFaces();
+    void sortTransparentFaces() const;
 
     void sortChunks(glm::vec3 pos);
 
