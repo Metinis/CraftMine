@@ -517,7 +517,9 @@ add_executable(CraftMine
         src/Graphics/CursorBlock.cpp
         src/Graphics/CursorBlock.h
         src/Graphics/UBO.cpp
-        src/Graphics/UBO.h)
+        src/Graphics/UBO.h
+        "src/World Gen/WorldThreading.cpp"
+        "src/World Gen/WorldThreading.h")
 
 target_link_libraries(CraftMine PRIVATE
         glfw

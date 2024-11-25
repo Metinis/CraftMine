@@ -1,9 +1,6 @@
 #include "ChunkMeshGeneration.h"
 
 bool ChunkMeshGeneration::CheckFace(int x, int y, int z, bool isSolid, unsigned char originalID, Chunk &chunk) {
-    if (&chunk == nullptr) {
-        return false;
-    }
     if (x >= 0 && x < Chunk::SIZE && y <= Chunk::HEIGHT && y >= 0 && z >= 0 && z < Chunk::SIZE) {
         if (Block::hasCustomMesh(chunk.GetBlockID(glm::ivec3(x, y, z)))) {
             return true;
@@ -22,9 +19,6 @@ bool ChunkMeshGeneration::CheckFace(int x, int y, int z, bool isSolid, unsigned 
 }
 
 void ChunkMeshGeneration::GenFaces(Chunk &chunk) {
-    if (&chunk == nullptr) {
-        return;
-    }
     int numFaces = 0;
     int numTransparentFaces = 0;
     for (int x = 0; x < Chunk::SIZE; x++) {
@@ -48,9 +42,6 @@ void ChunkMeshGeneration::GenFaces(Chunk &chunk) {
 void ChunkMeshGeneration::AddFaces(int x, int y, int z, int &numFaces, bool isSolid, Chunk &chunk)
 //checks the isSolid faces and adds them
 {
-    if (&chunk == nullptr) {
-        return;
-    }
     unsigned char id = chunk.GetBlockID(glm::ivec3(x, y, z));
     BlockType type = BlockIDMap[id];
 
@@ -108,9 +99,6 @@ void ChunkMeshGeneration::AddFaces(int x, int y, int z, int &numFaces, bool isSo
 }
 
 void ChunkMeshGeneration::UpdateSide(CraftMine::Faces face, Chunk &chunk) {
-    if (&chunk == nullptr) {
-        return;
-    }
     Chunk *tempChunk = nullptr;
     int numFaces = 0;
     int numTransparentFaces = 0;
@@ -231,9 +219,7 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk &chunk) {
                 UpdateSide(CraftMine::RIGHT, *tempChunk);
                 tempChunk->inThread = false;
 
-                chunk.world.mutexChunksToLoadData.lock();
-                chunk.world.loadedChunks.push(tempChunk->chunkPosition);
-                chunk.world.mutexChunksToLoadData.unlock();
+                WorldThreading::addToLoadedChunks(tempChunk);
             }
         } else if (tempChunk != nullptr && tempChunk->generatedBlockData) {
             UpdateSide(CraftMine::LEFT, chunk);
@@ -253,9 +239,7 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk &chunk) {
                 UpdateSide(CraftMine::LEFT, *tempChunk);
                 tempChunk->inThread = false;
 
-                chunk.world.mutexChunksToLoadData.lock();
-                chunk.world.loadedChunks.push(tempChunk->chunkPosition);
-                chunk.world.mutexChunksToLoadData.unlock();
+                WorldThreading::addToLoadedChunks(tempChunk);
             }
         } else if (tempChunk != nullptr && tempChunk->generatedBlockData) {
             UpdateSide(CraftMine::RIGHT, chunk);
@@ -274,9 +258,7 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk &chunk) {
                 tempChunk->generatedBuffData = false;
                 UpdateSide(CraftMine::BACK, *tempChunk);
                 tempChunk->inThread = false;
-                chunk.world.mutexChunksToLoadData.lock();
-                chunk.world.loadedChunks.push(tempChunk->chunkPosition);
-                chunk.world.mutexChunksToLoadData.unlock();
+                WorldThreading::addToLoadedChunks(tempChunk);
             }
         } else if (tempChunk != nullptr && tempChunk->generatedBlockData) {
             UpdateSide(CraftMine::FRONT, chunk);
@@ -295,9 +277,7 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk &chunk) {
                 tempChunk->generatedBuffData = false;
                 UpdateSide(CraftMine::FRONT, *tempChunk);
                 tempChunk->inThread = false;
-                chunk.world.mutexChunksToLoadData.lock();
-                chunk.world.loadedChunks.push(tempChunk->chunkPosition);
-                chunk.world.mutexChunksToLoadData.unlock();
+                WorldThreading::addToLoadedChunks(tempChunk);
             }
         } else if (tempChunk != nullptr && tempChunk->generatedBlockData) {
             UpdateSide(CraftMine::BACK, chunk);

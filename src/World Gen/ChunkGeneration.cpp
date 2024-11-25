@@ -183,7 +183,7 @@ void ChunkGeneration::generateLeaves(int startX, int endX, int startZ, int endZ,
                         generatedBuffData) {
                         if (tempChunk.GetBlockID(glm::ivec3(tempChunkLocalX, y, tempChunkLocalZ)) == 0) {
                             tempChunk.SetBlock(glm::ivec3(tempChunkLocalX, y, tempChunkLocalZ), 8);
-                            chunk.world.chunksToLoadData.push_back(tempChunk.chunkPosition);
+                            WorldThreading::updateLoadData(&tempChunk);
                         }
                     } else if (&tempChunk != nullptr && tempChunk.generatedBlockData && !tempChunk.inThread && !
                                tempChunk.generatedBuffData) {
@@ -193,17 +193,14 @@ void ChunkGeneration::generateLeaves(int startX, int endX, int startZ, int endZ,
                     } else
                     // if(&tempChunk == nullptr || (&tempChunk != nullptr && (!tempChunk.inThread || (tempChunk.inThread && tempChunk.generatedBlockData))))
                     {
-                        chunk.world.mutexBlocksToBeAddedList.lock();
-                        chunk.world.blocksToBeAddedList.push_back(BlocksToBeAdded{
-                            glm::ivec2(tempChunkX, tempChunkZ), glm::ivec3(tempChunkLocalX, y, tempChunkLocalZ), 8
-                        });
-                        chunk.world.mutexBlocksToBeAddedList.unlock();
+                        WorldThreading::addToBlocksToBeAdded(glm::ivec2(tempChunkX, tempChunkZ), glm::ivec3(tempChunkLocalX, y, tempChunkLocalZ), 8);
                     }
                 }
             }
         }
     }
 }
+//WorldThreading::addToBlocksToBeAdded(glm::ivec2(tempChunkX, tempChunkZ), glm::ivec3(tempChunkLocalX, y, tempChunkLocalZ), 8);
 
 void ChunkGeneration::UpdateWater(Chunk &chunk, glm::ivec3 waterPos) {
     int left = waterPos.x - 1;

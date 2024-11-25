@@ -12,6 +12,7 @@
 #include <iostream>
 #include <filesystem>
 #include <unordered_map>
+#include "WorldThreading.h"
 
 class Player;
 
@@ -28,30 +29,26 @@ class World
 private:
     glm::vec2 playerChunkPos{};
 
-	std::mutex mutexChunksToGenerate;
+
 
     struct CompareChunks {
         glm::ivec2 _playerChunkPos = glm::ivec2(50,50);
 
-		bool operator()(glm::ivec2 chunkPos1, glm::ivec2 chunkPos2 ){
-			int x1 = _playerChunkPos.x - chunkPos1.x;
-			int y1 = _playerChunkPos.y - chunkPos1.y;
-			int x2 = _playerChunkPos.x - chunkPos2.x;
-			int y2 = _playerChunkPos.y - chunkPos2.y;
-			double distance1 = sqrt(x1 * x1 + y1 * y1);
-			double distance2 = sqrt(x2 * x2 + y2 * y2);
+		bool operator()(const glm::ivec2 chunkPos1, const glm::ivec2 chunkPos2 ) const{
+			const int x1 = _playerChunkPos.x - chunkPos1.x;
+			const int y1 = _playerChunkPos.y - chunkPos1.y;
+			const int x2 = _playerChunkPos.x - chunkPos2.x;
+			const int y2 = _playerChunkPos.y - chunkPos2.y;
+			const double distance1 = sqrt(x1 * x1 + y1 * y1);
+			const double distance2 = sqrt(x2 * x2 + y2 * y2);
 			return distance1 > distance2;
 		}
 	};
-    struct ChunkPosHash {
-        std::size_t operator()(const glm::ivec2& pos) const {
-            return std::hash<int>()(pos.x) ^ std::hash<int>()(pos.y);
-        }
-    };
 
-    bool CheckForBlocksToBeAdded(Chunk* chunk);
-	void GenerateChunkBuffers(std::vector<Chunk*>& addedChunks);
-    void LoadThreadDataToMain();
+
+
+
+
 struct Plane
 {
     glm::vec3 normal = { 0.f, 1.f, 0.f }; // unit vector
@@ -80,10 +77,11 @@ struct Frustum
     Plane nearFace;
 };
 
-    bool isChunkInFrustum(const Chunk& chunk, const glm::vec3& minCorner, const glm::vec3& maxCorner);
-    Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
+    bool isChunkInFrustum(const glm::vec3& minCorner, const glm::vec3& maxCorner) const;
+    static Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
                                                                 float zNear, float zFar);
     static bool isPointInFrustum(const glm::vec3& point, const Frustum& frustum);
+	void LoadThreadDataToMain();
 
 public:
 Frustum frustum;
@@ -91,53 +89,45 @@ Frustum frustum;
     Camera& camera;
     Scene& scene;
 
-	static const int SIZE = 1000;
+	static constexpr int SIZE = 1000;
 	static int viewDistance;
-	std::thread chunkThread;
-	std::thread worldGenThread;
 
-	std::vector<glm::ivec2> chunksToGenerate;  //used for world gen for chunks that haven't been generated yet -> generates blocks
-	std::vector<glm::ivec2> chunksToLoadData; //used to load faces
-	std::queue<glm::ivec2> loadedChunks;	 //sent to main thread to be assigned buffers
-	std::vector<glm::ivec2> chunksToDelete;
+
+
 	std::vector<glm::ivec2> activeChunks;	 //chunks that are currently being rendered, any loaded chunks need to be sent from thread to here
     std::vector<glm::ivec2> chunksToSortFaces;
 
-    std::vector<BlocksToBeAdded> blocksToBeAddedList;
+
 	std::vector<BlocksToBeAdded> liquidToBeChecked;
 
-    std::mutex mutexBlocksToBeAddedList;
-    std::mutex mutexChunksToLoadData;
-    std::mutex mutexLoadedChunks;
-	std::mutex mutexLiquidBlocks;
+
 
     Chunk* chunks[SIZE*SIZE] = {nullptr};
 
 	explicit World(Camera& _camera, Scene& scene, Player& player);
 
-    void GenerateChunkThread();
 
-    void GenerateWorldThread();
+	void UpdateViewDistance(const glm::ivec2& cameraChunkPos);
 
-	void UpdateViewDistance(glm::ivec2& cameraPos);
+	void GenerateChunkBuffers(std::vector<Chunk*>& addedChunks);
 
-	Chunk* GetChunk(int x, int y);
+	Chunk* GetChunk(int x, int y) const;
 
-    Chunk* GetChunk(glm::ivec2 pos);
+    Chunk* GetChunk(glm::ivec2 pos) const;
 
-    bool RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, glm::ivec3& result, Chunk*& chunk);
+    bool RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, glm::ivec3& result, Chunk*& currentChunk) const;
 
-    bool RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, glm::ivec3& result, Chunk*& currentChunk, glm::ivec3& lastEmptyPos);
+    bool RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, glm::ivec3& result, Chunk*& currentChunk, glm::ivec3& lastEmptyPos) const;
 
     void PlaceBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirection);
 
-    void BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirection);
+    void BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirection) const;
 
-    void renderChunksToNormalShaders();
+    void renderChunksToNormalShaders() const;
 
-    void renderSolidMeshes(Shader& shader);
+    void renderSolidMeshes(Shader& shader) const;
 
-    void renderTransparentMeshes(Shader& shader);
+    void renderTransparentMeshes(Shader& shader) const;
 
 	void update();
 
@@ -145,17 +135,19 @@ Frustum frustum;
 
     void sortChunks();
 
-    void renderChunksToShader(Shader& shader);
+    void renderChunksToShader(Shader& shader) const;
 
-	void renderChunksToShadow(Shader& shader);
+	void renderChunksToShadow(Shader& shader) const;
 
     void sortTransparentFaces();
 
     void sortChunks(glm::vec3 pos);
 
-    void saveBlocksToBeAddedToFile();
+    static void saveBlocksToBeAddedToFile();
 
-    void loadDataFromFile();
+    static void loadDataFromFile();
+
+	void deleteChunk(glm::ivec2 pos);
 };
 
 
