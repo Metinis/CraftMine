@@ -42,10 +42,10 @@ void ChunkMeshGeneration::GenFaces(Chunk &chunk) {
 void ChunkMeshGeneration::AddFaces(int x, int y, int z, int &numFaces, bool isSolid, Chunk &chunk)
 //checks the isSolid faces and adds them
 {
-    unsigned char id = chunk.GetBlockID(glm::ivec3(x, y, z));
-    BlockType type = BlockIDMap[id];
+    const unsigned char id = chunk.GetBlockID(glm::ivec3(x, y, z));
+    const BlockType type = BlockIDMap[id];
 
-    glm::vec3 blockWorldPos = glm::ivec3(x + chunk.chunkPosition.x * Chunk::SIZE, y,
+    const glm::vec3 blockWorldPos = glm::ivec3(x + chunk.chunkPosition.x * Chunk::SIZE, y,
                                         z + chunk.chunkPosition.y * Chunk::SIZE);
 
     if (Block::hasCustomMesh(id)) {
@@ -60,17 +60,17 @@ void ChunkMeshGeneration::AddFaces(int x, int y, int z, int &numFaces, bool isSo
         return;
     }
 
-    int leftXoffset = x - 1;
+    const int leftXoffset = x - 1;
 
-    int rightXoffset = x + 1;
+    const int rightXoffset = x + 1;
 
-    int frontZoffset = z + 1;
+    const int frontZoffset = z + 1;
 
-    int backZoffset = z - 1;
+    const int backZoffset = z - 1;
 
-    int topYoffset = y + 1;
+    const int topYoffset = y + 1;
 
-    int bottomYoffset = y - 1;
+    const int bottomYoffset = y - 1;
 
     if (CheckFace(leftXoffset, y, z, isSolid, id, chunk)) {
         IntegrateFace(Block::GetFace(CraftMine::Faces::LEFT, type, blockWorldPos), isSolid, chunk);
@@ -88,7 +88,8 @@ void ChunkMeshGeneration::AddFaces(int x, int y, int z, int &numFaces, bool isSo
         IntegrateFace(Block::GetFace(CraftMine::Faces::BACK, type, blockWorldPos), isSolid, chunk);
         numFaces++;
     }
-    if (CheckFace(x, topYoffset, z, isSolid, id, chunk)) {
+    //Seperate check for liquid tops
+    if ((CheckFace(x, topYoffset, z, isSolid, id, chunk)) || (!isSolid && Block::isSolid(chunk.GetBlockID(glm::ivec3(x, topYoffset, z))))) {
         IntegrateFace(Block::GetFace(CraftMine::Faces::TOP, type, blockWorldPos), isSolid, chunk);
         numFaces++;
     }
