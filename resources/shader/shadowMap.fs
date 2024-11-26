@@ -2,7 +2,7 @@
 
 layout(location = 0) out float FragDepth;
 
-uniform float alphaThreshold = 0.2;
+uniform float alphaThreshold = 0.1;
 uniform sampler2D ourTexture;
 in vec2 FragTexCoord;
 

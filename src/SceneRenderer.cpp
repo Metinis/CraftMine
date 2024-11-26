@@ -1,4 +1,4 @@
-#include "Scene.h"
+#include "SceneRenderer.h"
 
 #include "Chunk.h"
 #include "UBO.h"
@@ -74,7 +74,7 @@ void Scene::initialiseWorldShaders(){
     shader->setInt("depthMap", 3);
     shader->setVec3("lightColor", glm::vec3(1.0f, 1.0f,1.0f));
     transparentShader->use();
-     transparentShader->setFloat("farPlane", cameraFarPlane);
+    transparentShader->setFloat("farPlane", cameraFarPlane);
     for (size_t i = 0; i < shadowCascadeLevels.size(); ++i)
     {
         transparentShader->setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", shadowCascadeLevels[i]);
@@ -124,6 +124,7 @@ void Scene::initialiseShadowMap(){
 }
 void Scene::updateShadowProjection(){
     //lightPos = glm::vec3(glm::round(camera.position.x + sunXOffset), Chunk::HEIGHT + 100, glm::round(camera.position.z + sunZOffset));
+    lightDir = glm::normalize(glm::vec3(0.5f, 1.0f, -0.5f));
 
     if(std::abs(sunXOffset) > 400 && minBrightness > 0.3f){
         minBrightness -= 0.00001;
@@ -139,7 +140,7 @@ void Scene::updateShadowProjection(){
     }
 
 
-    std::vector<glm::mat4> lightSpaceMats = getLightSpaceMatrices();
+    const std::vector<glm::mat4> lightSpaceMats = getLightSpaceMatrices();
     ubo->bind();
     for (size_t i = 0; i < lightSpaceMats.size(); ++i) {
         glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(glm::mat4x4), sizeof(glm::mat4x4), &lightSpaceMats[i]);
@@ -163,7 +164,7 @@ void Scene::updateShadowProjection(){
     float y = radius * cos(phi);
     float z = radius * sin(phi) * sin(theta);
 
-    glm::vec3 lightDir = glm::vec3(x, y, z);
+    //glm::vec3 lightDir = glm::vec3(x, y, z);
 
     glm::vec3 normalizedLightDir = glm::normalize(lightDir);
     shader->setVec3("lightDir", normalizedLightDir);
@@ -177,7 +178,7 @@ void Scene::updateShadowProjection(){
     transparentShader->setVec3("lightDir", normalizedLightDir);
 
     //transparentShader->use();
-    //transparentShader->setMat4("lightSpaceMatrix", lightProjection);
+    transparentShader->setMat4("lightSpaceMatrix", lightSpaceMats[0]);
     //transparentShader->setVec3("lightPos", lightPos);
     //transparentShader->setVec3("lightColor", glm::vec3(1.0f, 1.0f,1.0f));
     //transparentShader->setFloat("minBrightness", minBrightness);
@@ -245,13 +246,13 @@ void Scene::updateShaders(){
         transparentShader->setVec3("fogColor", fogColor);
     }
     transparentShader->use();
-    transparentShader->setVec3("cameraPos", position);
     view = camera.GetViewMatrix();
     outlineShader->use();
     outlineShader->setMat4("view", view);
     transparentShader->use();
     transparentShader->setMat4("view", view);
     transparentShader->setFloat("time",  currentTime);
+    transparentShader->setVec3("cameraPos", position);
     geometryShader->use();
     geometryShader->setMat4("view", view);
 }
@@ -347,7 +348,9 @@ void Scene::renderToShadowMap(World& world) const{
 
     depthFBO->bindForRender();
     glClear(GL_DEPTH_BUFFER_BIT);
+    glCullFace(GL_BACK);
     world.renderChunksToShadow(*shadowMapShader);
+    glCullFace(GL_FRONT);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -369,6 +372,7 @@ void Scene::renderWorld(World& world){
     worldTexture->Bind();
     geometryShader->use();
     world.renderSolidMeshes(*geometryShader);
+    //world.renderChunksToShader(*geometryShader);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -404,13 +408,13 @@ void Scene::renderWorld(World& world){
     glActiveTexture(GL_TEXTURE0);
     worldTexture->Bind();
 
-    glDepthMask(GL_FALSE);
+    //glDepthMask(GL_FALSE);
     glDisable(GL_CULL_FACE);
 
 
     world.renderTransparentMeshes(*transparentShader);
     glEnable(GL_CULL_FACE);
-    glDepthMask(GL_TRUE);
+    //glDepthMask(GL_TRUE);
     renderBlockOutline(world);
     //render toolbar to world frame buffer for post processing if inventory open
     if(inventoryOpen){
@@ -428,7 +432,7 @@ void Scene::renderWorld(World& world){
     }
     FBO::Unbind();
 }
-void Scene::renderGUI(){
+void Scene::renderGUI() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDisable(GL_DEPTH_TEST);
     //render cross hair/ui
@@ -466,8 +470,8 @@ void Scene::renderQuad(){
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     fbo->bindForRead();
     frameShader->use();
-    GLint textureLocation = glGetUniformLocation(frameShader->ID, "sampledTexture");
-    glUniform1i(textureLocation, 0);
+    //GLint textureLocation = glGetUniformLocation(frameShader->ID, "sampledTexture");
+    //glUniform1i(textureLocation, 0);
     //before rendering check if player is in water and apply water effect to frame shader, same for inventory
     frameShader->setBool("inWater", player.isHeadInWater());
     frameShader->setBool("inInventory", inventoryOpen);
@@ -611,8 +615,8 @@ glm::mat4 Scene::getLightSpaceMatrix(const float nearPlane, const float farPlane
     }
     center /= corners.size();
 
-    glm::vec3 lightDir = glm::normalize(glm::vec3(5.0f, 200, 20.0f));
-    //glm::vec3 lightDir = glm::normalize(glm::vec3(-0.5f, -1.0f, -0.5f));  // A sample directional vector for sunlight
+    //glm::vec3 lightDir = glm::normalize(glm::vec3(5.0f, 200, 20.0f));
+    //glm::vec3 lightDir = glm::normalize(glm::vec3(-0.5f, 1.0f, -0.5f));  // A sample directional vector for sunlight
     //glm::vec3 lightDir = center - lightPos;
     const auto lightView = glm::lookAt(center + lightDir, center, glm::vec3(0.0f, 1.0f, 0.0f));
 

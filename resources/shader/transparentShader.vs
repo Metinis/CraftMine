@@ -5,13 +5,15 @@ layout (location = 2) in vec2 aTexCoord;
 in float aBrightness;
 
 out vec2 TexCoord;
-out vec3 ourColor;
 out float brightness;
 out vec3 FragPos;
 out vec3 Normal;
-out vec3 ViewDir;
-out vec3 LightDir;
-out vec4 ClipSpacePos;
+out vec4 FragPosLightSpace[16];
+
+layout(std140) uniform LightSpaceMatrices
+{
+    mat4 lightSpaceMatrices[16]; // UBO for 16 light space matrices
+};
 
 uniform mat4 model;
 uniform mat4 view;
@@ -29,13 +31,14 @@ void main()
     gl_Position = projection * view * model * vec4(animatedPos, 1.0);
 
     // Normal correction for animated positions
-    Normal = normalize(transpose(inverse(mat3(model))) * aNormal);
+    //Normal = normalize(transpose(inverse(mat3(model))) * aNormal);
     //Normal = normalize(transpose(inverse(mat3(model))) * vec3(0.0, 1.0, 0.0));
-    //Normal = aNormal;
+    Normal = aNormal;
 
-    ourColor = vec3(0.0, 0.3, 0.8); // Water blue tint
     TexCoord = aTexCoord;
     brightness = aBrightness;
     FragPos = vec3(model * vec4(animatedPos, 1.0));
+    //FragPos = aPos;
+
 }
 

@@ -54,6 +54,7 @@ float inShadow(vec3 fragPosWorldSpace)
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     // transform to [0,1] range
     projCoords = projCoords * 0.5 + 0.5;
+
     // get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
     if(currentDepth > 1.0){
@@ -63,7 +64,7 @@ float inShadow(vec3 fragPosWorldSpace)
     // check whether current frag pos is in shadow
     vec3 normal = normalize(Normal);
     //vec3 lightDir = normalize(lightPos - FragPos);
-    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+    float bias = max(-0.01 * (1.0 - dot(normal, lightDir)), -0.001);
     const float biasModifier = 0.5f;
     if (layer == cascadeCount)
         {
@@ -114,7 +115,8 @@ void main()
 
     //result
 
-    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse)) * sampledColor.rgb * maxBrightnessFactor * brightness;
+    //vec3 lighting = (ambient + (1.0 - shadow) * (diffuse)) * sampledColor.rgb * brightness;
+    vec3 lighting = (ambient + 1 * (diffuse)) * sampledColor.rgb * brightness;
 
     vec3 finalColor = mix(lighting, fogColor, fogFactor);
 

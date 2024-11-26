@@ -20,6 +20,8 @@ public:
 
     static bool shouldGenFlower();
 
+    static void addWaterBorderingChunk();
+
     static void UpdateWater(Chunk &chunk, glm::ivec3 waterPos);
 };
 

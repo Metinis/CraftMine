@@ -311,8 +311,9 @@ void World::renderChunksToNormalShaders() const
                 chunk->transparentMesh->loadedData &&
                 !chunk->toBeDeleted) {
                     if(Frustum::isChunkInFrustum(chunk->getChunkMinBounds(), chunk->getChunkMaxBounds(), frustum)){
-                        Scene::renderMesh(*chunk->mesh, *scene.shader);
+
                         Scene::renderMesh(*chunk->transparentMesh, *scene.transparentShader);
+                        Scene::renderMesh(*chunk->mesh, *scene.shader);
                     }
                 }
             }
@@ -340,8 +341,10 @@ void World::renderChunksToShader(Shader& shader) const
             if (chunk->chunkHasMeshes && chunk->mesh != nullptr && chunk->mesh->loadedData &&
             !chunk->toBeDeleted) {
                 if(Frustum::isChunkInFrustum(chunk->getChunkMinBounds(), chunk->getChunkMaxBounds(), frustum)) {
-                    Scene::renderMesh(*chunk->transparentMesh, shader);
 
+
+
+                    Scene::renderMesh(*chunk->transparentMesh, shader);
                     Scene::renderMesh(*chunk->mesh, shader);
                 }
 
@@ -357,9 +360,16 @@ void World::renderChunksToShadow(Shader& shader) const {
             !chunk->toBeDeleted) {
 
                 if(Frustum::isChunkInFrustum(chunk->getChunkMinBounds(), chunk->getChunkMaxBounds(), frustum)) {
-                    Scene::renderMesh(*chunk->transparentMesh, shader);
+
+                    //
+
+                    //
 
                     Scene::renderMesh(*chunk->mesh, shader);
+                    glCullFace(GL_FRONT);
+                    Scene::renderMesh(*chunk->transparentMesh, shader);
+                    glCullFace(GL_BACK);
+
                 }
             }
         }

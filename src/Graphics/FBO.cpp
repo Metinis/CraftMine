@@ -4,7 +4,7 @@
 
 #include "FBO.h"
 
-#include "Scene.h"
+#include "SceneRenderer.h"
 
 FBO::FBO(int _width, int _height){
     width = _width;

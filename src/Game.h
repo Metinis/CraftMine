@@ -17,7 +17,7 @@
 #include "Input/Input.h"
 #include "Player/Player.h"
 #include "ScreenQuad.h"
-#include "Scene.h"
+#include "SceneRenderer.h"
 
 class Scene;
 

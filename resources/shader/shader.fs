@@ -65,7 +65,7 @@ float inShadow(vec3 fragPosWorldSpace)
     // check whether current frag pos is in shadow
     vec3 normal = normalize(Normal);
 
-    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+    float bias = max(-0.00025 * (1.0 - dot(normal, lightDir)), -0.000025);
     const float biasModifier = 0.5f;
     if (layer == cascadeCount)
         {
@@ -108,6 +108,7 @@ void main()
 
     vec4 sampledColor = texture(gAlbedoSpec, TexCoord);
 
+
     float shadow = inShadow(FragPos);
 
     //fog
@@ -120,7 +121,7 @@ void main()
 
     //result
 
-    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse)) * sampledColor.rgb * maxBrightnessFactor;
+    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse)) * sampledColor.rgb;
 
     vec3 finalColor = mix(lighting, fogColor, fogFactor);
 

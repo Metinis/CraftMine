@@ -507,9 +507,9 @@ add_executable(CraftMine
         src/Graphics/ScreenQuad.cpp
         src/Graphics/ScreenQuad.h
         src/Graphics/ScreenQuad.h
-        src/Scene.cpp
-        src/Scene.h
-        src/Scene.h
+        src/SceneRenderer.cpp
+        src/SceneRenderer.h
+        src/SceneRenderer.h
         src/Player/Toolbar.cpp
         src/Player/Toolbar.h
         src/Player/Inventory.cpp
@@ -521,7 +521,8 @@ add_executable(CraftMine
         "src/World Gen/WorldThreading.cpp"
         "src/World Gen/WorldThreading.h"
         "src/World Gen/Frustum.cpp"
-        "src/World Gen/Frustum.h")
+        "src/World Gen/Frustum.h"
+)
 
 target_link_libraries(CraftMine PRIVATE
         glfw

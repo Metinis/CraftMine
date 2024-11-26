@@ -2,7 +2,7 @@
 #include"Shader.h"
 #include<glm/vec3.hpp>
 #include"Input/Camera.h"
-#include "Scene.h"
+#include "SceneRenderer.h"
 #include <thread>
 #include <cmath>
 #include "Frustum.h"
