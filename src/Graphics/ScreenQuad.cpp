@@ -5,7 +5,7 @@
 #include "ScreenQuad.h"
 
 ScreenQuad::ScreenQuad(){
-    std::vector<float> rectangleVertices =
+    const std::vector<float> rectangleVertices =
             {
                     // Coords               // texCoords
                     1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
@@ -25,7 +25,7 @@ ScreenQuad::ScreenQuad(){
     quadVAO->Unbind();
     quadVBO->Unbind();
 }
-void ScreenQuad::renderQuad(Shader& shader){
+void ScreenQuad::renderQuad(Shader& shader) const {
     shader.use();
     quadVAO->Bind();
     glDrawArrays(GL_TRIANGLES, 0, 6);

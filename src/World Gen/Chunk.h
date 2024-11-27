@@ -1,20 +1,13 @@
 #pragma once
 #include <glad/glad.h>
-#include <glm/vec3.hpp>
 #include <vector>
 #include <array>
-#include <map>
 #include "Block.h"
 #include "Shader.h"
 #include "VBO.h"
-#include "VAO.h"
-#include "IBO.h"
-#include "Texture.h"
-#include <algorithm>
 #include "Mesh.h"
 #include "FastNoise/FastNoise.h"
 #include <random>
-#include "BlockData.h"
 #include <mutex>
 #include "zlib.h"
 
@@ -63,8 +56,8 @@ private:
 	static constexpr int CHUNKS_PER_REGION = 32;
 
 public:
-	static const int SIZE = 24;
-	static const int HEIGHT = 192;
+	static constexpr int SIZE = 24;
+	static constexpr int HEIGHT = 192;
 
     ChunkData chunkData;
     ChunkBools chunkBools;
@@ -85,12 +78,11 @@ public:
     World& world;
 
 	unsigned char blockIDs[SIZE * HEIGHT * SIZE] = {0}; //initialise all to empty block
-	glm::ivec2 chunkPosition;
+	glm::ivec2 chunkPosition{};
 
-	Chunk(glm::ivec2 Position, World& world);
+	Chunk(glm::ivec2 Position, World& _world);
 	~Chunk();
-    unsigned char GetBlockID(glm::ivec3 pos);
-	unsigned char GetBlockNeighbourY(glm::ivec2 pos, Faces face);
+    unsigned char GetBlockID(glm::ivec3 pos) const;
     void SetBlock(glm::ivec3 pos, unsigned char id);
 	void GenBlocks();
 	void ClearVertexData();
@@ -102,10 +94,8 @@ public:
 	void LoadBufferData();
     void saveData();
     bool loadData();
-	//void RenderChunk();
-    //void RenderShadowChunk(Shader& _shader);
-	std::string getRegionFilename(int regionX, int regionY);
-	int getChunkOffset(int chunkX, int chunkY);
+	static std::string getRegionFilename(int regionX, int regionY);
+	static int getChunkOffset(int chunkX, int chunkY);
 
 	void Delete();
     struct CompareFaces;

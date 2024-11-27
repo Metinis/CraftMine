@@ -185,7 +185,7 @@ void WorldThreading::updateLoadData(Chunk* currentChunk) {
         chunksToLoadData.push_back(currentChunk->chunkPosition);
     }
 }
-std::vector<Chunk*> WorldThreading::GetAddedThreadChunks(World& world)
+std::vector<Chunk*> WorldThreading::GetAddedThreadChunks(const World& world)
 {
     std::vector<Chunk*> addedChunks;
     while(!loadedChunks.empty())

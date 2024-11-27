@@ -1,12 +1,8 @@
 #include <unordered_set>
 #include "Chunk.h"
 #include "World.h"
-
 #include "ChunkGeneration.h"
-#include "Input/Input.h"
-#include "ChunkMeshGeneration.h"
 #include "Frustum.h"
-
 #include "Player/Player.h"
 
 
@@ -166,14 +162,14 @@ bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDire
         globalPos.y = static_cast<int>(std::round(rayOrigin.y + rayDirection.y * step));
         globalPos.z = static_cast<int>(std::round(rayOrigin.z + rayDirection.z * step));
 
-        Chunk* tempCurrentChunk = GetChunk(globalPos.x / Chunk::SIZE, globalPos.z / Chunk::SIZE);
+        const Chunk* tempCurrentChunk = GetChunk(globalPos.x / Chunk::SIZE, globalPos.z / Chunk::SIZE);
         if (tempCurrentChunk!= nullptr && tempCurrentChunk->generatedBlockData) {
 
             glm::ivec3 localPos;
             localPos.x = globalPos.x - tempCurrentChunk->chunkPosition.x * Chunk::SIZE;
             localPos.y = globalPos.y;
             localPos.z = globalPos.z - tempCurrentChunk->chunkPosition.y * Chunk::SIZE;
-            unsigned char currentBlockID = tempCurrentChunk->GetBlockID(localPos);
+            const unsigned char currentBlockID = tempCurrentChunk->GetBlockID(localPos);
             if (Block::isSolid(currentBlockID)){
                 result = localPos;
                 return true;
@@ -218,18 +214,16 @@ void World::BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
     {
         currentChunk->SetBlock(localPos, 0);
         WorldThreading::updateLoadData(currentChunk);
-        int tempChunkX = currentChunk->chunkPosition.x;
-        int tempChunkZ = currentChunk->chunkPosition.y;
         Chunk* tempChunk1 = nullptr;
         Chunk* tempChunk2 = nullptr;
         if(localPos.x == 0 || localPos.x == Chunk::SIZE-1)
         {
-            tempChunkX = (localPos.x == 0) ? currentChunk->chunkPosition.x-1 : currentChunk->chunkPosition.x+1;
+            const int tempChunkX = (localPos.x == 0) ? currentChunk->chunkPosition.x-1 : currentChunk->chunkPosition.x+1;
             tempChunk1 = GetChunk(tempChunkX, currentChunk->chunkPosition.y);
         }
         if(localPos.z == 0 || localPos.z == Chunk::SIZE-1)
         {
-            tempChunkZ = (localPos.z == 0) ? currentChunk->chunkPosition.y-1 : currentChunk->chunkPosition.y+1;
+            const int tempChunkZ = (localPos.z == 0) ? currentChunk->chunkPosition.y-1 : currentChunk->chunkPosition.y+1;
             tempChunk2 = GetChunk(currentChunk->chunkPosition.x, tempChunkZ);
         }
         if(tempChunk1 != nullptr && tempChunk1->generatedBlockData)
@@ -406,7 +400,7 @@ void World::updateTick() {
         }
         liquidToBeChecked.clear();
 
-        for(BlocksToBeAdded block : thisLiquidToBeChecked) {
+        for(const BlocksToBeAdded block : thisLiquidToBeChecked) {
             Chunk* currentChunk = GetChunk(block.chunkPosition);
             if(currentChunk == nullptr) {
                 continue;
@@ -443,13 +437,13 @@ void World::renderSolidMeshes(Shader &shader) const{
 void World::loadDataFromFile() {
 
     std::lock_guard<std::mutex> lock(WorldThreading::mutexBlocksToBeAddedList);
-    std::string filename = "../save/blocksToBeAdded.bin";
+    const std::string filename = "../save/blocksToBeAdded.bin";
     std::ifstream infile(filename, std::ios::binary | std::ios::ate);
     if (!infile) {
         return;
     }
 
-    std::streamsize dataSize = infile.tellg();
+    const std::streamsize dataSize = infile.tellg();
     infile.seekg(0, std::ios::beg);
 
     auto* serializedData = new unsigned char[dataSize];

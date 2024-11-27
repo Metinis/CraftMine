@@ -7,10 +7,10 @@
 Input::Input(Camera& _camera, World& _world, Scene& _scene, Player& _player, Game& _game) : lastX(1280 / 2.0f), lastY(720 / 2.0f),
                                                                                             camera(_camera), world(_world), scene(_scene), player(_player), game(_game), firstMouse(true) {}
 
-void Input::processMouse(GLFWwindow *window, double xposIn, double yposIn) {
+void Input::processMouse(GLFWwindow *window, const double xposIn, const double yposIn) {
     if(isCursorLocked){
-        auto xPos = static_cast<float>(xposIn);
-        auto yPos = static_cast<float>(yposIn);
+        const auto xPos = static_cast<float>(xposIn);
+        const auto yPos = static_cast<float>(yposIn);
 
         if (firstMouse) {
             lastX = xPos;
@@ -18,8 +18,8 @@ void Input::processMouse(GLFWwindow *window, double xposIn, double yposIn) {
             firstMouse = false;
         }
 
-        float xOffset = xPos - lastX;
-        float yOffset = lastY - yPos; // reversed since y-coordinates go from bottom to top
+        const float xOffset = xPos - lastX;
+        const float yOffset = lastY - yPos; // reversed since y-coordinates go from bottom to top
 
         lastX = xPos;
         lastY = yPos;
@@ -31,26 +31,26 @@ void Input::processMouse(GLFWwindow *window, double xposIn, double yposIn) {
         scene.cursorBlock->setMousePosCoordinates(xposIn, yposIn);
     }
 }
-void Input::mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+void Input::mouse_callback(GLFWwindow* window, const double xposIn, const double yposIn)
 {
-    Input* mouseInput = static_cast<Input*>(glfwGetWindowUserPointer(window));
+    auto* mouseInput = static_cast<Input*>(glfwGetWindowUserPointer(window));
 
     mouseInput->processMouse(window, xposIn, yposIn);
 }
-void Input::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+void Input::mouse_button_callback(GLFWwindow* window, const int button, const int action, const int mods)
 {
-    Input* mouseInput = static_cast<Input*>(glfwGetWindowUserPointer(window));
+    auto* mouseInput = static_cast<Input*>(glfwGetWindowUserPointer(window));
 
     mouseInput->mouseButtonCallback(window, button, action, mods);
 }
-void Input::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void Input::scroll_callback(GLFWwindow* window, const double xoffset, const double yoffset)
 {
-    Input* mouseInput = static_cast<Input*>(glfwGetWindowUserPointer(window));
+    const auto* mouseInput = static_cast<Input*>(glfwGetWindowUserPointer(window));
 
     mouseInput->scrollCallback(window, xoffset, yoffset);
 }
 
-void Input::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+void Input::mouseButtonCallback(GLFWwindow* window, const int button, const int action, int mods) {
     if(button == GLFW_MOUSE_BUTTON_LEFT && !scene.inventoryOpen){
         if(action == GLFW_PRESS && isCursorLocked)
         {
@@ -61,7 +61,7 @@ void Input::mouseButtonCallback(GLFWwindow* window, int button, int action, int 
             isCursorLocked = true;
         }
     }
-    else if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && scene.inventoryOpen){
+    else if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && scene.inventoryOpen == true){
         double cursorX;
         double cursorY;
         int width;
@@ -69,7 +69,8 @@ void Input::mouseButtonCallback(GLFWwindow* window, int button, int action, int 
         glfwGetWindowSize(window, &width, &height);
         glfwGetCursorPos(window, &cursorX, &cursorY);
         if((cursorY / height) < 0.77f){
-            unsigned char blockID = scene.player.inventory->determineSlotBlockID(cursorX / width, cursorY / height);
+            const unsigned char blockID = scene.player.inventory->determineSlotBlockID(static_cast<float>(cursorX) / static_cast<float>(width),
+                static_cast<float>(cursorY) / static_cast<float>(height));
             if(scene.cursorBlock->currentBlock == 0) {
                 scene.cursorBlock->currentBlock = 0;
                 scene.cursorBlock->loadBlockRendering(blockID);
@@ -83,9 +84,10 @@ void Input::mouseButtonCallback(GLFWwindow* window, int button, int action, int 
         }
         else //if mouse under inventory
         {
-            int toolbarIndex = scene.player.inventory->determineToolbarIndex(cursorX / width, cursorY / height);
+            const int toolbarIndex = scene.player.inventory->determineToolbarIndex(static_cast<float>(cursorX) / static_cast<float>(width),
+                static_cast<float>(cursorY) / static_cast<float>(height));
             if(toolbarIndex != -1){
-                unsigned char blockID = scene.player.toolbar->getID(toolbarIndex);
+                const unsigned char blockID = scene.player.toolbar->getID(toolbarIndex);
                 scene.player.toolbar->setID(scene.cursorBlock->currentBlock, toolbarIndex);
                 scene.player.toolbar->loadItemsRendering();
                 player.setBlockID(scene.player.toolbar->getID(scene.player.toolbar->slot));
@@ -112,7 +114,7 @@ void Input::mouseButtonCallback(GLFWwindow* window, int button, int action, int 
         }
     }
 }
-void Input::scrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
+void Input::scrollCallback(GLFWwindow *window, double xoffset, const double yoffset) const{
     if(isCursorLocked) {
         if (yoffset > 0) {
             scene.player.toolbar->changeSlotNegative();
@@ -123,15 +125,15 @@ void Input::scrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
         }
     }
 }
-void Input::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void Input::key_callback(GLFWwindow* window, const int key, int scancode, const int action, int mods)
 {
-    Input* input = static_cast<Input*>(glfwGetWindowUserPointer(window));
+    auto* input = static_cast<Input*>(glfwGetWindowUserPointer(window));
     input->processKey(key, action, window);
 
 }
-void Input::processKey(int key, int action, GLFWwindow* window) {
+void Input::processKey(const int key, const int action, GLFWwindow* window) {
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
-        double currentTime = glfwGetTime();
+        const double currentTime = glfwGetTime();
         if(currentTime - lastPressTime <= timeFrame)
             player.updateFlying();
 
@@ -231,14 +233,12 @@ void Input::processKey(int key, int action, GLFWwindow* window) {
             world.UpdateViewDistance(player.chunkPosition);
             scene.loadShader(*scene.shader, World::viewDistance);
             scene.loadShader(*scene.transparentShader, World::viewDistance);
-            scene.updateShadowResolution();
         }
         else {
             World::viewDistance += 2;
             world.UpdateViewDistance(player.chunkPosition);
             scene.loadShader(*scene.shader, World::viewDistance);
             scene.loadShader(*scene.transparentShader, World::viewDistance);
-            scene.updateShadowResolution();
         }
 
     }
@@ -268,7 +268,7 @@ void Input::processKey(int key, int action, GLFWwindow* window) {
         }
     }
 }
-void Input::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, bool* _isFullscreen, Player& player, World& world, float& deltaTime, Scene& scene)
+void Input::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, bool* _isFullscreen, Player& player, World& world, const float& deltaTime, Scene& scene)
 {
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)

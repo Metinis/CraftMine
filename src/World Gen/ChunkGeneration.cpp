@@ -14,23 +14,23 @@ void ChunkGeneration::GenBlocks(Chunk &chunk) {
     noise3D.SetSeed(123);
     noise3D.SetFrequency(0.045f);
 
-    int seaLevel = Chunk::HEIGHT / 2;
+    constexpr int seaLevel = Chunk::HEIGHT / 2;
 
     for (int y = Chunk::HEIGHT - 1; y >= 0; y--) {
         for (int z = 0; z < Chunk::SIZE; z++) {
             for (int x = 0; x < Chunk::SIZE; x++) {
-                float worldX = static_cast<float>(x) + (Chunk::SIZE * static_cast<float>(chunk.chunkPosition.x));
-                float worldZ = static_cast<float>(z) + (Chunk::SIZE * static_cast<float>(chunk.chunkPosition.y));
-                float worldY = static_cast<float>(y);
-                float noiseValue = noise3D.GetNoise(worldX, worldY, worldZ);
+                const float worldX = static_cast<float>(x) + (Chunk::SIZE * static_cast<float>(chunk.chunkPosition.x));
+                const float worldZ = static_cast<float>(z) + (Chunk::SIZE * static_cast<float>(chunk.chunkPosition.y));
+                const auto worldY = static_cast<float>(y);
+                const float noiseValue = noise3D.GetNoise(worldX, worldY, worldZ);
 
                 // Carve out caves based on noise value threshold
 
-                int columnHeight = (int) heightMap[x + Chunk::SIZE * z] + (seaLevel - 30);
+                const int columnHeight = static_cast<int>(heightMap[x + Chunk::SIZE * z] + (seaLevel - 30));
                 //add sealevel so noise generates above it
 
-                unsigned char id = 0;
                 if (chunk.GetBlockID(glm::ivec3(x, y, z)) == 0) {
+                    unsigned char id = 0;
                     //so that trees/structures don't get overwritten
 
                     if (y >= columnHeight && y + 2 < seaLevel) {
@@ -106,7 +106,7 @@ bool ChunkGeneration::shouldGenFlower() {
     std::uniform_int_distribution<> dis(1, 100);
 
     // Generate a random number
-    int randomNumber = dis(rng);
+    const int randomNumber = dis(rng);
 
     // Check if the random number falls within the desired range
     return randomNumber == 1;
@@ -118,37 +118,37 @@ void ChunkGeneration::genTree(glm::ivec3 treeCoord, Chunk &chunk) //starts from 
     std::mt19937 rng(rd());
 
     // Define the range
-    int lower_bound = 4;
-    int upper_bound = 5;
+    constexpr int lower_bound = 4;
+    constexpr int upper_bound = 5;
 
     // Create a uniform integer distribution
     std::uniform_int_distribution<int> distribution(lower_bound, upper_bound);
 
     // Generate a random number between 5 and 7
-    int treeHeight = distribution(rng);
-    int leafHeight = 2;
+    const int treeHeight = distribution(rng);
+    constexpr int leafHeight = 2;
 
     for (int y = treeCoord.y; y < (treeHeight + treeCoord.y + leafHeight) && y < Chunk::HEIGHT; y++) {
-        int localY = y - treeCoord.y;
+        const int localY = y - treeCoord.y;
         //set the tree
         if (y < treeHeight + treeCoord.y)
             chunk.SetBlock(glm::ivec3(treeCoord.x, y, treeCoord.z), 7); //7 is wood
 
         if (localY >= treeHeight - 2 && localY < treeHeight) {
             //bottom layer
-            int startX = treeCoord.x - 2;
-            int endX = treeCoord.x + 3;
-            int startZ = treeCoord.z - 2;
-            int endZ = treeCoord.z + 3;
+            const int startX = treeCoord.x - 2;
+            const int endX = treeCoord.x + 3;
+            const int startZ = treeCoord.z - 2;
+            const int endZ = treeCoord.z + 3;
 
             generateLeaves(startX, endX, startZ, endZ, y, chunk);
         }
         //top layer
         else if (localY >= treeHeight && localY < (treeHeight + leafHeight)) {
-            int startX = treeCoord.x - 1;
-            int endX = treeCoord.x + 2;
-            int startZ = treeCoord.z - 1;
-            int endZ = treeCoord.z + 2;
+            const int startX = treeCoord.x - 1;
+            const int endX = treeCoord.x + 2;
+            const int startZ = treeCoord.z - 1;
+            const int endZ = treeCoord.z + 2;
 
             generateLeaves(startX, endX, startZ, endZ, y, chunk);
         }
@@ -166,35 +166,35 @@ void ChunkGeneration::generateLeaves(int startX, int endX, int startZ, int endZ,
                 //find the chunk x and z are in, check if it is not null, convert x and y to that local chunk coordinates and set blocks and update buffers
                 //Add to loaded chunks for updating
 
-                int tempChunkX = (x < 0)
+                const int tempChunkX = (x < 0)
                                      ? (chunk.chunkPosition.x - 1)
                                      : (x > Chunk::SIZE - 1)
                                            ? (chunk.chunkPosition.x + 1)
                                            : chunk.chunkPosition.x;
 
-                int tempChunkZ = (z < 0)
+                const int tempChunkZ = (z < 0)
                                      ? (chunk.chunkPosition.y - 1)
                                      : (z > Chunk::SIZE - 1)
                                            ? (chunk.chunkPosition.y + 1)
                                            : chunk.chunkPosition.y;
 
                 if (tempChunkX >= 0 && tempChunkX < World::SIZE && tempChunkZ >= 0 && tempChunkZ < World::SIZE) {
-                    Chunk &tempChunk = *chunk.world.GetChunk(tempChunkX, tempChunkZ);
+                    Chunk* tempChunk = chunk.world.GetChunk(tempChunkX, tempChunkZ);
 
-                    int tempChunkLocalX = (x < 0) ? (Chunk::SIZE + x) : (x > Chunk::SIZE - 1) ? (x - Chunk::SIZE) : x;
+                    const int tempChunkLocalX = (x < 0) ? (Chunk::SIZE + x) : (x > Chunk::SIZE - 1) ? (x - Chunk::SIZE) : x;
 
-                    int tempChunkLocalZ = (z < 0) ? (Chunk::SIZE + z) : (z > Chunk::SIZE - 1) ? (z - Chunk::SIZE) : z;
+                    const int tempChunkLocalZ = (z < 0) ? (Chunk::SIZE + z) : (z > Chunk::SIZE - 1) ? (z - Chunk::SIZE) : z;
 
-                    if (&tempChunk != nullptr && tempChunk.generatedBlockData && !tempChunk.inThread && tempChunk.
+                    if (tempChunk != nullptr && tempChunk->generatedBlockData && !tempChunk->inThread && tempChunk->
                         generatedBuffData) {
-                        if (tempChunk.GetBlockID(glm::ivec3(tempChunkLocalX, y, tempChunkLocalZ)) == 0) {
-                            tempChunk.SetBlock(glm::ivec3(tempChunkLocalX, y, tempChunkLocalZ), 8);
-                            WorldThreading::updateLoadData(&tempChunk);
+                        if (tempChunk->GetBlockID(glm::ivec3(tempChunkLocalX, y, tempChunkLocalZ)) == 0) {
+                            tempChunk->SetBlock(glm::ivec3(tempChunkLocalX, y, tempChunkLocalZ), 8);
+                            WorldThreading::updateLoadData(tempChunk);
                         }
-                    } else if (&tempChunk != nullptr && tempChunk.generatedBlockData && !tempChunk.inThread && !
-                               tempChunk.generatedBuffData) {
-                        if (tempChunk.GetBlockID(glm::ivec3(tempChunkLocalX, y, tempChunkLocalZ)) == 0) {
-                            tempChunk.SetBlock(glm::ivec3(tempChunkLocalX, y, tempChunkLocalZ), 8);
+                    } else if (tempChunk != nullptr && tempChunk->generatedBlockData && !tempChunk->inThread && !
+                               tempChunk->generatedBuffData) {
+                        if (tempChunk->GetBlockID(glm::ivec3(tempChunkLocalX, y, tempChunkLocalZ)) == 0) {
+                            tempChunk->SetBlock(glm::ivec3(tempChunkLocalX, y, tempChunkLocalZ), 8);
                         }
                     } else
                     // if(&tempChunk == nullptr || (&tempChunk != nullptr && (!tempChunk.inThread || (tempChunk.inThread && tempChunk.generatedBlockData))))
@@ -261,27 +261,27 @@ void ChunkGeneration::addWaterBorderingChunk() {
 //WorldThreading::addToBlocksToBeAdded(glm::ivec2(tempChunkX, tempChunkZ), glm::ivec3(tempChunkLocalX, y, tempChunkLocalZ), 8);
 
 void ChunkGeneration::UpdateWater(Chunk &chunk, glm::ivec3 waterPos) {
-    int left = waterPos.x - 1;
-    int right = waterPos.x + 1;
-    int front = waterPos.z - 1;
-    int back = waterPos.z + 1;
-    int down = waterPos.y - 1;
+    const int left = waterPos.x - 1;
+    const int right = waterPos.x + 1;
+    const int front = waterPos.z - 1;
+    const int back = waterPos.z + 1;
+    const int down = waterPos.y - 1;
 
     if (left >= 0) {
         if (chunk.GetBlockID(glm::ivec3(left, waterPos.y, waterPos.z)) == 0) {
-            BlocksToBeAdded block = BlocksToBeAdded(chunk.chunkPosition, glm::ivec3(left, waterPos.y, waterPos.z), 5);
+            auto block = BlocksToBeAdded(chunk.chunkPosition, glm::ivec3(left, waterPos.y, waterPos.z), 5);
             if (std::find(chunk.world.liquidToBeChecked.begin(), chunk.world.liquidToBeChecked.end(), block) == chunk.
                 world.liquidToBeChecked.end())
                 chunk.world.liquidToBeChecked.push_back(block);
         }
     } else {
-        glm::ivec3 blockPosInBorderingChunk = glm::ivec3(Chunk::SIZE - 1, waterPos.y, waterPos.z);
-        glm::ivec2 borderingChunkPosition = glm::ivec2(chunk.chunkPosition.x - 1, chunk.chunkPosition.y);
+        auto blockPosInBorderingChunk = glm::ivec3(Chunk::SIZE - 1, waterPos.y, waterPos.z);
+        auto borderingChunkPosition = glm::ivec2(chunk.chunkPosition.x - 1, chunk.chunkPosition.y);
         //if(chunk.world.GetChunk(borderingChunkPosition)) {
             //if(!chunk.world.GetChunk(borderingChunkPosition)->generatedBlockData) {
                 if (chunk.world.GetChunk(borderingChunkPosition)->GetBlockID(blockPosInBorderingChunk) == 0) {
 
-                    BlocksToBeAdded block = BlocksToBeAdded(borderingChunkPosition, blockPosInBorderingChunk, 5);
+                    auto block = BlocksToBeAdded(borderingChunkPosition, blockPosInBorderingChunk, 5);
 
                     if (std::find(chunk.world.liquidToBeChecked.begin(), chunk.world.liquidToBeChecked.end(), block) == chunk.
                         world.liquidToBeChecked.end())
@@ -295,19 +295,19 @@ void ChunkGeneration::UpdateWater(Chunk &chunk, glm::ivec3 waterPos) {
     }
     if (right < Chunk::SIZE) {
         if (chunk.GetBlockID(glm::ivec3(right, waterPos.y, waterPos.z)) == 0) {
-            BlocksToBeAdded block = BlocksToBeAdded(chunk.chunkPosition, glm::ivec3(right, waterPos.y, waterPos.z), 5);
+            auto block = BlocksToBeAdded(chunk.chunkPosition, glm::ivec3(right, waterPos.y, waterPos.z), 5);
             if (std::find(chunk.world.liquidToBeChecked.begin(), chunk.world.liquidToBeChecked.end(), block) == chunk.
                 world.liquidToBeChecked.end())
                 chunk.world.liquidToBeChecked.push_back(block);
         }
     } else {
-        glm::ivec3 blockPosInBorderingChunk = glm::ivec3(0, waterPos.y, waterPos.z);
-        glm::ivec2 borderingChunkPosition = glm::ivec2(chunk.chunkPosition.x + 1, chunk.chunkPosition.y);
+        auto blockPosInBorderingChunk = glm::ivec3(0, waterPos.y, waterPos.z);
+        auto borderingChunkPosition = glm::ivec2(chunk.chunkPosition.x + 1, chunk.chunkPosition.y);
 
         //if(chunk.world.GetChunk(borderingChunkPosition)) {
             //if (chunk.world.GetChunk(borderingChunkPosition)->GetBlockID(blockPosInBorderingChunk) == 0) {
                 if(!chunk.world.GetChunk(borderingChunkPosition)->generatedBlockData) {
-                    BlocksToBeAdded block = BlocksToBeAdded(borderingChunkPosition, blockPosInBorderingChunk, 5);
+                    auto block = BlocksToBeAdded(borderingChunkPosition, blockPosInBorderingChunk, 5);
 
                     if (std::find(chunk.world.liquidToBeChecked.begin(), chunk.world.liquidToBeChecked.end(), block) == chunk.
                         world.liquidToBeChecked.end())
@@ -318,18 +318,18 @@ void ChunkGeneration::UpdateWater(Chunk &chunk, glm::ivec3 waterPos) {
     }
     if (front >= 0) {
         if (chunk.GetBlockID(glm::ivec3(waterPos.x, waterPos.y, front)) == 0) {
-            BlocksToBeAdded block = BlocksToBeAdded(chunk.chunkPosition, glm::ivec3(waterPos.x, waterPos.y, front), 5);
+            auto block = BlocksToBeAdded(chunk.chunkPosition, glm::ivec3(waterPos.x, waterPos.y, front), 5);
             if (std::find(chunk.world.liquidToBeChecked.begin(), chunk.world.liquidToBeChecked.end(), block) == chunk.
                 world.liquidToBeChecked.end())
                 chunk.world.liquidToBeChecked.push_back(block);
         }
     } else {
-        glm::ivec3 blockPosInBorderingChunk = glm::ivec3(waterPos.x, waterPos.y, Chunk::SIZE - 1);
-        glm::ivec2 borderingChunkPosition = glm::ivec2(chunk.chunkPosition.x, chunk.chunkPosition.y - 1);
+        auto blockPosInBorderingChunk = glm::ivec3(waterPos.x, waterPos.y, Chunk::SIZE - 1);
+        auto borderingChunkPosition = glm::ivec2(chunk.chunkPosition.x, chunk.chunkPosition.y - 1);
 
         if (chunk.world.GetChunk(borderingChunkPosition)->GetBlockID(blockPosInBorderingChunk) == 0) {
 
-            BlocksToBeAdded block = BlocksToBeAdded(borderingChunkPosition, blockPosInBorderingChunk, 5);
+            auto block = BlocksToBeAdded(borderingChunkPosition, blockPosInBorderingChunk, 5);
 
             if (std::find(chunk.world.liquidToBeChecked.begin(), chunk.world.liquidToBeChecked.end(), block) == chunk.
                 world.liquidToBeChecked.end())
@@ -338,7 +338,7 @@ void ChunkGeneration::UpdateWater(Chunk &chunk, glm::ivec3 waterPos) {
     }
     if (back < Chunk::SIZE) {
         if (chunk.GetBlockID(glm::ivec3(waterPos.x, waterPos.y, back)) == 0) {
-            BlocksToBeAdded block = BlocksToBeAdded(chunk.chunkPosition, glm::ivec3(waterPos.x, waterPos.y, back), 5);
+            auto block = BlocksToBeAdded(chunk.chunkPosition, glm::ivec3(waterPos.x, waterPos.y, back), 5);
             if (std::find(chunk.world.liquidToBeChecked.begin(), chunk.world.liquidToBeChecked.end(), block) == chunk.
                 world.liquidToBeChecked.end()) {
                 chunk.world.liquidToBeChecked.push_back(block);
@@ -347,14 +347,14 @@ void ChunkGeneration::UpdateWater(Chunk &chunk, glm::ivec3 waterPos) {
             }
         }
     } else {
-        glm::ivec3 blockPosInBorderingChunk = glm::ivec3(waterPos.x, waterPos.y, 0);
-        glm::ivec2 borderingChunkPosition = glm::ivec2(chunk.chunkPosition.x, chunk.chunkPosition.y + 1);
+        auto blockPosInBorderingChunk = glm::ivec3(waterPos.x, waterPos.y, 0);
+        auto borderingChunkPosition = glm::ivec2(chunk.chunkPosition.x, chunk.chunkPosition.y + 1);
 
         //if(chunk.world.GetChunk(borderingChunkPosition)) {
             //if(!chunk.world.GetChunk(borderingChunkPosition)->generatedBlockData) {
                 if (chunk.world.GetChunk(borderingChunkPosition)->GetBlockID(blockPosInBorderingChunk) == 0) {
 
-                    BlocksToBeAdded block = BlocksToBeAdded(borderingChunkPosition, blockPosInBorderingChunk, 5);
+                    auto block = BlocksToBeAdded(borderingChunkPosition, blockPosInBorderingChunk, 5);
 
                     if (std::find(chunk.world.liquidToBeChecked.begin(), chunk.world.liquidToBeChecked.end(), block) == chunk.
                         world.liquidToBeChecked.end())
@@ -365,7 +365,7 @@ void ChunkGeneration::UpdateWater(Chunk &chunk, glm::ivec3 waterPos) {
     }
     if (down >= 0) {
         if (chunk.GetBlockID(glm::ivec3(waterPos.x, down, waterPos.z)) == 0) {
-            BlocksToBeAdded block = BlocksToBeAdded(chunk.chunkPosition, glm::ivec3(waterPos.x, down, waterPos.z), 5);
+            auto block = BlocksToBeAdded(chunk.chunkPosition, glm::ivec3(waterPos.x, down, waterPos.z), 5);
             if (std::find(chunk.world.liquidToBeChecked.begin(), chunk.world.liquidToBeChecked.end(), block) == chunk.
                 world.liquidToBeChecked.end())
                 chunk.world.liquidToBeChecked.push_back(block);
@@ -377,7 +377,7 @@ float lerp(float a, float b, float t) {
     return a + t * (b - a);
 }
 
-void ChunkGeneration::GenChunk(float *heightMap, Chunk &chunk) {
+void ChunkGeneration::GenChunk(float *heightMap, const Chunk &chunk) {
     FastNoise noise;
 
     // Set noise parameters for more varied terrain
@@ -386,28 +386,19 @@ void ChunkGeneration::GenChunk(float *heightMap, Chunk &chunk) {
     noise.SetFractalOctaves(16); // Increase octaves for more detail
     noise.SetSeed(123); // Example seed
     noise.SetFrequency(0.00835f); // Higher frequency for more hills/valleys
-    float scaleFactor = 0.65f;
-    /*FastNoise cliffNoise; // Additional noise for cliffs
-    cliffNoise.SetNoiseType(FastNoise::PerlinFractal); // Use Perlin noise to create sharp cliffs
-    cliffNoise.SetFractalType(FastNoise::FBM); // FBM for multi-layered noise
-    cliffNoise.SetFractalOctaves(3); // Increase octaves for more detail
-    cliffNoise.SetSeed(321); // Different seed for cliff variation
-    cliffNoise.SetFrequency(0.002f); // Higher frequency for cliff-like formations*/
+
 
 
     for (int x = 0; x < Chunk::SIZE; x++) {
         for (int z = 0; z < Chunk::SIZE; z++) {
-            float worldX = static_cast<float>(x) + (Chunk::SIZE * static_cast<float>(chunk.chunkPosition.x));
-            float worldZ = static_cast<float>(z) + (Chunk::SIZE * static_cast<float>(chunk.chunkPosition.y));
+            constexpr float scaleFactor = 0.65f;
 
-            float noiseValue = noise.GetNoise(worldX, worldZ);
+            const float worldX = static_cast<float>(x) + (Chunk::SIZE * static_cast<float>(chunk.chunkPosition.x));
+            const float worldZ = static_cast<float>(z) + (Chunk::SIZE * static_cast<float>(chunk.chunkPosition.y));
 
-            int terrainHeight = static_cast<int>((noiseValue + 1.0f) * 50.0f * scaleFactor);
-            // Cliff variation from 3D noise
-            /*float cliffVariation = cliffNoise.GetNoise(worldX, worldZ) * 100.0f; // Scale cliff influence
-            if(cliffVariation > 0.5f) {
-                terrainHeight+=cliffVariation;
-            }*/
+            const float noiseValue = noise.GetNoise(worldX, worldZ);
+
+            const float terrainHeight = (noiseValue + 1.0f) * 50.0f * scaleFactor;
 
             heightMap[x + Chunk::SIZE * z] = terrainHeight;
         }

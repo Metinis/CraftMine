@@ -6,7 +6,7 @@
 
 #include "SceneRenderer.h"
 
-FBO::FBO(int _width, int _height){
+FBO::FBO(const int _width, const int _height){
     width = _width;
     height = _height;
 
@@ -28,7 +28,7 @@ void FBO::initialiseTextureFBO() {
 
 
     /*Check for incomplete framebuffer errors*/
-    auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    const auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
         std::cout << "Framebuffer error: " << fboStatus << std::endl;
 }
@@ -42,7 +42,7 @@ void FBO::initialiseDepthFBO(){
 
 
     /*Check for incomplete framebuffer errors*/
-    auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    const auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
         std::cout << "Framebuffer error: " << fboStatus << std::endl;
 }
@@ -50,7 +50,6 @@ void FBO::setDimensionTexture(int _width, int _height){
     width = _width;
     height = _height;
     initialiseTexture();
-    //initialiseDepthMap();
     initialiseRBO();
 }
 void FBO::setDimensionDepthMap(int _width, int _height){
@@ -61,7 +60,7 @@ void FBO::setDimensionDepthMap(int _width, int _height){
 void FBO::initialiseTexture() const{
 
     glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, static_cast<int>(width), static_cast<int>(height), 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // Prevents edge bleeding
@@ -74,9 +73,9 @@ void FBO::initialiseDepthMap() const{
     GL_TEXTURE_2D_ARRAY,
     0,
     GL_DEPTH_COMPONENT32F,
-    width,
-    height,
-    int(Scene::shadowCascadeLevels.size()) + 1,
+    static_cast<int>(width),
+    static_cast<int>(height),
+    static_cast<int>(Scene::shadowCascadeLevels.size()) + 1,
     0,
     GL_DEPTH_COMPONENT,
     GL_FLOAT,
@@ -86,7 +85,7 @@ void FBO::initialiseDepthMap() const{
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     // Prevents darkness outside the frustrum
-    float clampColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    constexpr float clampColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
     glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, clampColor);
     glBindFramebuffer(GL_FRAMEBUFFER, ID);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texture, 0);
@@ -98,7 +97,7 @@ void FBO::initialiseDepthMap() const{
 }
 void FBO::initialiseRBO() const{
     glBindRenderbuffer(GL_RENDERBUFFER, RBO);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, static_cast<int>(width), static_cast<int>(height));
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, RBO);
     // finally check if framebuffer is complete
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -106,7 +105,7 @@ void FBO::initialiseRBO() const{
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 void FBO::bindForRender() const {
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, static_cast<int>(width), static_cast<int>(height));
     glBindFramebuffer(GL_FRAMEBUFFER, ID);
 
 }
@@ -116,19 +115,12 @@ void FBO::bindFBOTextureLayer(const int layer) const {
 }
 void FBO::bindForRead() const {
 
-    //glViewport(0, 0, width, height);
-
     glBindTexture(GL_TEXTURE_2D, texture);
 }
 
 void FBO::bindForReadDepth() const {
 
-    //glViewport(0, 0, width, height);
-
     glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
-}
-void FBO::bindRBO() const {
-
 }
 
 void FBO::Unbind(){
@@ -139,7 +131,7 @@ void FBO::UnbindDepth() {
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
-void FBO::Delete()
+void FBO::Delete() const
 {
     glDeleteBuffers(1, &ID);
     glDeleteBuffers(1, &texture);

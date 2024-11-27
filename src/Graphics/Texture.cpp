@@ -32,16 +32,15 @@ void Texture::setTexture(const char* fileLocation)
 
     stbi_image_free(data);
 }
-void Texture::Bind()
+void Texture::Bind() const
 {
-    //glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, ID);
 }
 void Texture::Unbind()
 {
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
-void Texture::Delete()
+void Texture::Delete() const
 {
 	glDeleteTextures(1, &ID);
 }

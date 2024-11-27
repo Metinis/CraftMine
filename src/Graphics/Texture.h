@@ -8,19 +8,19 @@
 class Texture
 {
 	public:
-	unsigned int ID;
+	unsigned int ID{};
 
-	Texture(const char* fileLocation);
+	explicit Texture(const char* fileLocation);
 
     void setTexture(const char* fileLocation);
-	void Bind();
-	void Unbind();
-	void Delete();
+	void Bind() const;
+	static void Unbind();
+	void Delete() const;
 
 	private:
 	unsigned char* data;
-	int width;
-	int height;
-	int nrChannels;
+	int width{};
+	int height{};
+	int nrChannels{};
 };
 

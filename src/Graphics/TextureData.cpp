@@ -573,11 +573,12 @@ const std::map<CraftMine::BlockType, std::map<CraftMine::Faces, int>> TextureDat
 };
 std::vector<glm::vec2> TextureData::GetUVs(int atlasID)
 {
-	int row = (atlasID / 16) + 1;
-    float left = (float)atlasID / 16.0f;
-    float right = ((float)atlasID + 1.0f) / 16.0f;
-    float top = row / 16.0f;
-    float bottom = (row - 1.0f) / 16.0f;
+ const int row = (atlasID / 16) + 1;
+ const float left = static_cast<float>(atlasID) / 16.0f;
+ const float right = (static_cast<float>(atlasID) + 1.0f) / 16.0f;
+ const float top = static_cast<float>(row) / 16.0f;
+ const float bottom = (static_cast<float>(row) - 1.0f) / 16.0f;
+
 	std::vector<glm::vec2> uvs = {
 		glm::vec2(left, bottom),  //bottom left
 		glm::vec2(right, bottom),   //bottom right

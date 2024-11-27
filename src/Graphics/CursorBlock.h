@@ -29,23 +29,23 @@ private:
 
     std::vector<float> itemBrightness;
 
-    int screenWidth;
-    int screenHeight;
+    int screenWidth{};
+    int screenHeight{};
 
-    double mouseX;
-    double mouseY;
+    double mouseX{};
+    double mouseY{};
 
 public:
-    void setScreenDimensions(int& width, int& height);
+    void setScreenDimensions(const int& width, const int& height);
     void loadBlockRendering(unsigned char blockID);
-    void renderBlockOnCursor();
+    void renderBlockOnCursor() const;
     void deleteBuffers();
 
     unsigned char currentBlock;
 
     void deleteBufferData();
 
-    void setMousePosCoordinates(double &x, double &y);
+    void setMousePosCoordinates(const double &x, const double &y);
 };
 
 

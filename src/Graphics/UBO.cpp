@@ -16,6 +16,6 @@ UBO::UBO() {
 void UBO::bind() const {
     glBindBuffer(GL_UNIFORM_BUFFER, matricesUBO);
 }
-void UBO::unbind() const {
+void UBO::unbind() {
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }

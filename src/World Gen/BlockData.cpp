@@ -32,10 +32,10 @@ namespace CraftMine {
 					 glm::vec3(0.5f, -0.5f, -0.5f), // bottomright vert
 					 glm::vec3(-0.5f, -0.5f, -0.5f)}} // bottomleft vert
 	};
-    glm::vec3 rotateVertex(const glm::vec3& vertex, float angle) {
-        glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::vec4 tempVertex = rotationMatrix * glm::vec4(vertex, 1.0f);
-        return glm::vec3(tempVertex);
+    glm::vec3 rotateVertex(const glm::vec3& vertex, const float angle) {
+        const glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
+        const glm::vec4 tempVertex = rotationMatrix * glm::vec4(vertex, 1.0f);
+        return tempVertex;
     }
 
 // Raw vertex data for the flower with rotated faces

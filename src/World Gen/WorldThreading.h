@@ -50,7 +50,7 @@ public:
 
     static void updateLoadData(Chunk* currentChunk);
 
-    static std::vector<Chunk*> GetAddedThreadChunks(World& world);
+    static std::vector<Chunk*> GetAddedThreadChunks(const World& world);
 
     static void addToLoadedChunks(const Chunk* currentChunk);
 

@@ -22,7 +22,7 @@ private:
     std::vector<glm::vec2> UVCoords;
 public:
     Crosshair();
-    void renderCrosshair();
+    void renderCrosshair() const;
 };
 
 

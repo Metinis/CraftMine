@@ -14,7 +14,7 @@ private:
     static bool shouldGenTree();
     static void genTree(glm::ivec3 treeCoord, Chunk& chunk);
     static void generateLeaves(int startX, int endX, int startZ, int endZ, int y, Chunk& chunk);
-    static void GenChunk(float* heightMap, Chunk& chunk);
+    static void GenChunk(float* heightMap, const Chunk& chunk);
 public:
     static void GenBlocks(Chunk& chunk);
 

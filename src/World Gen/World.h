@@ -48,20 +48,14 @@ public:
 	static constexpr int SIZE = 1000;
 	static int viewDistance;
 
-
-
 	std::vector<glm::ivec2> activeChunks;	 //chunks that are currently being rendered, any loaded chunks need to be sent from thread to here
     std::vector<glm::ivec2> chunksToSortFaces;
 
-
 	std::vector<BlocksToBeAdded> liquidToBeChecked;
-
-
 
     Chunk* chunks[SIZE*SIZE] = {nullptr};
 
-	explicit World(Camera& _camera, Scene& scene, Player& player);
-
+	explicit World(Camera& _camera, Scene& _scene, Player& _player);
 
 	void UpdateViewDistance(const glm::ivec2& cameraChunkPos);
 

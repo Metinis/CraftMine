@@ -1,12 +1,14 @@
 #include "Mesh.h"
-void Mesh::setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec3> _normals, std::vector<glm::vec2> _UVs, std::vector<GLuint> _indices, std::vector<float> _brightnessFloats)
+
+#include <utility>
+void Mesh::setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec3> _normals, std::vector<glm::vec2> UVs_, std::vector<GLuint> _indices, std::vector<float> _brightnessFloats)
 {
     std::lock_guard<std::mutex> lock(meshMutex);
-    vertices = _vertices;
-    normals = _normals;
-    UVs = _UVs;
-    indices = _indices;
-    brightnessFloats = _brightnessFloats;
+    vertices = std::move(_vertices);
+    normals = std::move(_normals);
+    UVs = std::move(UVs_);
+    indices = std::move(_indices);
+    brightnessFloats = std::move(_brightnessFloats);
 }
 bool Mesh::clearData()
 {

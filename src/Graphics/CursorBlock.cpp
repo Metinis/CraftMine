@@ -10,9 +10,9 @@ void CursorBlock::loadBlockRendering(unsigned char blockID) {
     deleteBufferData();
     currentBlock = blockID;
     if (currentBlock != 0) {
-        glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 view = glm::mat4(1.0f);
-        glm::vec3 blockCenter = glm::vec3(0, 0, 0);
+        auto model = glm::mat4(1.0f);
+        auto view = glm::mat4(1.0f);
+        auto blockCenter = glm::vec3(0, 0, 0);
 
         glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.04f, 0.065f, 0.04f));
         glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(25.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -67,7 +67,7 @@ void CursorBlock::loadBlockRendering(unsigned char blockID) {
         for (glm::vec3 vert: verts) {
                 glm::mat4 translationToOrigin = glm::translate(glm::mat4(1.0f), -blockCenter);
                 glm::mat4 translationBack = glm::translate(glm::mat4(1.0f), blockCenter);
-                glm::vec3 rotatedVert = glm::vec3(
+                auto rotatedVert = glm::vec3(
                     scale * translationBack * rotationX * rotationY * translationToOrigin * glm::vec4(vert, 1.0f));
                 itemVertices.push_back(rotatedVert);
             }
@@ -77,9 +77,6 @@ void CursorBlock::loadBlockRendering(unsigned char blockID) {
 
         itemShader = new Shader("../resources/shader/itemUI.vs", "../resources/shader/itemUI.fs");
         itemShader->use();
-
-
-        //view = glm::rotate(view, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)); // Rotate around z-axis
         // Get the primary monitor
         GLFWmonitor *primaryMonitor = glfwGetPrimaryMonitor();
 
@@ -87,9 +84,8 @@ void CursorBlock::loadBlockRendering(unsigned char blockID) {
         const GLFWvidmode *mode = glfwGetVideoMode(primaryMonitor);
 
         // Calculate the aspect ratio
-        float aspectRatio = (float) mode->width / (float) mode->height;
+        float aspectRatio = static_cast<float>(mode->width) / static_cast<float>(mode->height);
         glm::mat4 proj = glm::perspective(glm::radians(65.0f), aspectRatio, 0.1f, 100.0f);
-        //model = glm::scale(model, glm::vec3(1.0f));
         itemShader->setMat4("model", model);
         itemShader->setMat4("view", view);
         itemShader->setMat4("projection", proj);
@@ -117,15 +113,14 @@ void CursorBlock::loadBlockRendering(unsigned char blockID) {
     }
 }
 
-void CursorBlock::renderBlockOnCursor() {
+void CursorBlock::renderBlockOnCursor() const{
     // Get mouse position
-    float xNDC = 2.0f * static_cast<float>(mouseX) / screenWidth - 1.0f;
-    float yNDC = 1.0f - 2.0f * static_cast<float>(mouseY) / screenHeight;
+    const float xNDC = 2.0f * static_cast<float>(mouseX) / static_cast<float>(screenWidth) - 1.0f;
+    const float yNDC = 1.0f - 2.0f * static_cast<float>(mouseY) / static_cast<float>(screenHeight);
 
     // Calculate the model matrix
-    glm::mat4 model = glm::mat4(1.0f);
+    auto model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(xNDC, yNDC, 0.0f));
-
 
     itemShader->use();
 
@@ -134,7 +129,7 @@ void CursorBlock::renderBlockOnCursor() {
     itemIBO->Bind();
     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, nullptr);
     itemVAO->Unbind();
-    itemIBO->Unbind();
+    IBO::Unbind();
 }
 
 void CursorBlock::deleteBuffers() {
@@ -172,12 +167,12 @@ void CursorBlock::deleteBufferData() {
     itemBrightness.clear();
 }
 
-void CursorBlock::setScreenDimensions(int &width, int &height) {
+void CursorBlock::setScreenDimensions(const int &width, const int &height) {
     screenWidth = width;
     screenHeight = height;
 }
 
-void CursorBlock::setMousePosCoordinates(double &x, double &y) {
+void CursorBlock::setMousePosCoordinates(const double &x, const double &y) {
     mouseX = x;
     mouseY = y;
 }

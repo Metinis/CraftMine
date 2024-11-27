@@ -10,8 +10,6 @@
 #include "VAO.h"
 #include "IBO.h"
 #include "Shader.h"
-#include "BlockData.h"
-#include "Block.h"
 #include "Toolbar.h"
 
 class Inventory {
@@ -63,17 +61,17 @@ private:
 public:
     explicit Inventory(Toolbar& _toolbar);
 
-    unsigned char getItemAtSlot(int x, int y);
+    unsigned char getItemAtSlot(int x, int y) const;
 
-    void renderInventory();
+    void renderInventory() const;
 
     void loadItemsRendering();
 
-    void renderItems();
+    void renderItems() const;
 
-    unsigned char determineSlotBlockID(float mouseX, float mouseY);
+    unsigned char determineSlotBlockID(float mouseX, float mouseY) const;
 
-    int determineToolbarIndex(float mouseX, float mouseY);
+    static int determineToolbarIndex(float mouseX, float mouseY);
 
     void loadItemsRenderingInv();
 
@@ -86,12 +84,12 @@ public:
     void
     loadBlockData(int i, std::vector<glm::vec3> &verts, std::vector<glm::vec2> &uvCoords,
                   std::vector<float> &brightness,
-                  glm::vec3 &blockCenter);
+                  const glm::vec3 &blockCenter);
 
     void
     loadCustomData(int i, std::vector<glm::vec3> &verts, std::vector<glm::vec2> &uvCoords,
                    std::vector<float> &brightness,
-                   glm::vec3 &blockCenter);
+                   const glm::vec3 &blockCenter);
 };
 
 

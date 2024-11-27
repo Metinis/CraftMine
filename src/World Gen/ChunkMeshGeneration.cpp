@@ -1,6 +1,6 @@
 #include "ChunkMeshGeneration.h"
 
-bool ChunkMeshGeneration::CheckFace(int x, int y, int z, bool isSolid, unsigned char originalID, Chunk &chunk) {
+bool ChunkMeshGeneration::CheckFace(const int x, const int y, const int z, const bool isSolid, unsigned char originalID, const Chunk &chunk) {
     if (x >= 0 && x < Chunk::SIZE && y <= Chunk::HEIGHT && y >= 0 && z >= 0 && z < Chunk::SIZE) {
         if (Block::hasCustomMesh(chunk.GetBlockID(glm::ivec3(x, y, z)))) {
             return true;
@@ -100,7 +100,7 @@ void ChunkMeshGeneration::AddFaces(int x, int y, int z, int &numFaces, bool isSo
 }
 
 void ChunkMeshGeneration::UpdateSide(CraftMine::Faces face, Chunk &chunk) {
-    Chunk *tempChunk = nullptr;
+    Chunk *tempChunk;
     int numFaces = 0;
     int numTransparentFaces = 0;
 
@@ -160,45 +160,39 @@ void ChunkMeshGeneration::UpdateSide(CraftMine::Faces face, Chunk &chunk) {
                     }
                 }
             }
-
+        default:
             break;
+
     }
     AddIndices(numFaces, chunk.chunkData.chunkIndices, chunk.chunkData.indexCount);
     AddIndices(numTransparentFaces, chunk.chunkData.nonSolidIndices, chunk.chunkData.nonSolidIndexCount);
 }
 
-void ChunkMeshGeneration::AddEdgeFaces(glm::ivec3 localBlockPos, int &numFaces, int &numNonSolidFaces, int neighbourZ,
-                                       int neighbourX, Chunk *tempChunk, Faces face,
+void ChunkMeshGeneration::AddEdgeFaces(const glm::ivec3 localBlockPos, int &numFaces, int &numNonSolidFaces, const int neighbourZ,
+                                       const int neighbourX, const Chunk *tempChunk, const Faces face,
                                        Chunk &chunk) //used to add the faces neighbouring chunks
 {
-    glm::vec3 blockWorldPos = glm::vec3(localBlockPos.x + chunk.chunkPosition.x * Chunk::SIZE, localBlockPos.y,
+    const auto blockWorldPos = glm::vec3(localBlockPos.x + chunk.chunkPosition.x * Chunk::SIZE, localBlockPos.y,
                                         localBlockPos.z + chunk.chunkPosition.y * Chunk::SIZE);
 
-    unsigned char blockID = chunk.GetBlockID(localBlockPos);
+    const unsigned char blockID = chunk.GetBlockID(localBlockPos);
 
-    unsigned char neighbourBlockID = tempChunk->GetBlockID(glm::ivec3(neighbourX, localBlockPos.y, neighbourZ));
+    const unsigned char neighbourBlockID = tempChunk->GetBlockID(glm::ivec3(neighbourX, localBlockPos.y, neighbourZ));
 
     if (Block::hasCustomMesh(blockID) || blockID == 0)
         return;
 
-    BlockType type = BlockIDMap[blockID];
-    if (Block::isSolid(blockID) && !Block::isSolid(neighbourBlockID)) {
-        IntegrateFace(Block::GetFace(face, type, blockWorldPos), true, chunk);
-        numFaces++;
-    } else if (Block::isSolid(blockID) && neighbourBlockID == 0) {
+    const BlockType type = BlockIDMap[blockID];
+    if ((Block::isSolid(blockID) && !Block::isSolid(neighbourBlockID)) ||
+        (Block::isSolid(blockID) && neighbourBlockID == 0) ||
+        (Block::isSolid(blockID) && !Block::isTransparent(blockID) && Block::isTransparent(neighbourBlockID)) ||
+        (Block::isSolid(blockID) && Block::isTransparent(blockID) && !Block::isTransparent(neighbourBlockID)))
+    {
         IntegrateFace(Block::GetFace(face, type, blockWorldPos), true, chunk);
         numFaces++;
     }
     else if (!Block::isSolid(blockID) && neighbourBlockID == 0) {
         IntegrateFace(Block::GetFace(face, type, blockWorldPos), false, chunk);
-        numFaces++;
-    }
-    else if(Block::isSolid(blockID) && !Block::isTransparent(blockID) && Block::isTransparent(neighbourBlockID)) {
-        IntegrateFace(Block::GetFace(face, type, blockWorldPos), true, chunk);
-        numFaces++;
-    }
-    else if(Block::isSolid(blockID) && Block::isTransparent(blockID) && !Block::isTransparent(neighbourBlockID)) {
-        IntegrateFace(Block::GetFace(face, type, blockWorldPos), true, chunk);
         numFaces++;
     }
 }
@@ -288,8 +282,8 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk &chunk) {
     }
 }
 
-void ChunkMeshGeneration::IntegrateFace(FaceData faceData, bool isSolid, Chunk &chunk) {
-    if (isSolid && &chunk != nullptr) {
+void ChunkMeshGeneration::IntegrateFace(FaceData faceData, const bool isSolid, Chunk &chunk) {
+    if (isSolid) {
         chunk.chunkData.chunkVerts.insert(chunk.chunkData.chunkVerts.end(), faceData.vertices.begin(),
                                           faceData.vertices.end());
         chunk.chunkData.chunkUVs.insert(chunk.chunkData.chunkUVs.end(), faceData.texCoords.begin(),

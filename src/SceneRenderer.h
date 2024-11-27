@@ -31,7 +31,7 @@ private:
 
     int sunZOffset = 25;
 
-    glm::ivec3 lastOutlinePos;
+    glm::ivec3 lastOutlinePos{};
     glm::vec3 fogColor = glm::vec3(0.55f, 0.75f, 1.0f);
 
     glm::vec3 lightPos = glm::vec3(0,0,0);
@@ -44,14 +44,13 @@ private:
 
     Camera& camera;
 
-    FBO* fbo;
-    ScreenQuad* screenQuad;
+    FBO* fbo{};
+    ScreenQuad* screenQuad{};
     Crosshair* ui;
 
-    unsigned int gBuffer;
-    GLuint gPosition, gNormal, gAlbedoSpec;
-    unsigned int rboDepth;
-
+    unsigned int gBuffer{};
+    GLuint gPosition{}, gNormal{}, gAlbedoSpec{};
+    unsigned int rboDepth{};
 
 
 public:
@@ -62,22 +61,20 @@ public:
     static float cameraFarPlane;
     static std::vector<float> shadowCascadeLevels;
 
-    FBO* depthFBO;
-    UBO* ubo;
-    Shader* shader;
-    Shader* transparentShader;
-    Shader* outlineShader;
-    Shader* frameShader;
-    Shader* shadowMapShader;
-    Shader* geometryShader;
-    Texture* worldTexture;
-    Texture* guiTexture;
-    Texture* inventoryTexture;
-    CursorBlock* cursorBlock;
+    FBO* depthFBO{};
+    UBO* ubo{};
+    Shader* shader{};
+    Shader* transparentShader{};
+    Shader* outlineShader{};
+    Shader* frameShader{};
+    Shader* shadowMapShader{};
+    Shader* geometryShader{};
+    Texture* worldTexture{};
+    Texture* guiTexture{};
+    Texture* inventoryTexture{};
+    CursorBlock* cursorBlock{};
 
     Player& player;
-
-
 
     float sunXOffset = 100;
     float sunYOffset = 50;
@@ -93,51 +90,44 @@ public:
 
     void updateShadowProjection();
 
-    void loadShader(Shader& shader, const int viewDistance);
+    void loadShader(const Shader& _shader, int viewDistance) const;
 
     void changeGlobalTexture();
 
     void updateShaders();
 
-    void updateShadowResolution();
+    void renderBlockOutline(const World& world);
 
-    void renderBlockOutline(World& world);
-
-    void updateOutlineBuffers(glm::ivec3& globalPos);
-
-    void drawOutline();
+    void drawOutline() const;
 
     static void renderMesh(Mesh& mesh, Shader& _shader);
 
-    static void render(Shader& _shader, World& world);
+    static void render(Shader& _shader, const World& world);
 
-    static void render(World& world);
+    static void render(const World& world);
 
-    void renderToShadowMap(World& world) const;
+    void renderToShadowMap(const World& world) const;
 
-    void renderWorld(World& world);
+    void renderWorld(const World& world);
 
-    void setFBODimensions(int width, int height);
+    void setFBODimensions(int width, int height) const;
 
-    void renderQuad();
+    void renderQuad() const;
 
-    void drawBlockOnCursor();
-
-    void changeSlotToolbar(int slot);
+    void changeSlotToolbar(int slot) const;
 
     void initialiseGBuffer();
 
-    void setGBufferDimensions(int width, int height);
+    void setGBufferDimensions(int width, int height) const;
 
-    void renderGUI();
+    void renderGUI() const;
 
-    void updateOutlineBuffers(glm::ivec3 &globalPos, unsigned char blockID);
+    void updateOutlineBuffers(const glm::ivec3 &globalPos, unsigned char blockID);
 
     static std::vector<glm::vec4> getFrustumCornersWorldSpace(const glm::mat4& proj, const glm::mat4& view);
 
+    glm::mat4 getLightSpaceMatrix(float nearPlane, float farPlane) const;
 
-    glm::mat4 getLightSpaceMatrix(const float nearPlane, const float farPlane);
-
-    std::vector<glm::mat4> getLightSpaceMatrices();
+    std::vector<glm::mat4> getLightSpaceMatrices() const;
 
 };

@@ -11,12 +11,12 @@
 class IBO
 {
 	public:
-		unsigned int ID;
+		unsigned int ID{};
 
-		IBO(const std::vector<GLuint>& data);
-		void SetNewData(const std::vector<GLuint>& data);
-		void Bind();
-		void Unbind();
-		void Delete();
+		explicit IBO(const std::vector<GLuint>& data);
+		void SetNewData(const std::vector<GLuint>& data) const;
+		void Bind() const;
+		static void Unbind();
+		void Delete() const;
 };
 

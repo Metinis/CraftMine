@@ -48,26 +48,26 @@ Toolbar::Toolbar()
     ToolBarVAO->Bind();
     ToolBarVBO->Bind();
     ToolBarVAO->LinkToVAO(shader->getAttribLocation("aPos"), 2, *ToolBarVBO);
-    ToolBarVBO->Unbind();
+    VBO::Unbind();
 
     textureVBO = new VBO(UVCoords);
     ToolBarVAO->Bind();
     textureVBO->Bind();
     ToolBarVAO->LinkToVAO(shader->getAttribLocation("aTexCoord"), 2, *textureVBO);
-    textureVBO->Unbind();
+    VBO::Unbind();
 
     slotVAO = new VAO();
     slotVBO = new VBO(slotVertices);
     slotVAO->Bind();
     slotVBO->Bind();
     slotVAO->LinkToVAO(shader->getAttribLocation("aPos"), 2, *slotVBO);
-    slotVBO->Unbind();
+    VBO::Unbind();
 
     slotTextureVBO = new VBO(slotUVCoords);
     slotVAO->Bind();
     slotTextureVBO->Bind();
     slotVAO->LinkToVAO(shader->getAttribLocation("aTexCoord"), 2, *slotTextureVBO);
-    slotTextureVBO->Unbind();
+    VBO::Unbind();
 
 
 
@@ -84,15 +84,15 @@ Toolbar::Toolbar()
 
     loadItemsRendering();
 }
-void Toolbar::changeSlot(int currentSlot) {
+void Toolbar::changeSlot(const int currentSlot) {
     slot = currentSlot;
-    float adjustedToolbarWidth = toolbarWidth * 180/182;
-    float adjustedHalfToolbarWidth = adjustedToolbarWidth / 2.0f;
-    float adjustedSlotWidth = adjustedToolbarWidth / 9.0f;
-    float adjustedHalfSlotWidth = adjustedSlotWidth / 2.0f;
+    const float adjustedToolbarWidth = toolbarWidth * 180/182;
+    const float adjustedHalfToolbarWidth = adjustedToolbarWidth / 2.0f;
+    const float adjustedSlotWidth = adjustedToolbarWidth / 9.0f;
+    const float adjustedHalfSlotWidth = adjustedSlotWidth / 2.0f;
 
-    toolbarCenterX = -adjustedHalfToolbarWidth + adjustedHalfSlotWidth + adjustedSlotWidth * currentSlot;
-    float offset = 0.005f;
+    toolbarCenterX = -adjustedHalfToolbarWidth + adjustedHalfSlotWidth + adjustedSlotWidth * static_cast<float>(currentSlot);
+    constexpr float offset = 0.005f;
 
     slotVertices = {
             glm::vec2(toolbarCenterX + halfSlotWidth + offset, toolbarBottomY - offset),  // Bottom right
@@ -106,7 +106,7 @@ void Toolbar::changeSlot(int currentSlot) {
     slotVBO->SetNewData(slotVertices);
     slotVBO->Bind();
     slotVAO->LinkToVAO(shader->getAttribLocation("aPos"), 2, *slotVBO);
-    slotVBO->Unbind();
+    VBO::Unbind();
 }
 void Toolbar::changeSlotPositive() {
     if(slot == 8){
@@ -127,49 +127,49 @@ void Toolbar::changeSlotNegative() {
     changeSlot(slot);
 }
 
-void Toolbar::renderToolbar()
+void Toolbar::renderToolbar() const
 {
     shader->use();
     ToolBarVAO->Bind();
-    glDrawArrays(GL_TRIANGLES, 0, vertices.size());
-    ToolBarVAO->Unbind();
+    glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(vertices.size()));
+    VAO::Unbind();
 }
-void Toolbar::renderSlot(){
+void Toolbar::renderSlot() const{
     shader->use();
     slotVAO->Bind();
-    glDrawArrays(GL_TRIANGLES, 0, slotVertices.size());
-    slotVAO->Unbind();
+    glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(slotVertices.size()));
+    VAO::Unbind();
 }
 
-unsigned char Toolbar::getID(unsigned char _slot) {
+unsigned char Toolbar::getID(const unsigned char _slot) const{
     return toolbarItems[_slot];
 }
 
-void Toolbar::setID(unsigned char id, unsigned char _slot) {
+void Toolbar::setID(const unsigned char id, const unsigned char _slot) {
     toolbarItems[_slot] = id;
 }
 
-void Toolbar::renderItems() {
+void Toolbar::renderItems() const{
     itemShader->use();
     itemVAO->Bind();
     itemIBO->Bind();
     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, nullptr);
-    itemVAO->Unbind();
-    itemIBO->Unbind();
+    VAO::Unbind();
+    IBO::Unbind();
 }
 
 void Toolbar::loadItemsRendering() {
     deleteItemBuffers();
-    glm::mat4 model = glm::mat4(1.0f);
-    glm::mat4 view = glm::mat4(1.0f);
+    constexpr auto model = glm::mat4(1.0f);
+    constexpr auto view = glm::mat4(1.0f);
     glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.0375f, 0.065f, 0.0375f));
     glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(25.0f), glm::vec3(1.0f,0.0f, 0.0f));
     glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), glm::vec3(0.0f,1.0f, 0.0f));
     for(int i = 0; i < 9; i++){
         if(toolbarItems[i] != 0){
-            toolbarCenterX = -halfToolbarWidth * 22.0f + (slotWidth) * 22.0f  / 2 + i * 1.2f * (slotWidth) * 22.0f ;
+            toolbarCenterX = -halfToolbarWidth * 22.0f + (slotWidth) * 22.0f  / 2 + static_cast<float>(i) * 1.2f * (slotWidth) * 22.0f ;
 
-            glm::vec3 blockCenter = glm::vec3(toolbarCenterX - 1.47f, -13.5f, 0.0f);
+            auto blockCenter = glm::vec3(toolbarCenterX - 1.47f, -13.5f, 0.0f);
 
             std::vector<glm::vec3> verts;
 
@@ -192,13 +192,13 @@ void Toolbar::loadItemsRendering() {
                 uvCoords.insert(uvCoords.end(), faceDataRight.texCoords.begin(), faceDataRight.texCoords.end());
                 uvCoords.insert(uvCoords.end(), faceDataTop.texCoords.begin(), faceDataTop.texCoords.end());
 
-                for(int i = 0; i < 4; i++){
+                for(int q = 0; q < 4; q++){
                     itemBrightness.push_back(faceDataFront.brightness);
                 }
-                for(int i = 0; i < 4; i++){
+                for(int q = 0; q < 4; q++){
                     itemBrightness.push_back(faceDataRight.brightness);
                 }
-                for(int i = 0; i < 4; i++){
+                for(int q = 0; q < 4; q++){
                     itemBrightness.push_back(faceDataTop.brightness);
                 }
 
@@ -211,7 +211,7 @@ void Toolbar::loadItemsRendering() {
 
                 uvCoords.insert(uvCoords.end(), faceDataFront.texCoords.begin(), faceDataFront.texCoords.end());
 
-                for(int i = 0; i < 4; i++){
+                for(int q = 0; q < 4; q++){
                     itemBrightness.push_back(faceDataFront.brightness);
                 }
 
@@ -222,7 +222,7 @@ void Toolbar::loadItemsRendering() {
             for(glm::vec3 vert : verts){
                 glm::mat4 translationToOrigin = glm::translate(glm::mat4(1.0f), -blockCenter);
                 glm::mat4 translationBack = glm::translate(glm::mat4(1.0f), blockCenter);
-                glm::vec3 rotatedVert = glm::vec3(scale * translationBack * rotationX * rotationY * translationToOrigin * glm::vec4(vert, 1.0f));
+                auto rotatedVert = glm::vec3(scale * translationBack * rotationX * rotationY * translationToOrigin * glm::vec4(vert, 1.0f));
                 itemVertices.push_back(rotatedVert);
             }
             for(glm::vec2 uvCoord : uvCoords){
@@ -241,7 +241,7 @@ void Toolbar::loadItemsRendering() {
     const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
 
     // Calculate the aspect ratio
-    float aspectRatio = (float)mode->width / (float)mode->height;
+    float aspectRatio = static_cast<float>(mode->width) / static_cast<float>(mode->height);
     glm::mat4 proj = glm::perspective(glm::radians(65.0f), aspectRatio, 0.1f, 100.0f);
 
     itemShader->setMat4("model", model);
@@ -253,19 +253,19 @@ void Toolbar::loadItemsRendering() {
     itemVAO->Bind();
     itemVBO->Bind();
     itemVAO->LinkToVAO(itemShader->getAttribLocation("aPos"), 3, *itemVBO);
-    itemVBO->Unbind();
+    VBO::Unbind();
 
     itemUVVBO = new VBO(itemUVCoords);
     itemVAO->Bind();
     itemUVVBO->Bind();
     itemVAO->LinkToVAO(itemShader->getAttribLocation("aTexCoord"), 2, *itemUVVBO);
-    itemUVVBO->Unbind();
+    VBO::Unbind();
 
     itemBrightnessVBO = new VBO(itemBrightness);
     itemVAO->Bind();
     itemBrightnessVBO->Bind();
     itemVAO->LinkToVAO(itemShader->getAttribLocation("aBrightness"), 1, *itemBrightnessVBO);
-    itemBrightnessVBO->Unbind();
+    VBO::Unbind();
 
     itemIBO = new IBO(indices);
 }

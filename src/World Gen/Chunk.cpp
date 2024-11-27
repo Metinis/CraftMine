@@ -2,15 +2,14 @@
 #include "World.h"
 #include "ChunkGeneration.h"
 #include "ChunkMeshGeneration.h"
-#include "Player/Player.h"
 
 
-Chunk::Chunk(glm::ivec2 Position, World& _world) : world(_world)
+Chunk::Chunk(const glm::ivec2 Position, World& _world) : world(_world)
 {
     chunkPosition = Position;
 }
 
-unsigned char Chunk::GetBlockID(glm::ivec3 pos)
+unsigned char Chunk::GetBlockID(const glm::ivec3 pos) const
 {
     if (pos.x < 0 || pos.x > SIZE - 1 || pos.y < 0 || pos.y > HEIGHT - 1 || pos.z < 0 || pos.z > SIZE - 1) {
         return 0;
@@ -19,10 +18,8 @@ unsigned char Chunk::GetBlockID(glm::ivec3 pos)
     return blockIDs[pos.x + SIZE * (pos.y + HEIGHT * pos.z)];
 }
 
-unsigned char Chunk::GetBlockNeighbourY(glm::ivec2 pos, Faces face) {
-}
 
-void Chunk::SetBlock(glm::ivec3 pos, unsigned char id)
+void Chunk::SetBlock(const glm::ivec3 pos, const unsigned char id)
 {
     {
         std::lock_guard<std::mutex> lock(chunkBlockMutex);
@@ -69,8 +66,8 @@ void Chunk::ClearVertexData()
 
 bool Chunk::compareDistanceToPlayer(const ChunkDataPair& pair1, const ChunkDataPair& pair2, glm::vec3 playerPos) {
     // Calculate the center of each quad and compare distances
-    glm::vec3 center1 = (glm::vec3(((pair1.vertices[0]) + (pair1.vertices[1]) + (pair1.vertices[2]) + (pair1.vertices[3]))));
-    glm::vec3 center2 = (glm::vec3(((pair2.vertices[0]) + (pair2.vertices[1]) + (pair2.vertices[2]) + (pair2.vertices[3]))));
+    const auto center1 = (glm::vec3(((pair1.vertices[0]) + (pair1.vertices[1]) + (pair1.vertices[2]) + (pair1.vertices[3]))));
+    const auto center2 = (glm::vec3(((pair2.vertices[0]) + (pair2.vertices[1]) + (pair2.vertices[2]) + (pair2.vertices[3]))));
 
     return glm::distance(playerPos, center1) > glm::distance((playerPos), center2);
 }
@@ -78,13 +75,13 @@ struct Chunk::CompareFaces{
 
     glm::vec3 playerPos;
 
-    bool operator()(ChunkDataPair pair1, ChunkDataPair pair2){
+    bool operator()(const ChunkDataPair &pair1, const ChunkDataPair &pair2) const{
 
-        glm::vec3 center1 = glm::vec3((pair1.vertices[0]) + (pair1.vertices[1]) + (pair1.vertices[2]) + (pair1.vertices[3]))/4.0f;
-        glm::vec3 center2 = glm::vec3((pair2.vertices[0]) + (pair2.vertices[1]) + (pair2.vertices[2]) + (pair2.vertices[3]))/4.0f;
+        const auto center1 = glm::vec3((pair1.vertices[0]) + (pair1.vertices[1]) + (pair1.vertices[2]) + (pair1.vertices[3]))/4.0f;
+        const auto center2 = glm::vec3((pair2.vertices[0]) + (pair2.vertices[1]) + (pair2.vertices[2]) + (pair2.vertices[3]))/4.0f;
 
-        double squaredDistance1 = glm::distance((playerPos), (center1));
-        double squaredDistance2 = glm::distance((playerPos), (center2));
+        const double squaredDistance1 = glm::distance((playerPos), (center1));
+        const double squaredDistance2 = glm::distance((playerPos), (center2));
         return squaredDistance1 > squaredDistance2;
 
     }
@@ -95,7 +92,7 @@ void Chunk::sortTransparentMeshData() {
     if(!inThread && !toBeDeleted) {
         // Sort transparent mesh data based on distance to player
         CompareFaces compareFaces{};
-        glm::vec3 cameraPos = world.camera.position;
+        const glm::vec3 cameraPos = world.camera.position;
         compareFaces.playerPos = cameraPos;
         std::vector<ChunkDataPair> combinedData;
         int k = 0;
@@ -121,17 +118,17 @@ void Chunk::sortTransparentMeshData() {
         chunkData.nonSolidIndices.clear();
         chunkData.nonSolidNormals.clear();
 
-        for (int i = 0; i < combinedData.size(); i++) {
+        for (auto & i : combinedData) {
             for (int j = 0; j < 4; j++) {
 
-                chunkData.nonSolidVerts.push_back(combinedData[i].vertices[j]);
-                chunkData.nonSolidNormals.push_back(combinedData[i].normals[j]);
-                chunkData.nonSolidUVs.push_back(combinedData[i].uvs[j]);
-                chunkData.nonSolidBrightnessFloats.push_back(combinedData[i].brightnessFloats[j]);
+                chunkData.nonSolidVerts.push_back(i.vertices[j]);
+                chunkData.nonSolidNormals.push_back(i.normals[j]);
+                chunkData.nonSolidUVs.push_back(i.uvs[j]);
+                chunkData.nonSolidBrightnessFloats.push_back(i.brightnessFloats[j]);
             }
         }
         chunkData.nonSolidIndexCount = 0;
-        ChunkMeshGeneration::AddIndices(combinedData.size(), chunkData.nonSolidIndices,
+        ChunkMeshGeneration::AddIndices(static_cast<int>(combinedData.size()), chunkData.nonSolidIndices,
                                         chunkData.nonSolidIndexCount);
     }
 }
@@ -165,17 +162,17 @@ void Chunk::sortTransparentMeshData(glm::vec3 position) {
     chunkData.nonSolidIndices.clear();
     chunkData.nonSolidNormals.clear();
 
-    for (int i = 0; i < combinedData.size(); i++) {
+    for (auto & i : combinedData) {
         for (int j = 0; j < 4; j++) {
 
-            chunkData.nonSolidVerts.push_back(combinedData[i].vertices[j]);
-            chunkData.nonSolidNormals.push_back(combinedData[i].normals[j]);
-            chunkData.nonSolidUVs.push_back(combinedData[i].uvs[j]);
-            chunkData.nonSolidBrightnessFloats.push_back(combinedData[i].brightnessFloats[j]);
+            chunkData.nonSolidVerts.push_back(i.vertices[j]);
+            chunkData.nonSolidNormals.push_back(i.normals[j]);
+            chunkData.nonSolidUVs.push_back(i.uvs[j]);
+            chunkData.nonSolidBrightnessFloats.push_back(i.brightnessFloats[j]);
         }
     }
     chunkData.nonSolidIndexCount = 0;
-    ChunkMeshGeneration::AddIndices(combinedData.size(), chunkData.nonSolidIndices, chunkData.nonSolidIndexCount);
+    ChunkMeshGeneration::AddIndices(static_cast<int>(combinedData.size()), chunkData.nonSolidIndices, chunkData.nonSolidIndexCount);
 }
 void Chunk::LoadBufferData()
 {
@@ -194,20 +191,10 @@ void Chunk::LoadBufferData()
 
     if(mesh != nullptr && !inThread && transparentMesh != nullptr)
     {
-        if (chunkData.chunkVerts.size() >= 0 && chunkData.chunkNormals.size() >= 0 &&
-            chunkData.chunkUVs.size() >= 0 && chunkData.chunkIndices.size() >= 0 &&
-            chunkData.chunkBrightnessFloats.size() >= 0 &&
-            chunkData.nonSolidVerts.size() >= 0 && chunkData.nonSolidNormals.size() >= 0 &&
-            chunkData.nonSolidUVs.size() >= 0 && chunkData.nonSolidIndices.size() >= 0 &&
-            chunkData.nonSolidBrightnessFloats.size() >= 0) {
-
-            mesh->setData(chunkData.chunkVerts, chunkData.chunkNormals, chunkData.chunkUVs, chunkData.chunkIndices, chunkData.chunkBrightnessFloats);
-            mesh->loadData(*world.scene.geometryShader);
-            transparentMesh->setData(chunkData.nonSolidVerts, chunkData.nonSolidNormals, chunkData.nonSolidUVs, chunkData.nonSolidIndices, chunkData.nonSolidBrightnessFloats);
-            transparentMesh->loadData(*world.scene.geometryShader);
-        } else {
-            return;
-        }
+        mesh->setData(chunkData.chunkVerts, chunkData.chunkNormals, chunkData.chunkUVs, chunkData.chunkIndices, chunkData.chunkBrightnessFloats);
+        mesh->loadData(*world.scene.geometryShader);
+        transparentMesh->setData(chunkData.nonSolidVerts, chunkData.nonSolidNormals, chunkData.nonSolidUVs, chunkData.nonSolidIndices, chunkData.nonSolidBrightnessFloats);
+        transparentMesh->loadData(*world.scene.geometryShader);
     }
     generatedBuffData = true;
 }
@@ -249,11 +236,11 @@ bool Chunk::getIsAllSidesUpdated() {
 
 
 
-std::string Chunk::getRegionFilename(int regionX, int regionY) {
+std::string Chunk::getRegionFilename(const int regionX, const int regionY) {
     return "../save/chunkData/" + std::to_string(regionX) + "-" + std::to_string(regionY) + ".bin";
 }
 
-int Chunk::getChunkOffset(int chunkX, int chunkY) {
+int Chunk::getChunkOffset(const int chunkX, const int chunkY) {
     return (chunkY % CHUNKS_PER_REGION) * CHUNKS_PER_REGION + (chunkX % CHUNKS_PER_REGION);
 }
 
@@ -269,9 +256,9 @@ void Chunk::saveData() {
             return;
         }
 
-        int regionX = chunkPosition.x / CHUNKS_PER_REGION;
-        int regionY = chunkPosition.y / CHUNKS_PER_REGION;
-        std::string filename = getRegionFilename(regionX, regionY);
+        const int regionX = chunkPosition.x / CHUNKS_PER_REGION;
+        const int regionY = chunkPosition.y / CHUNKS_PER_REGION;
+        const std::string filename = getRegionFilename(regionX, regionY);
 
         std::ofstream outfile(filename, std::ios::binary | std::ios::in | std::ios::out);
         if (!outfile) {
@@ -285,10 +272,10 @@ void Chunk::saveData() {
             outfile.open(filename, std::ios::binary | std::ios::in | std::ios::out);
         }
 
-        int chunkOffset = getChunkOffset(chunkPosition.x, chunkPosition.y);
-        int dataOffset = chunkOffset * sizeof(blockIDs);
+        const int chunkOffset = getChunkOffset(chunkPosition.x, chunkPosition.y);
+        const int dataOffset = static_cast<int>(chunkOffset * sizeof(blockIDs));
         outfile.seekp(dataOffset);
-        outfile.write(reinterpret_cast<const char*>(compressedData.data()), compressedSize);
+        outfile.write(reinterpret_cast<const char*>(compressedData.data()), static_cast<long>(compressedSize));
         outfile.close();
     }
 }
@@ -296,17 +283,17 @@ void Chunk::saveData() {
 bool Chunk::loadData() {
     std::lock_guard<std::mutex> lock(chunkBlockMutex);
 
-    int regionX = chunkPosition.x / CHUNKS_PER_REGION;
-    int regionY = chunkPosition.y / CHUNKS_PER_REGION;
-    std::string filename = getRegionFilename(regionX, regionY);
+    const int regionX = chunkPosition.x / CHUNKS_PER_REGION;
+    const int regionY = chunkPosition.y / CHUNKS_PER_REGION;
+    const std::string filename = getRegionFilename(regionX, regionY);
 
     std::ifstream infile(filename, std::ios::binary);
     if (!infile) {
         return false;
     }
 
-    int chunkOffset = getChunkOffset(chunkPosition.x, chunkPosition.y);
-    int dataOffset = chunkOffset * sizeof(blockIDs);
+    const int chunkOffset = getChunkOffset(chunkPosition.x, chunkPosition.y);
+    const int dataOffset = static_cast<int>(chunkOffset * sizeof(blockIDs));
     infile.seekg(dataOffset);
 
     std::vector<unsigned char> compressedData(sizeof(blockIDs));
@@ -314,7 +301,7 @@ bool Chunk::loadData() {
     infile.close();
 
     uLongf decompressedSize = sizeof(blockIDs);
-    int result = uncompress(blockIDs, &decompressedSize, compressedData.data(), sizeof(blockIDs));
+    const int result = uncompress(blockIDs, &decompressedSize, compressedData.data(), sizeof(blockIDs));
 
     if (result != Z_OK) {
         return false;
@@ -328,18 +315,18 @@ bool Chunk::loadData() {
 }
 // Calculate min and max bounds of the chunk in world space
 glm::vec3 Chunk::getChunkMinBounds() const {
-    return glm::vec3(
+    return {
         chunkPosition.x * Chunk::SIZE,
         0,
         chunkPosition.y * Chunk::SIZE
-    );
+    };
 
 }
 
 glm::vec3 Chunk::getChunkMaxBounds() const {
-    return glm::vec3(
+    return {
         chunkPosition.x * Chunk::SIZE + Chunk::SIZE,
         Chunk::HEIGHT,
         chunkPosition.y * Chunk::SIZE + Chunk::SIZE
-    );
+    };
 }

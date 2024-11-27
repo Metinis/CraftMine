@@ -84,9 +84,6 @@ void Game::run() {
     // Disable VSync
     glfwSwapInterval(1);
 
-    // Variables for FPS calculation
-    int frames = 0;
-    double fpsTime = 0.0;
     // Initial window size
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
@@ -99,7 +96,7 @@ void Game::run() {
             break;
         }
 
-        currentTime = glfwGetTime();
+        currentTime = static_cast<float>(glfwGetTime());
         deltaTime = currentTime - lastFrame;
         lastFrame = currentTime;
 

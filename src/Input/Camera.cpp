@@ -10,7 +10,7 @@ Camera::Camera()
     Pitch = 0.0f;
 
 }
-glm::mat4 Camera::GetViewMatrix()
+glm::mat4 Camera::GetViewMatrix() const
 {
 	return glm::lookAt(position, position + Front, Up);
 }
@@ -44,7 +44,7 @@ void Camera::updateCameraVectors()
 	Up = glm::normalize(glm::cross(Right, Front));
 }
 
-void Camera::updatePosition(glm::vec3 lastPlayerPos, glm::vec3 playerPos, double alpha) {
-    glm::vec3 interpolatedPosition = glm::mix(lastPlayerPos, playerPos, alpha);
+void Camera::updatePosition(const glm::vec3 lastPlayerPos, const glm::vec3 playerPos, const double alpha) {
+    const glm::vec3 interpolatedPosition = glm::mix(lastPlayerPos, playerPos, alpha);
     position = interpolatedPosition;
 }

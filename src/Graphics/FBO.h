@@ -14,7 +14,7 @@
 class FBO {
 private:
 
-    unsigned int RBO;
+    unsigned int RBO{};
 
 
     void initialiseTexture() const;
@@ -25,8 +25,8 @@ private:
 
 public:
 
-    unsigned int texture;
-    unsigned int ID;
+    unsigned int texture{};
+    unsigned int ID{};
     unsigned int width, height;
     FBO(int _width, int _height);
     //initialises the standard FBO
@@ -42,13 +42,11 @@ public:
 
     void bindForReadDepth() const;
 
-    void bindRBO() const;
-
     static void Unbind();
 
     static void UnbindDepth();
 
-    void Delete();
+    void Delete() const;
 
     void setDimensionDepthMap(int _width, int _height);
     void bindFBOTextureLayer(int layer) const;

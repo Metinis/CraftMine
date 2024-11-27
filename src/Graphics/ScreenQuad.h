@@ -11,7 +11,7 @@ private:
 public:
     ScreenQuad();
 
-    void renderQuad(Shader& shader);
+    void renderQuad(Shader& shader) const;
 
     ~ScreenQuad();
 

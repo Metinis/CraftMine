@@ -1,8 +1,6 @@
 #ifndef CRAFTMINE_PLAYER_H
 #define CRAFTMINE_PLAYER_H
 #pragma once
-#include <vector>
-#include <glm/vec3.hpp>
 #include "Input/Camera.h"
 #include "Chunk.h"
 #include "World.h"
@@ -26,7 +24,7 @@ private:
     //todo fix private and public attributes
 
 public:
-    World* world;
+    World* world{};
     Camera camera;
     glm::vec3 position{};
     glm::vec3 lastPosition{};
@@ -44,22 +42,22 @@ public:
 
     Player();
     void Update(float deltaTime);
-    void calculateNewPositionY(float& deltaTime);
-    void UpdatePositionXZ(glm::vec3& newPosition);
-    void UpdateDeceleration(float& deltaTime);
+    void calculateNewPositionY(const float& deltaTime);
+    void UpdatePositionXZ(const glm::vec3& newPosition);
+    void UpdateDeceleration(const float& deltaTime);
     void ProcessKeyboardMovement(cameraMovement dir, float deltaTime);
     bool isColliding(glm::vec3 newPosition) const;
-    bool isHeadInWater();
+    bool isHeadInWater() const;
     bool checkNewPositionZ(float newZ) const;
-    bool checkNewPositionX(float newZ) const;
-    bool checkNewPositionXZ(glm::vec3 newPosition) const;
-    bool checkNewPositionY(glm::vec3& newPosition) const;
-    void applyNewPositionY(glm::vec3& newPosition);
+    bool checkNewPositionX(float newX) const;
+    bool checkNewPositionXZ(const glm::vec3& newPosition) const;
+    bool checkNewPositionY(const glm::vec3& newPosition) const;
+    void applyNewPositionY(const glm::vec3& newPosition);
     void updateShifting();
-    glm::vec3 positionInChunk();
-    bool checkCollisionWithBlockLocal(glm::ivec3 localPos);
+    glm::vec3 positionInChunk() const;
+    bool checkCollisionWithBlockLocal(glm::ivec3 localPos) const;
     void setBlockID(int blockID);
-    int getBlockID();
+    int getBlockID() const;
 
     void updateFlying();
 
@@ -68,7 +66,7 @@ public:
     void checkIfSwimming(glm::ivec3 pos);
 
     bool loadPlayerPosFromFile();
-    void savePosToFile();
+    void savePosToFile() const;
 };
 
 

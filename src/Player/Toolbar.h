@@ -6,12 +6,9 @@
 #define CRAFTMINE_TOOLBAR_H
 
 
-#include "vec2.hpp"
 #include "Shader.h"
 #include "VBO.h"
 #include "VAO.h"
-#include "Block.h"
-#include "BlockData.h"
 #include "IBO.h"
 
 class Toolbar {
@@ -71,15 +68,15 @@ public:
 
     int slot;
     Toolbar();
-    void renderToolbar();
+    void renderToolbar() const;
     void changeSlot(int currentSlot);
     void changeSlotPositive();
     void changeSlotNegative();
-    unsigned char getID(unsigned char _slot);
+    unsigned char getID(unsigned char _slot) const;
     void setID(unsigned char id, unsigned char _slot);
-    void renderItems();
+    void renderItems() const;
 
-    void renderSlot();
+    void renderSlot() const;
 
     void deleteItemBuffers();
 

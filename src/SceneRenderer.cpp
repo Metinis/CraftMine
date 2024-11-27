@@ -42,7 +42,7 @@ void Scene::initialiseWorldShaders(){
     const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
 
     // Calculate the aspect ratio
-    float aspectRatio = (float)mode->width / (float)mode->height;
+    const float aspectRatio = static_cast<float>(mode->width) / static_cast<float>(mode->height);
 
 
     model = glm::mat4(1.0f);
@@ -68,7 +68,7 @@ void Scene::initialiseWorldShaders(){
         shader->setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", shadowCascadeLevels[i]);
     }
 
-    shader->setInt("cascadeCount", shadowCascadeLevels.size());
+    shader->setInt("cascadeCount", static_cast<int>(shadowCascadeLevels.size()));
 
 
     shader->setInt("depthMap", 3);
@@ -80,7 +80,7 @@ void Scene::initialiseWorldShaders(){
         transparentShader->setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", shadowCascadeLevels[i]);
     }
 
-    transparentShader->setInt("cascadeCount", shadowCascadeLevels.size());
+    transparentShader->setInt("cascadeCount", static_cast<int>(shadowCascadeLevels.size()));
 
 
     transparentShader->setInt("depthMap", 3);
@@ -143,65 +143,42 @@ void Scene::updateShadowProjection(){
     const std::vector<glm::mat4> lightSpaceMats = getLightSpaceMatrices();
     ubo->bind();
     for (size_t i = 0; i < lightSpaceMats.size(); ++i) {
-        glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(glm::mat4x4), sizeof(glm::mat4x4), &lightSpaceMats[i]);
+        glBufferSubData(GL_UNIFORM_BUFFER, static_cast<long>(i * sizeof(glm::mat4x4)), sizeof(glm::mat4x4), &lightSpaceMats[i]);
     }
-    ubo->unbind();
+    UBO::unbind();
 
-
-    shader->use();
+    const glm::vec3 normalizedLightDir = glm::normalize(lightDir);
     view = camera.GetViewMatrix();
+    shader->use();
     shader->setMat4("view", view);
-
-    //shader->setVec3("lightPos", lightPos);
     shader->setFloat("minBrightness", minBrightness);
     shader->setFloat("maxBrightnessFactor", maxBrightnessFactor);
-    //lightDir = glm::vec3(lightDir.x - 0.1f, 200, lightDir.x - 0.1f);
-    float radius = 500.0f;
-    float theta = glm::radians(45.0f); // Angle in the XY plane
-    float phi = glm::radians(30.0f);   // Angle from the Y axis
-
-    float x = radius * sin(phi) * cos(theta);
-    float y = radius * cos(phi);
-    float z = radius * sin(phi) * sin(theta);
-
-    //glm::vec3 lightDir = glm::vec3(x, y, z);
-
-    glm::vec3 normalizedLightDir = glm::normalize(lightDir);
     shader->setVec3("lightDir", normalizedLightDir);
 
     transparentShader->use();
     transparentShader->setMat4("view", view);
-
-    //shader->setVec3("lightPos", lightPos);
     transparentShader->setFloat("minBrightness", minBrightness);
     transparentShader->setFloat("maxBrightnessFactor", maxBrightnessFactor);
     transparentShader->setVec3("lightDir", normalizedLightDir);
-
-    //transparentShader->use();
-    transparentShader->setMat4("lightSpaceMatrix", lightSpaceMats[0]);
-    //transparentShader->setVec3("lightPos", lightPos);
-    //transparentShader->setVec3("lightColor", glm::vec3(1.0f, 1.0f,1.0f));
-    //transparentShader->setFloat("minBrightness", minBrightness);
-    //transparentShader->setFloat("maxBrightnessFactor", maxBrightnessFactor);
 }
 
 void Scene::renderMesh(Mesh& mesh, Shader& _shader){
         mesh.render(_shader);
 }
 
-void Scene::loadShader(Shader& _shader, int viewDistance) {
+void Scene::loadShader(const Shader& _shader, const int viewDistance) const{
     _shader.use();
     _shader.setMat4("model", model);
     _shader.setMat4("projection", proj);
     _shader.setVec3("cameraPos", camera.position);
-    _shader.setFloat("fogStart", ((viewDistance - (viewDistance/3)) < viewDistance - 1 ? (viewDistance - (viewDistance/3)) : 0) * Chunk::SIZE);
-    _shader.setFloat("fogEnd", (viewDistance-1) * Chunk::SIZE);
+    _shader.setFloat("fogStart", static_cast<float>(((viewDistance) - (viewDistance/3)) < viewDistance - 1 ? (viewDistance - (viewDistance/3)) : 0) * Chunk::SIZE);
+    _shader.setFloat("fogEnd", static_cast<float>(viewDistance-1) * Chunk::SIZE);
     _shader.setVec3("fogColor", fogColor);
 }
 void Scene::changeGlobalTexture()
 {
     //Updates every second
-    int currentTime = (int)glfwGetTime();
+    const int currentTime = static_cast<int>(glfwGetTime());
     if(currentTime != lastTime)
     {
         if(lastTexture < 5) {
@@ -213,15 +190,15 @@ void Scene::changeGlobalTexture()
         lastTime = currentTime;
         std::stringstream path;
         path << "../resources/texture/terrain" << lastTexture << ".png";
-        std::string texturePath = path.str();
+        const std::string texturePath = path.str();
         worldTexture->setTexture(texturePath.c_str());
     }
 }
 
 void Scene::updateShaders(){
-    float currentTime = (float)glfwGetTime();
+    const auto currentTime = static_cast<float>(glfwGetTime());
     shader->use();
-    glm::vec3 position = camera.position;
+    const glm::vec3 position = camera.position;
     shader->setVec3("cameraPos", position);
     if(player.isHeadInWater()){
         fogColor = glm::vec3(0.1f, 0.1f, 0.1f);
@@ -236,13 +213,13 @@ void Scene::updateShaders(){
     }
     else{
         fogColor = glm::vec3(0.55f, 0.75f, 1.0f);
-        int viewDistance = World::viewDistance;
-        shader->setFloat("fogStart", ((viewDistance - (viewDistance/3)) < viewDistance - 1 ? (viewDistance - (viewDistance/3)) : 0) * Chunk::SIZE);
-        shader->setFloat("fogEnd", (viewDistance-1) * Chunk::SIZE);
+        const int viewDistance = World::viewDistance;
+        shader->setFloat("fogStart", static_cast<float>((viewDistance - (viewDistance/3)) < viewDistance - 1 ? (viewDistance - (viewDistance/3)) : 0) * Chunk::SIZE);
+        shader->setFloat("fogEnd", static_cast<float>(viewDistance-1) * Chunk::SIZE);
         shader->setVec3("fogColor", fogColor);
         transparentShader->use();
-        transparentShader->setFloat("fogStart", ((viewDistance - (viewDistance/3)) < viewDistance - 1 ? (viewDistance - (viewDistance/3)) : 0) * Chunk::SIZE);
-        transparentShader->setFloat("fogEnd", (viewDistance-1) * Chunk::SIZE);
+        transparentShader->setFloat("fogStart", static_cast<float>((viewDistance - (viewDistance/3)) < viewDistance - 1 ? (viewDistance - (viewDistance/3)) : 0) * Chunk::SIZE);
+        transparentShader->setFloat("fogEnd", static_cast<float>(viewDistance-1) * Chunk::SIZE);
         transparentShader->setVec3("fogColor", fogColor);
     }
     transparentShader->use();
@@ -256,12 +233,12 @@ void Scene::updateShaders(){
     geometryShader->use();
     geometryShader->setMat4("view", view);
 }
-void Scene::renderBlockOutline(World& world)
+void Scene::renderBlockOutline(const World& world)
 {
     glm::ivec3 result;
     Chunk* currentChunk;
     if(world.RaycastBlockPos(camera.position, camera.Front, result, currentChunk)){
-        glm::ivec3 globalPos = glm::vec3(result.x + currentChunk->chunkPosition.x * Chunk::SIZE, result.y, result.z + currentChunk->chunkPosition.y * Chunk::SIZE);
+        const auto globalPos = glm::ivec3(result.x + currentChunk->chunkPosition.x * Chunk::SIZE, result.y, result.z + currentChunk->chunkPosition.y * Chunk::SIZE);
         if(globalPos != lastOutlinePos)
         {
             updateOutlineBuffers(globalPos, currentChunk->GetBlockID(result));
@@ -274,8 +251,8 @@ void Scene::renderBlockOutline(World& world)
         lastOutlinePos = globalPos;
     }
 }
-void Scene::updateOutlineBuffers(glm::ivec3& globalPos, unsigned char blockID){
-    std::vector<glm::vec3> vertices = Block::GetOutline(globalPos, blockID);
+void Scene::updateOutlineBuffers(const glm::ivec3& globalPos, const unsigned char blockID){
+    const std::vector<glm::vec3> vertices = Block::GetOutline(globalPos, blockID);
     std::vector<GLuint> indices;
 
     if(outlineVAO != nullptr)
@@ -319,31 +296,31 @@ void Scene::updateOutlineBuffers(glm::ivec3& globalPos, unsigned char blockID){
 
     outlineVAO->LinkToVAO(outlineShader->getAttribLocation("aPos"), 3, *outlineVBO);
 
-    outlineVBO->Unbind();
-    outlineVAO->Unbind();
+    VBO::Unbind();
+    VAO::Unbind();
 
     outlineIBO = new IBO(indices);
 }
 
-void Scene::drawOutline()
+void Scene::drawOutline() const
 {
-    int indexCount = 48;
+    constexpr int indexCount = 48;
     outlineShader->use();
     outlineVAO->Bind();
     outlineIBO->Bind();
     glDrawElements(GL_LINES, static_cast<GLsizei>(indexCount), GL_UNSIGNED_INT, nullptr);
-    outlineVAO->Unbind();
-    outlineIBO->Unbind();
+    VAO::Unbind();
+    IBO::Unbind();
 }
 
-void Scene::render(Shader& _shader, World& world){
+void Scene::render(Shader& _shader, const World& world){
     //calls render function to world which provides it with chunk meshes and uses scene.renderMesh
     world.renderChunksToShader(_shader);
 }
-void Scene::render(World& world){
+void Scene::render(const World& world){
     world.renderChunksToNormalShaders();
 }
-void Scene::renderToShadowMap(World& world) const{
+void Scene::renderToShadowMap(const World& world) const{
     glEnable(GL_DEPTH_TEST);
 
     depthFBO->bindForRender();
@@ -354,7 +331,7 @@ void Scene::renderToShadowMap(World& world) const{
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
-void Scene::renderWorld(World& world){
+void Scene::renderWorld(const World& world){
 
     setFBODimensions(Game::currentWidth,Game:: currentHeight);
 
@@ -400,7 +377,8 @@ void Scene::renderWorld(World& world){
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo->ID);
-    glBlitFramebuffer(0, 0, fbo->width, fbo->height, 0, 0, fbo->width, fbo->height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    glBlitFramebuffer(0, 0, static_cast<int>(fbo->width), static_cast<int>(fbo->height), 0, 0,
+        static_cast<int>(fbo->width), static_cast<int>(fbo->height), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo->ID);
 
 
@@ -432,7 +410,7 @@ void Scene::renderWorld(World& world){
     }
     FBO::Unbind();
 }
-void Scene::renderGUI() {
+void Scene::renderGUI() const{
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDisable(GL_DEPTH_TEST);
     //render cross hair/ui
@@ -460,10 +438,10 @@ void Scene::renderGUI() {
 
     glEnable(GL_DEPTH_TEST);
 }
-void Scene::setFBODimensions(int width, int height){
+void Scene::setFBODimensions(const int width, const int height) const{
     fbo->setDimensionTexture(width, height);
 }
-void Scene::renderQuad(){
+void Scene::renderQuad() const{
 
 
     glActiveTexture(GL_TEXTURE0);
@@ -482,7 +460,7 @@ void Scene::renderQuad(){
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Scene::changeSlotToolbar(int slot) {
+void Scene::changeSlotToolbar(const int slot) const {
     player.toolbar->changeSlot(slot);
 }
 
@@ -498,26 +476,26 @@ void Scene::initialiseGBuffer() {
     // position color buffer
     glGenTextures(1, &gPosition);
     glBindTexture(GL_TEXTURE_2D, gPosition);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, mode->width, mode->height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, mode->width, mode->height, 0, GL_RGBA, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
     // normal color buffer
     glGenTextures(1, &gNormal);
     glBindTexture(GL_TEXTURE_2D, gNormal);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, mode->width, mode->height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, mode->width, mode->height, 0, GL_RGBA, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
     // color + specular color buffer
     glGenTextures(1, &gAlbedoSpec);
     glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mode->width, mode->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mode->width, mode->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpec, 0);
     // tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
-    unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+    constexpr unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
     glDrawBuffers(3, attachments);
     // create and attach depth buffer (renderbuffer)
 
@@ -531,24 +509,24 @@ void Scene::initialiseGBuffer() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Scene::setGBufferDimensions(int width, int height) {
+void Scene::setGBufferDimensions(const int width, const int height) const {
     glViewport(0, 0, width, height);
     glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
     // position color buffer
     glBindTexture(GL_TEXTURE_2D, gPosition);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
     // normal color buffer
     glBindTexture(GL_TEXTURE_2D, gNormal);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
     // color + specular color buffer
     glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpec, 0);
@@ -560,15 +538,6 @@ void Scene::setGBufferDimensions(int width, int height) {
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cout << "Framebuffer not complete!" << std::endl;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void Scene::updateShadowResolution() {
-    //Scene::SHADOW_RESOLUTION = 1024 * 4;
-    //depthFBO->setDimensionDepthMap(SHADOW_RESOLUTION, SHADOW_RESOLUTION);
-}
-
-void Scene::drawBlockOnCursor() {
-
 }
 std::vector<glm::vec4> Scene::getFrustumCornersWorldSpace(const glm::mat4& proj, const glm::mat4& view)
 {
@@ -583,9 +552,9 @@ std::vector<glm::vec4> Scene::getFrustumCornersWorldSpace(const glm::mat4& proj,
             {
                 const glm::vec4 pt =
                     inv * glm::vec4(
-                        2.0f * x - 1.0f,
-                        2.0f * y - 1.0f,
-                        2.0f * z - 1.0f,
+                        2.0f * static_cast<float>(x) - 1.0f,
+                        2.0f * static_cast<float>(y) - 1.0f,
+                        2.0f * static_cast<float>(z) - 1.0f,
                         1.0f);
                 frustumCorners.push_back(pt / pt.w);
             }
@@ -594,21 +563,21 @@ std::vector<glm::vec4> Scene::getFrustumCornersWorldSpace(const glm::mat4& proj,
 
     return frustumCorners;
 }
-glm::mat4 Scene::getLightSpaceMatrix(const float nearPlane, const float farPlane) {
+glm::mat4 Scene::getLightSpaceMatrix(const float nearPlane, const float farPlane) const{
 
     //Get the primary monitor
     GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
 
     // Get the video mode of the primary monitor
     const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
-    float aspectRatio = (float)mode->width / (float)mode->height;
+    const float aspectRatio = static_cast<float>(mode->width) / static_cast<float>(mode->height);
 
 
     const auto proj = glm::perspective(glm::radians(65.0f), aspectRatio, nearPlane, farPlane);
 
     const auto corners = getFrustumCornersWorldSpace(proj, camera.GetViewMatrix());
 
-    glm::vec3 center = glm::vec3(0, 0, 0);
+    auto center = glm::vec3(0, 0, 0);
     for (const auto& v : corners)
     {
         center += glm::vec3(v);
@@ -659,7 +628,7 @@ glm::mat4 Scene::getLightSpaceMatrix(const float nearPlane, const float farPlane
     const glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
     return lightProjection * lightView;
 }
-std::vector<glm::mat4> Scene::getLightSpaceMatrices()
+std::vector<glm::mat4> Scene::getLightSpaceMatrices() const
 {
     std::vector<glm::mat4> ret;
     for (size_t i = 0; i < shadowCascadeLevels.size() + 1; ++i)

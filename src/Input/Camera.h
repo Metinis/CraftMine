@@ -23,16 +23,16 @@ private:
     float MouseSensitivity;
 	void updateCameraVectors();
 public:
-    glm::vec3 Right;
-    glm::vec3 Front;
+    glm::vec3 Right{};
+    glm::vec3 Front{};
 
-	glm::vec3 Up, WorldUp;
+	glm::vec3 Up{}, WorldUp{};
 	float Yaw;
 	float Pitch;
-    glm::vec3 position;
+    glm::vec3 position{};
 	Camera();
 
-	glm::mat4 GetViewMatrix();
+	glm::mat4 GetViewMatrix() const;
 	void ProcessMouseMovement(float xoffset, float yoffset);
     void updatePosition(glm::vec3 lastPlayerPos, glm::vec3 playerPos, double alpha);
 
