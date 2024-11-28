@@ -11,7 +11,7 @@ uniform float maxBrightnessFactor;
 
 in vec3 FragPos;
 uniform sampler2D ourTexture;
-uniform sampler2DArray depthMap;
+uniform sampler2DArray shadowMap;
 uniform vec3 cameraPos;
 uniform float fogStart;
 uniform float fogEnd;
@@ -29,7 +29,7 @@ uniform int cascadeCount;   // number of frusta - 1
 uniform float farPlane;
 uniform mat4 view;
 
-float inShadow(vec3 fragPosWorldSpace)
+float inShadow(vec3 fragPosWorldSpace, float alpha)
 {
     // select cascade layer
     vec4 fragPosViewSpace = view * vec4(fragPosWorldSpace, 1.0);
@@ -75,13 +75,13 @@ float inShadow(vec3 fragPosWorldSpace)
             bias *= 1 / (cascadePlaneDistances[layer] * biasModifier);
         }
     float shadow = 0.0;
-    vec2 texelSize = 1.0 / vec2(textureSize(depthMap, 0));
+    vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0));
 
         for(int x = -1; x <= 1; ++x)
         {
             for(int y = -1; y <= 1; ++y)
             {
-                float pcfDepth = texture(depthMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;
+                float pcfDepth = texture(shadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;
                 shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
             }
         }
@@ -103,7 +103,9 @@ void main()
 
     vec4 sampledColor = texture(ourTexture, TexCoord);
 
-    float shadow = inShadow(FragPos);
+    sampledColor.a *= 1.4;
+
+    float shadow = inShadow(FragPos, sampledColor.a);
 
     //fog
 
@@ -115,8 +117,8 @@ void main()
 
     //result
 
-    //vec3 lighting = (ambient + (1.0 - shadow) * (diffuse)) * sampledColor.rgb * brightness;
-    vec3 lighting = (ambient + 1 * (diffuse)) * sampledColor.rgb * brightness;
+    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse)) * sampledColor.rgb * brightness;
+    //vec3 lighting = (ambient + 1 * (diffuse)) * sampledColor.rgb * brightness;
 
     vec3 finalColor = mix(lighting, fogColor, fogFactor);
 

@@ -4,7 +4,7 @@
 
 #include "Input.h"
 
-Input::Input(Camera& _camera, World& _world, Scene& _scene, Player& _player, Game& _game) : lastX(1280 / 2.0f), lastY(720 / 2.0f),
+Input::Input(Camera& _camera, World& _world, SceneRenderer& _scene, Player& _player, Game& _game) : lastX(1280 / 2.0f), lastY(720 / 2.0f),
                                                                                             camera(_camera), world(_world), scene(_scene), player(_player), game(_game), firstMouse(true) {}
 
 void Input::processMouse(GLFWwindow *window, const double xposIn, const double yposIn) {
@@ -268,7 +268,7 @@ void Input::processKey(const int key, const int action, GLFWwindow* window) {
         }
     }
 }
-void Input::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, bool* _isFullscreen, Player& player, World& world, const float& deltaTime, Scene& scene)
+void Input::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, bool* _isFullscreen, Player& player, World& world, const float& deltaTime, SceneRenderer& scene)
 {
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)

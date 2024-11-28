@@ -19,7 +19,7 @@
 #include "ScreenQuad.h"
 #include "SceneRenderer.h"
 
-class Scene;
+class SceneRenderer;
 
 class Input;
 
@@ -34,7 +34,7 @@ public:
     Camera* camera;
     World* world;
     Input* mouseInput;
-    Scene* scene;
+    SceneRenderer* scene;
     static int currentWidth;
     static int currentHeight;
 private:

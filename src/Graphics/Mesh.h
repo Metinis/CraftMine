@@ -34,9 +34,9 @@ public:
     bool deletedData = false;
     bool beingRendered = false;
     void setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec3> _normals, std::vector<glm::vec2> UVs_, std::vector<GLuint> _indices, std::vector<float> _brightnessFloats);
-    void render(Shader& _shader);
+    void render(const Shader& _shader);
     //void renderShadow(Shader& _shader);
-    void loadData(Shader& _shader);
+    void loadData(const Shader& _shader);
 
     ~Mesh()
     {

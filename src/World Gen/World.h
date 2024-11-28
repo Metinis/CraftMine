@@ -16,7 +16,7 @@ class Chunk;
 
 class ChunkMeshGeneration;
 
-class Scene;
+class SceneRenderer;
 
 class World
 {
@@ -43,7 +43,7 @@ public:
 	Frustum::FrustumPlanes frustum{};
     Player& player;
     Camera& camera;
-    Scene& scene;
+    SceneRenderer& scene;
 
 	static constexpr int SIZE = 1000;
 	static int viewDistance;
@@ -55,7 +55,7 @@ public:
 
     Chunk* chunks[SIZE*SIZE] = {nullptr};
 
-	explicit World(Camera& _camera, Scene& _scene, Player& _player);
+	explicit World(Camera& _camera, SceneRenderer& _scene, Player& _player);
 
 	void UpdateViewDistance(const glm::ivec2& cameraChunkPos);
 

@@ -8,12 +8,6 @@ out vec2 TexCoord;
 out float brightness;
 out vec3 FragPos;
 out vec3 Normal;
-out vec4 FragPosLightSpace[16];
-
-layout(std140) uniform LightSpaceMatrices
-{
-    mat4 lightSpaceMatrices[16]; // UBO for 16 light space matrices
-};
 
 uniform mat4 model;
 uniform mat4 view;
@@ -27,17 +21,18 @@ void main()
     float waveSpeed = 0.75;  // Speed of wave movement
     vec3 animatedPos = aPos;
     animatedPos.y += ((sin(aPos.x * 5.0 + time * waveSpeed) + 1) * waveHeight + (sin(aPos.z * 5.0 + time * waveSpeed) + 1) * waveHeight);
+    Normal = aNormal;
+
+    TexCoord = aTexCoord;
+    brightness = aBrightness;
+    FragPos = vec3(model * vec4(animatedPos, 1.0));
 
     gl_Position = projection * view * model * vec4(animatedPos, 1.0);
 
     // Normal correction for animated positions
     //Normal = normalize(transpose(inverse(mat3(model))) * aNormal);
     //Normal = normalize(transpose(inverse(mat3(model))) * vec3(0.0, 1.0, 0.0));
-    Normal = aNormal;
 
-    TexCoord = aTexCoord;
-    brightness = aBrightness;
-    FragPos = vec3(model * vec4(animatedPos, 1.0));
     //FragPos = aPos;
 
 }

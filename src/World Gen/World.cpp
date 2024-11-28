@@ -6,7 +6,7 @@
 #include "Player/Player.h"
 
 
-World::World(Camera& _camera, Scene& _scene, Player& _player) : camera(_camera), scene(_scene), player(_player)
+World::World(Camera& _camera, SceneRenderer& _scene, Player& _player) : camera(_camera), scene(_scene), player(_player)
 {
     loadDataFromFile();
     World::viewDistance = 6;
@@ -306,8 +306,8 @@ void World::renderChunksToNormalShaders() const
                 !chunk->toBeDeleted) {
                     if(Frustum::isChunkInFrustum(chunk->getChunkMinBounds(), chunk->getChunkMaxBounds(), frustum)){
 
-                        Scene::renderMesh(*chunk->transparentMesh, *scene.transparentShader);
-                        Scene::renderMesh(*chunk->mesh, *scene.shader);
+                        SceneRenderer::renderMesh(*chunk->transparentMesh, *scene.transparentShader);
+                        SceneRenderer::renderMesh(*chunk->mesh, *scene.shader);
                     }
                 }
             }
@@ -322,7 +322,7 @@ void World::renderTransparentMeshes(Shader& shader) const{
             chunk->transparentMesh->loadedData && !chunk->toBeDeleted) {
 
                 if(Frustum::isChunkInFrustum(chunk->getChunkMinBounds(), chunk->getChunkMaxBounds(), frustum))
-                    Scene::renderMesh(*chunk->transparentMesh, shader);
+                    SceneRenderer::renderMesh(*chunk->transparentMesh, shader);
             }
         }
     }
@@ -338,8 +338,8 @@ void World::renderChunksToShader(Shader& shader) const
 
 
 
-                    Scene::renderMesh(*chunk->transparentMesh, shader);
-                    Scene::renderMesh(*chunk->mesh, shader);
+                    SceneRenderer::renderMesh(*chunk->transparentMesh, shader);
+                    SceneRenderer::renderMesh(*chunk->mesh, shader);
                 }
 
             }
@@ -355,14 +355,9 @@ void World::renderChunksToShadow(Shader& shader) const {
 
                 if(Frustum::isChunkInFrustum(chunk->getChunkMinBounds(), chunk->getChunkMaxBounds(), frustum)) {
 
-                    //
+                    SceneRenderer::renderMesh(*chunk->mesh, shader);
 
-                    //
-
-                    Scene::renderMesh(*chunk->mesh, shader);
-                    glCullFace(GL_FRONT);
-                    Scene::renderMesh(*chunk->transparentMesh, shader);
-                    glCullFace(GL_BACK);
+                    SceneRenderer::renderMesh(*chunk->transparentMesh, shader);
 
                 }
             }
@@ -429,7 +424,7 @@ void World::renderSolidMeshes(Shader &shader) const{
                     !chunk->toBeDeleted) {
 
                     if(Frustum::isChunkInFrustum(chunk->getChunkMinBounds(), chunk->getChunkMaxBounds(), frustum))
-                        Scene::renderMesh(*chunk->mesh, shader);
+                        SceneRenderer::renderMesh(*chunk->mesh, shader);
                 }
         }
     }

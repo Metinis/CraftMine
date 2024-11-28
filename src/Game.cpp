@@ -50,7 +50,7 @@ Game::Game() {
     World::viewDistance = 12;
     player = new Player();
     camera = &player->camera;
-    scene = new Scene(*camera, *player);
+    scene = new SceneRenderer(*camera, *player);
     world = new World(*camera, *scene, *player);
     player->world = world;
 

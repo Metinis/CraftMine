@@ -15,7 +15,7 @@
 
 class UBO;
 
-class Scene {
+class SceneRenderer {
 private:
     static int SHADOW_RESOLUTION;
 
@@ -82,7 +82,7 @@ public:
     bool inventoryOpen = false;
     unsigned char blockGrabbed = 0;
 
-    Scene(Camera& _camera, Player& _player);
+    SceneRenderer(Camera& _camera, Player& _player);
 
     void initialiseWorldShaders();
 

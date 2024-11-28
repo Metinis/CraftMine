@@ -75,7 +75,7 @@ void FBO::initialiseDepthMap() const{
     GL_DEPTH_COMPONENT32F,
     static_cast<int>(width),
     static_cast<int>(height),
-    static_cast<int>(Scene::shadowCascadeLevels.size()) + 1,
+    static_cast<int>(SceneRenderer::shadowCascadeLevels.size()) + 1,
     0,
     GL_DEPTH_COMPONENT,
     GL_FLOAT,

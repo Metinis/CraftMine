@@ -3,11 +3,11 @@
 #include "Chunk.h"
 #include "UBO.h"
 
-float Scene::cameraNearPlane = 0.1f;
-float Scene::cameraFarPlane = 500.0f;
-std::vector<float> Scene::shadowCascadeLevels{ Scene::cameraFarPlane / 50.0f, Scene::cameraFarPlane / 25.0f, Scene::cameraFarPlane / 10.0f, Scene::cameraFarPlane / 2.0f };
+float SceneRenderer::cameraNearPlane = 0.1f;
+float SceneRenderer::cameraFarPlane = 500.0f;
+std::vector<float> SceneRenderer::shadowCascadeLevels{ SceneRenderer::cameraFarPlane / 50.0f, SceneRenderer::cameraFarPlane / 25.0f, SceneRenderer::cameraFarPlane / 10.0f, SceneRenderer::cameraFarPlane / 2.0f };
 
-Scene::Scene(Camera& _camera, Player& _player) : camera(_camera), player(_player){
+SceneRenderer::SceneRenderer(Camera& _camera, Player& _player) : camera(_camera), player(_player){
     initialiseWorldShaders();
     initialiseShadowMap();
     initialiseGBuffer();
@@ -15,10 +15,10 @@ Scene::Scene(Camera& _camera, Player& _player) : camera(_camera), player(_player
 }
 
 
-int Scene::SHADOW_RESOLUTION = 1024 * 4;
+int SceneRenderer::SHADOW_RESOLUTION = 1024 * 4;
 
 
-void Scene::initialiseWorldShaders(){
+void SceneRenderer::initialiseWorldShaders(){
     shader = new Shader("../resources/shader/shader.vs", "../resources/shader/shader.fs");
 
     outlineShader = new Shader("../resources/shader/OutlineShader.vs", "../resources/shader/OutlineShader.fs");
@@ -71,7 +71,8 @@ void Scene::initialiseWorldShaders(){
     shader->setInt("cascadeCount", static_cast<int>(shadowCascadeLevels.size()));
 
 
-    shader->setInt("depthMap", 3);
+    //shader->setInt("depthMap", 3);
+    glUniform1i(glGetUniformLocation(shader->ID, "depthMap"), 3);
     shader->setVec3("lightColor", glm::vec3(1.0f, 1.0f,1.0f));
     transparentShader->use();
     transparentShader->setFloat("farPlane", cameraFarPlane);
@@ -83,9 +84,11 @@ void Scene::initialiseWorldShaders(){
     transparentShader->setInt("cascadeCount", static_cast<int>(shadowCascadeLevels.size()));
 
 
-    transparentShader->setInt("depthMap", 3);
+    //transparentShader->setInt("depthMap", 3);
+    glUniform1i(glGetUniformLocation(transparentShader->ID, "shadowMap"), 3);
     transparentShader->setInt("ourTexture", 0);
     transparentShader->setVec3("lightColor", glm::vec3(1.0f, 1.0f,1.0f));
+    transparentShader->setMat4("projection", proj);
 
 
     loadShader(*shader, World::viewDistance);
@@ -93,7 +96,7 @@ void Scene::initialiseWorldShaders(){
 
     ubo = new UBO();
 }
-void Scene::initialiseShadowMap(){
+void SceneRenderer::initialiseShadowMap(){
 
     screenQuad = new ScreenQuad();
 
@@ -122,7 +125,7 @@ void Scene::initialiseShadowMap(){
 
     updateShadowProjection();
 }
-void Scene::updateShadowProjection(){
+void SceneRenderer::updateShadowProjection(){
     //lightPos = glm::vec3(glm::round(camera.position.x + sunXOffset), Chunk::HEIGHT + 100, glm::round(camera.position.z + sunZOffset));
     lightDir = glm::normalize(glm::vec3(0.5f, 1.0f, -0.5f));
 
@@ -162,11 +165,11 @@ void Scene::updateShadowProjection(){
     transparentShader->setVec3("lightDir", normalizedLightDir);
 }
 
-void Scene::renderMesh(Mesh& mesh, Shader& _shader){
+void SceneRenderer::renderMesh(Mesh& mesh, Shader& _shader){
         mesh.render(_shader);
 }
 
-void Scene::loadShader(const Shader& _shader, const int viewDistance) const{
+void SceneRenderer::loadShader(const Shader& _shader, const int viewDistance) const{
     _shader.use();
     _shader.setMat4("model", model);
     _shader.setMat4("projection", proj);
@@ -175,7 +178,7 @@ void Scene::loadShader(const Shader& _shader, const int viewDistance) const{
     _shader.setFloat("fogEnd", static_cast<float>(viewDistance-1) * Chunk::SIZE);
     _shader.setVec3("fogColor", fogColor);
 }
-void Scene::changeGlobalTexture()
+void SceneRenderer::changeGlobalTexture()
 {
     //Updates every second
     const int currentTime = static_cast<int>(glfwGetTime());
@@ -195,7 +198,7 @@ void Scene::changeGlobalTexture()
     }
 }
 
-void Scene::updateShaders(){
+void SceneRenderer::updateShaders(){
     const auto currentTime = static_cast<float>(glfwGetTime());
     shader->use();
     const glm::vec3 position = camera.position;
@@ -233,7 +236,7 @@ void Scene::updateShaders(){
     geometryShader->use();
     geometryShader->setMat4("view", view);
 }
-void Scene::renderBlockOutline(const World& world)
+void SceneRenderer::renderBlockOutline(const World& world)
 {
     glm::ivec3 result;
     Chunk* currentChunk;
@@ -251,7 +254,7 @@ void Scene::renderBlockOutline(const World& world)
         lastOutlinePos = globalPos;
     }
 }
-void Scene::updateOutlineBuffers(const glm::ivec3& globalPos, const unsigned char blockID){
+void SceneRenderer::updateOutlineBuffers(const glm::ivec3& globalPos, const unsigned char blockID){
     const std::vector<glm::vec3> vertices = Block::GetOutline(globalPos, blockID);
     std::vector<GLuint> indices;
 
@@ -302,7 +305,7 @@ void Scene::updateOutlineBuffers(const glm::ivec3& globalPos, const unsigned cha
     outlineIBO = new IBO(indices);
 }
 
-void Scene::drawOutline() const
+void SceneRenderer::drawOutline() const
 {
     constexpr int indexCount = 48;
     outlineShader->use();
@@ -313,25 +316,27 @@ void Scene::drawOutline() const
     IBO::Unbind();
 }
 
-void Scene::render(Shader& _shader, const World& world){
+void SceneRenderer::render(Shader& _shader, const World& world){
     //calls render function to world which provides it with chunk meshes and uses scene.renderMesh
     world.renderChunksToShader(_shader);
 }
-void Scene::render(const World& world){
+void SceneRenderer::render(const World& world){
     world.renderChunksToNormalShaders();
 }
-void Scene::renderToShadowMap(const World& world) const{
+void SceneRenderer::renderToShadowMap(const World& world) const{
     glEnable(GL_DEPTH_TEST);
 
     depthFBO->bindForRender();
     glClear(GL_DEPTH_BUFFER_BIT);
     glCullFace(GL_BACK);
+    glDisable(GL_BLEND);
     world.renderChunksToShadow(*shadowMapShader);
+    glEnable(GL_BLEND);
     glCullFace(GL_FRONT);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
-void Scene::renderWorld(const World& world){
+void SceneRenderer::renderWorld(const World& world){
 
     setFBODimensions(Game::currentWidth,Game:: currentHeight);
 
@@ -350,6 +355,7 @@ void Scene::renderWorld(const World& world){
     geometryShader->use();
     world.renderSolidMeshes(*geometryShader);
     //world.renderChunksToShader(*geometryShader);
+    //world.renderTransparentMeshes(*geometryShader);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -385,14 +391,12 @@ void Scene::renderWorld(const World& world){
     transparentShader->use();
     glActiveTexture(GL_TEXTURE0);
     worldTexture->Bind();
-
-    //glDepthMask(GL_FALSE);
-    glDisable(GL_CULL_FACE);
-
+    glActiveTexture(GL_TEXTURE4);  // Transparency depth map
+    glBindTexture(GL_TEXTURE_2D_ARRAY, depthFBO->texture);
+    glUniform1i(glGetUniformLocation(transparentShader->ID, "shadowMap"), 4);
 
     world.renderTransparentMeshes(*transparentShader);
-    glEnable(GL_CULL_FACE);
-    //glDepthMask(GL_TRUE);
+
     renderBlockOutline(world);
     //render toolbar to world frame buffer for post processing if inventory open
     if(inventoryOpen){
@@ -410,7 +414,7 @@ void Scene::renderWorld(const World& world){
     }
     FBO::Unbind();
 }
-void Scene::renderGUI() const{
+void SceneRenderer::renderGUI() const{
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDisable(GL_DEPTH_TEST);
     //render cross hair/ui
@@ -438,10 +442,10 @@ void Scene::renderGUI() const{
 
     glEnable(GL_DEPTH_TEST);
 }
-void Scene::setFBODimensions(const int width, const int height) const{
+void SceneRenderer::setFBODimensions(const int width, const int height) const{
     fbo->setDimensionTexture(width, height);
 }
-void Scene::renderQuad() const{
+void SceneRenderer::renderQuad() const{
 
 
     glActiveTexture(GL_TEXTURE0);
@@ -460,11 +464,11 @@ void Scene::renderQuad() const{
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Scene::changeSlotToolbar(const int slot) const {
+void SceneRenderer::changeSlotToolbar(const int slot) const {
     player.toolbar->changeSlot(slot);
 }
 
-void Scene::initialiseGBuffer() {
+void SceneRenderer::initialiseGBuffer() {
 
     GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
 
@@ -509,7 +513,7 @@ void Scene::initialiseGBuffer() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Scene::setGBufferDimensions(const int width, const int height) const {
+void SceneRenderer::setGBufferDimensions(const int width, const int height) const {
     glViewport(0, 0, width, height);
     glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
     // position color buffer
@@ -539,7 +543,7 @@ void Scene::setGBufferDimensions(const int width, const int height) const {
         std::cout << "Framebuffer not complete!" << std::endl;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
-std::vector<glm::vec4> Scene::getFrustumCornersWorldSpace(const glm::mat4& proj, const glm::mat4& view)
+std::vector<glm::vec4> SceneRenderer::getFrustumCornersWorldSpace(const glm::mat4& proj, const glm::mat4& view)
 {
     const auto inv = glm::inverse(proj * view);
 
@@ -563,7 +567,7 @@ std::vector<glm::vec4> Scene::getFrustumCornersWorldSpace(const glm::mat4& proj,
 
     return frustumCorners;
 }
-glm::mat4 Scene::getLightSpaceMatrix(const float nearPlane, const float farPlane) const{
+glm::mat4 SceneRenderer::getLightSpaceMatrix(const float nearPlane, const float farPlane) const{
 
     //Get the primary monitor
     GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
@@ -628,7 +632,7 @@ glm::mat4 Scene::getLightSpaceMatrix(const float nearPlane, const float farPlane
     const glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
     return lightProjection * lightView;
 }
-std::vector<glm::mat4> Scene::getLightSpaceMatrices() const
+std::vector<glm::mat4> SceneRenderer::getLightSpaceMatrices() const
 {
     std::vector<glm::mat4> ret;
     for (size_t i = 0; i < shadowCascadeLevels.size() + 1; ++i)

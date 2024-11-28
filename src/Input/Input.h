@@ -13,7 +13,7 @@
 
 class GLFWwindow;
 class World;
-class Scene;
+class SceneRenderer;
 class Game;
 
 class Input {
@@ -22,7 +22,7 @@ private:
     Game& game;
     World& world;
     Camera& camera;
-    Scene& scene;
+    SceneRenderer& scene;
     Player& player;
     float lastX;
     float lastY;
@@ -41,7 +41,7 @@ private:
     double previousCursorX = 0.0, previousCursorY = 0.0;
 public:
 
-    Input(Camera &_camera, World &_world, Scene &_scene, Player &_player, Game &_game);
+    Input(Camera &_camera, World &_world, SceneRenderer &_scene, Player &_player, Game &_game);
 
     void processMouse(GLFWwindow *window, double xposIn, double yposIn);
 
@@ -60,7 +60,7 @@ public:
     static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
     static void processInput(GLFWwindow *window, bool *wireframe, bool *keyProccessed, bool *_isFullscreen, Player &player,
-                             World &world, const float &deltaTime, Scene &scene);
+                             World &world, const float &deltaTime, SceneRenderer &scene);
 };
 
 #endif //CRAFTMINE_MOUSEINPUT_H
