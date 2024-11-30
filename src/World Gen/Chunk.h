@@ -27,13 +27,13 @@ private:
         std::vector<glm::vec3> chunkVerts;
         std::vector<glm::vec2> chunkUVs;
         std::vector<GLuint> chunkIndices;
-        std::vector<float> chunkBrightnessFloats;
+        std::vector<glm::vec4> chunkRGBIValues;
         std::vector<glm::vec3> chunkNormals;
 
         std::vector<glm::vec3> nonSolidVerts;
         std::vector<glm::vec2> nonSolidUVs;
         std::vector<GLuint> nonSolidIndices;
-        std::vector<float> nonSolidBrightnessFloats;
+        std::vector<glm::vec4> nonSolidRGBIValues;
         std::vector<glm::vec3> nonSolidNormals;
 
         GLsizei indexCount = 0;
@@ -49,7 +49,7 @@ private:
         std::array<glm::vec3, 4> vertices;
         std::array<glm::vec2, 4> uvs;
         std::array<GLuint, 6> indices;
-        std::array<float, 4> brightnessFloats;
+        std::array<glm::vec4, 4> rgbiLightValues;
         std::array<glm::vec3, 4> normals;
     };
 
@@ -77,14 +77,27 @@ public:
 
     World& world;
 
-	unsigned char blockIDs[SIZE * HEIGHT * SIZE] = {0}; //initialise all to empty block
+	typedef struct {
+		unsigned char blockID;      // Block type
+		std::array<unsigned char, 4> light;     // RGBI lighting
+		unsigned char orientation;  // Orientation
+	} Block;
+
+	Block blocks[SIZE * HEIGHT * SIZE] = {0}; // Array of structured blocks
+
+
+
 	glm::ivec2 chunkPosition{};
 
 	Chunk(glm::ivec2 Position, World& _world);
 	~Chunk();
     unsigned char GetBlockID(glm::ivec3 pos) const;
+	glm::vec4 getBlockLightNormalised(glm::ivec3 pos) const;
+	std::array<unsigned char, 4> getBlockLightValue(glm::ivec3 pos) const;
     void SetBlock(glm::ivec3 pos, unsigned char id);
-	void GenBlocks();
+	void SetBlockLighting(glm::ivec3 pos, std::array<unsigned char, 4> rgbaLight);
+	void genBlocks();
+	void genLight();
 	void ClearVertexData();
     static bool compareDistanceToPlayer(const ChunkDataPair& pair1, const ChunkDataPair& pair2, glm::vec3 playerPos);
     void sortTransparentMeshData();

@@ -1,5 +1,12 @@
 #include "VBO.h"
 
+VBO::VBO(const std::vector<glm::vec4>& data)
+{
+	glGenBuffers(1, &ID);
+	glBindBuffer(GL_ARRAY_BUFFER, ID);
+	glBufferData(GL_ARRAY_BUFFER, static_cast<long>(data.size() * sizeof(glm::vec4)), data.data(), GL_STATIC_DRAW);
+}
+
 VBO::VBO(const std::vector<glm::vec3>& data)
 {
 	glGenBuffers(1, &ID);

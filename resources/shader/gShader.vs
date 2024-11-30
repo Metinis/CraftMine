@@ -2,7 +2,7 @@
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoord;
-in float aBrightness;
+layout (location = 3) in vec4 rgbiLight;    // RGBI light (color and brightness)
 
 out vec2 TexCoord;
 
@@ -19,9 +19,9 @@ void main()
 {
     gl_Position = projection * view * model * vec4(aPos, 1.0);
     Normal = aNormal;
-    ourColor = vec3(0.5, 0.0, 0.0);
+    ourColor = rgbiLight.rgb;
     TexCoord = aTexCoord;
-    brightness = aBrightness;
+    brightness = rgbiLight.a;
     FragPos = vec3(model * vec4(aPos, 1.0));
 }
 

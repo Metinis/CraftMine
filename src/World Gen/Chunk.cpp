@@ -1,12 +1,14 @@
 #include "Chunk.h"
 #include "World.h"
 #include "ChunkGeneration.h"
+#include "ChunkLighting.h"
 #include "ChunkMeshGeneration.h"
 
 
 Chunk::Chunk(const glm::ivec2 Position, World& _world) : world(_world)
 {
     chunkPosition = Position;
+
 }
 
 unsigned char Chunk::GetBlockID(const glm::ivec3 pos) const
@@ -15,7 +17,7 @@ unsigned char Chunk::GetBlockID(const glm::ivec3 pos) const
         return 0;
     }
 
-    return blockIDs[pos.x + SIZE * (pos.y + HEIGHT * pos.z)];
+    return blocks[pos.x + SIZE * (pos.y + HEIGHT * pos.z)].blockID;
 }
 
 
@@ -26,14 +28,45 @@ void Chunk::SetBlock(const glm::ivec3 pos, const unsigned char id)
         if (pos.x < 0 || pos.x > SIZE - 1 || pos.y < 0 || pos.y > HEIGHT - 1 || pos.z < 0 || pos.z > SIZE - 1) {
             std::cout << "invalid block position at: " << pos.x << "x " << pos.y << "y " << pos.z << "z ";
         } else {
-            blockIDs[pos.x + SIZE * (pos.y + HEIGHT * pos.z)] = id;
+            blocks[pos.x + SIZE * (pos.y + HEIGHT * pos.z)].blockID = id;
         }
     }
 
     saveData();
+
+}
+void Chunk::SetBlockLighting(const glm::ivec3 pos, const std::array<unsigned char, 4> rgbaLight) {
+    {
+        std::lock_guard<std::mutex> lock(chunkBlockMutex);
+        if (pos.x < 0 || pos.x > SIZE - 1 || pos.y < 0 || pos.y > HEIGHT - 1 || pos.z < 0 || pos.z > SIZE - 1) {
+            std::cout << "invalid block position at: " << pos.x << "x " << pos.y << "y " << pos.z << "z ";
+        } else {
+            Block& block = blocks[pos.x + SIZE * (pos.y + HEIGHT * pos.z)];
+            for (int i = 0; i < 4; ++i) {
+                block.light[i] = rgbaLight[i];
+            }
+        }
+    }
+}
+glm::vec4 Chunk::getBlockLightNormalised(const glm::ivec3 pos) const {
+    if (pos.x < 0 || pos.x > SIZE - 1 || pos.y < 0 || pos.y > HEIGHT - 1 || pos.z < 0 || pos.z > SIZE - 1) {
+        std::cout << "invalid block position at: " << pos.x << "x " << pos.y << "y " << pos.z << "z ";
+    }
+    const std::array<unsigned char, 4> light = blocks[pos.x + SIZE * (pos.y + HEIGHT * pos.z)].light;
+
+    return {light[0] / 16.0f, light[1] / 16.0f, light[2] / 16.0f, light[3] / 16.0f};
+    //return {1.0f, 1.0f, 1.0f,0.5f,};
+}
+std::array<unsigned char, 4> Chunk::getBlockLightValue(const glm::ivec3 pos) const {
+    if (pos.x < 0 || pos.x > SIZE - 1 || pos.y < 0 || pos.y > HEIGHT - 1 || pos.z < 0 || pos.z > SIZE - 1) {
+        std::cout << "invalid block position at: " << pos.x << "x " << pos.y << "y " << pos.z << "z ";
+    }
+    return blocks[pos.x + SIZE * (pos.y + HEIGHT * pos.z)].light;
 }
 
-void Chunk::GenBlocks()
+
+
+void Chunk::genBlocks()
 {
     {
         if (!loadData()) {
@@ -43,6 +76,10 @@ void Chunk::GenBlocks()
     }
     saveData();
 }
+void Chunk::genLight()
+{
+    ChunkLighting::addLightingValues(*this);
+}
 
 void Chunk::ClearVertexData()
 {
@@ -50,14 +87,14 @@ void Chunk::ClearVertexData()
     chunkData.chunkVerts.clear();
     chunkData.chunkUVs.clear();
     chunkData.chunkIndices.clear();
-    chunkData.chunkBrightnessFloats.clear();
+    chunkData.chunkRGBIValues.clear();
     chunkData.chunkNormals.clear();
 
     chunkData.nonSolidVerts.clear();
     chunkData.nonSolidUVs.clear();
     chunkData.nonSolidIndices.clear();
     chunkData.nonSolidIndexCount = 0;
-    chunkData.nonSolidBrightnessFloats.clear();
+    chunkData.nonSolidRGBIValues.clear();
     chunkData.nonSolidNormals.clear();
 
     generatedBuffData = false;
@@ -101,7 +138,7 @@ void Chunk::sortTransparentMeshData() {
             for (int j = 0; j < 4; j++) {
                 pair.vertices[j] = chunkData.nonSolidVerts[i + j];
                 pair.normals[j] = chunkData.nonSolidNormals[i + j];
-                pair.brightnessFloats[j] = chunkData.nonSolidBrightnessFloats[i + j];
+                pair.rgbiLightValues[j] = chunkData.nonSolidRGBIValues[i + j];
                 pair.uvs[j] = chunkData.nonSolidUVs[i + j];
             }
             for (int j = 0; j < 6; j++) {
@@ -114,7 +151,7 @@ void Chunk::sortTransparentMeshData() {
 
         chunkData.nonSolidVerts.clear();
         chunkData.nonSolidUVs.clear();
-        chunkData.nonSolidBrightnessFloats.clear();
+        chunkData.nonSolidRGBIValues.clear();
         chunkData.nonSolidIndices.clear();
         chunkData.nonSolidNormals.clear();
 
@@ -124,7 +161,7 @@ void Chunk::sortTransparentMeshData() {
                 chunkData.nonSolidVerts.push_back(i.vertices[j]);
                 chunkData.nonSolidNormals.push_back(i.normals[j]);
                 chunkData.nonSolidUVs.push_back(i.uvs[j]);
-                chunkData.nonSolidBrightnessFloats.push_back(i.brightnessFloats[j]);
+                chunkData.nonSolidRGBIValues.push_back(i.rgbiLightValues[j]);
             }
         }
         chunkData.nonSolidIndexCount = 0;
@@ -144,7 +181,7 @@ void Chunk::sortTransparentMeshData(glm::vec3 position) {
         for (int j = 0; j < 4; j++) {
             pair.vertices[j] = chunkData.nonSolidVerts[i + j];
             pair.normals[j] = chunkData.nonSolidNormals[i + j];
-            pair.brightnessFloats[j] = chunkData.nonSolidBrightnessFloats[i+j];
+            pair.rgbiLightValues[j] = chunkData.nonSolidRGBIValues[i+j];
             pair.uvs[j] = chunkData.nonSolidUVs[i + j];
         }
         for(int j = 0; j < 6; j++)
@@ -158,7 +195,7 @@ void Chunk::sortTransparentMeshData(glm::vec3 position) {
 
     chunkData.nonSolidVerts.clear();
     chunkData.nonSolidUVs.clear();
-    chunkData.nonSolidBrightnessFloats.clear();
+    chunkData.nonSolidRGBIValues.clear();
     chunkData.nonSolidIndices.clear();
     chunkData.nonSolidNormals.clear();
 
@@ -168,7 +205,7 @@ void Chunk::sortTransparentMeshData(glm::vec3 position) {
             chunkData.nonSolidVerts.push_back(i.vertices[j]);
             chunkData.nonSolidNormals.push_back(i.normals[j]);
             chunkData.nonSolidUVs.push_back(i.uvs[j]);
-            chunkData.nonSolidBrightnessFloats.push_back(i.brightnessFloats[j]);
+            chunkData.nonSolidRGBIValues.push_back(i.rgbiLightValues[j]);
         }
     }
     chunkData.nonSolidIndexCount = 0;
@@ -191,9 +228,9 @@ void Chunk::LoadBufferData()
 
     if(mesh != nullptr && !inThread && transparentMesh != nullptr)
     {
-        mesh->setData(chunkData.chunkVerts, chunkData.chunkNormals, chunkData.chunkUVs, chunkData.chunkIndices, chunkData.chunkBrightnessFloats);
+        mesh->setData(chunkData.chunkVerts, chunkData.chunkNormals, chunkData.chunkUVs, chunkData.chunkIndices, chunkData.chunkRGBIValues);
         mesh->loadData(*world.scene.geometryShader);
-        transparentMesh->setData(chunkData.nonSolidVerts, chunkData.nonSolidNormals, chunkData.nonSolidUVs, chunkData.nonSolidIndices, chunkData.nonSolidBrightnessFloats);
+        transparentMesh->setData(chunkData.nonSolidVerts, chunkData.nonSolidNormals, chunkData.nonSolidUVs, chunkData.nonSolidIndices, chunkData.nonSolidRGBIValues);
         transparentMesh->loadData(*world.scene.geometryShader);
     }
     generatedBuffData = true;
@@ -246,23 +283,36 @@ int Chunk::getChunkOffset(const int chunkX, const int chunkY) {
 
 void Chunk::saveData() {
     std::lock_guard<std::mutex> lock(chunkBlockMutex);
+
     if (generatedBlockData) {
-        uLongf compressedSize = compressBound(sizeof(blockIDs));
+        constexpr int blockCount = Chunk::SIZE * Chunk::SIZE * Chunk::HEIGHT;
+        std::vector<unsigned char> tempBlockIDs(blockCount); // Array for blockIDs
+
+        for (int i = 0; i < blockCount; ++i) {
+            tempBlockIDs[i] = blocks[i].blockID;
+        }
+
+        uLongf compressedSize = compressBound(tempBlockIDs.size());
         std::vector<unsigned char> compressedData(compressedSize);
 
-        int result = compress(compressedData.data(), &compressedSize, blockIDs, sizeof(blockIDs));
+        int result = compress(
+            compressedData.data(), &compressedSize,
+            tempBlockIDs.data(), tempBlockIDs.size()
+        );
+
         if (result != Z_OK) {
-            std::cerr << "Failed to compress data" << std::endl;
+            std::cerr << "Failed to compress data: Error code " << result << std::endl;
             return;
         }
+
+        compressedData.resize(compressedSize);
 
         const int regionX = chunkPosition.x / CHUNKS_PER_REGION;
         const int regionY = chunkPosition.y / CHUNKS_PER_REGION;
         const std::string filename = getRegionFilename(regionX, regionY);
 
-        std::ofstream outfile(filename, std::ios::binary | std::ios::in | std::ios::out);
+        std::fstream outfile(filename, std::ios::binary | std::ios::in | std::ios::out);
         if (!outfile) {
-            // If the file doesn't exist, create it
             outfile.open(filename, std::ios::binary | std::ios::out);
             if (!outfile) {
                 std::cerr << "Failed to create region file: " << filename << std::endl;
@@ -272,10 +322,29 @@ void Chunk::saveData() {
             outfile.open(filename, std::ios::binary | std::ios::in | std::ios::out);
         }
 
+        if (!outfile) {
+            std::cerr << "Failed to open region file: " << filename << std::endl;
+            return;
+        }
+
         const int chunkOffset = getChunkOffset(chunkPosition.x, chunkPosition.y);
-        const int dataOffset = static_cast<int>(chunkOffset * sizeof(blockIDs));
+        const int dataOffset = static_cast<int>(chunkOffset * sizeof(blocks));
+
         outfile.seekp(dataOffset);
-        outfile.write(reinterpret_cast<const char*>(compressedData.data()), static_cast<long>(compressedSize));
+        if (!outfile) {
+            std::cerr << "Failed to seek to chunk offset in file: " << filename << std::endl;
+            return;
+        }
+
+        outfile.write(
+            reinterpret_cast<const char*>(compressedData.data()),
+            compressedData.size()
+        );
+
+        if (!outfile) {
+            std::cerr << "Failed to write compressed data to file: " << filename << std::endl;
+        }
+
         outfile.close();
     }
 }
@@ -293,26 +362,49 @@ bool Chunk::loadData() {
     }
 
     const int chunkOffset = getChunkOffset(chunkPosition.x, chunkPosition.y);
-    const int dataOffset = static_cast<int>(chunkOffset * sizeof(blockIDs));
-    infile.seekg(dataOffset);
+    constexpr int blockCount = Chunk::SIZE * Chunk::SIZE * Chunk::HEIGHT;
 
-    std::vector<unsigned char> compressedData(sizeof(blockIDs));
-    infile.read(reinterpret_cast<char*>(compressedData.data()), sizeof(blockIDs));
+    std::vector<unsigned char> compressedData(compressBound(blockCount));
+
+    const int dataOffset = static_cast<int>(chunkOffset * sizeof(Block) * blockCount);
+    infile.seekg(dataOffset);
+    if (!infile) {
+        return false;
+    }
+
+    infile.read(reinterpret_cast<char*>(compressedData.data()), compressedData.size());
+    std::streamsize bytesRead = infile.gcount();
     infile.close();
 
-    uLongf decompressedSize = sizeof(blockIDs);
-    const int result = uncompress(blockIDs, &decompressedSize, compressedData.data(), sizeof(blockIDs));
+    if (bytesRead <= 0) {
+        return false;
+    }
+
+    compressedData.resize(bytesRead);
+
+    std::vector<unsigned char> tempBlockIDs(blockCount);
+    uLongf decompressedSize = tempBlockIDs.size();
+
+    const int result = uncompress(
+        tempBlockIDs.data(), &decompressedSize,
+        compressedData.data(), compressedData.size()
+    );
 
     if (result != Z_OK) {
         return false;
     }
 
-    if (decompressedSize != sizeof(blockIDs)) {
+    if (decompressedSize != tempBlockIDs.size()) {
         return false;
+    }
+
+    for (int i = 0; i < blockCount; ++i) {
+        blocks[i].blockID = tempBlockIDs[i];
     }
 
     return true;
 }
+
 // Calculate min and max bounds of the chunk in world space
 glm::vec3 Chunk::getChunkMinBounds() const {
     return {

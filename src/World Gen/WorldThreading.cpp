@@ -1,5 +1,6 @@
 #include "WorldThreading.h"
 
+#include "ChunkLighting.h"
 
 
 class Chunk;
@@ -56,7 +57,12 @@ void WorldThreading::GenerateChunkThread(const World& world)
                 chunk->inThread = true;
 
                 CheckForBlocksToBeAdded(chunk);
+                //ChunkLighting::addLightingValues(*chunk);
+                //ChunkLighting::recalculateLightWithNeighbours(*chunk);
+                //chunk->genLight();
                 chunk->LoadChunkData();
+
+
                 chunk->inThread = false;
                 {
                     std::lock_guard<std::mutex> _lock(mutexLoadedChunks);
@@ -97,7 +103,11 @@ void WorldThreading::GenerateWorldThread(const World& world)
                 chunksToGenerate.pop_back();
                 lock.unlock();
                 chunk->inThread = true;
-                chunk->GenBlocks();
+                chunk->genBlocks();
+                ChunkLighting::initialiseLight(*chunk);
+                //ChunkLighting::recalculateLightWithNeighbours(*chunk);
+                chunk->genLight();
+
                 CheckForBlocksToBeAdded(chunk);
 
                 {

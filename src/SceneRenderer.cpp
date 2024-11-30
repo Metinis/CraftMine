@@ -85,7 +85,7 @@ void SceneRenderer::initialiseWorldShaders(){
 
 
     //transparentShader->setInt("depthMap", 3);
-    glUniform1i(glGetUniformLocation(transparentShader->ID, "shadowMap"), 3);
+    glUniform1i(glGetUniformLocation(transparentShader->ID, "shadowMap"), 4);
     transparentShader->setInt("ourTexture", 0);
     transparentShader->setVec3("lightColor", glm::vec3(1.0f, 1.0f,1.0f));
     transparentShader->setMat4("projection", proj);
@@ -393,9 +393,11 @@ void SceneRenderer::renderWorld(const World& world){
     worldTexture->Bind();
     glActiveTexture(GL_TEXTURE4);  // Transparency depth map
     glBindTexture(GL_TEXTURE_2D_ARRAY, depthFBO->texture);
-    glUniform1i(glGetUniformLocation(transparentShader->ID, "shadowMap"), 4);
 
     world.renderTransparentMeshes(*transparentShader);
+
+    Texture::Unbind();
+    glActiveTexture(GL_TEXTURE0);
 
     renderBlockOutline(world);
     //render toolbar to world frame buffer for post processing if inventory open

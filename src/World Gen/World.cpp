@@ -2,6 +2,7 @@
 #include "Chunk.h"
 #include "World.h"
 #include "ChunkGeneration.h"
+#include "ChunkLighting.h"
 #include "Frustum.h"
 #include "Player/Player.h"
 
@@ -199,6 +200,7 @@ void World::PlaceBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
 
         if(currentChunk->generatedBlockData) {
             currentChunk->SetBlock(lastEmptyPos, player.getBlockID());
+            ChunkLighting::addLightingValues(*currentChunk);
             if(player.getBlockID() == 5) {
                 ChunkGeneration::UpdateWater(*currentChunk, lastEmptyPos);
             }
@@ -212,7 +214,21 @@ void World::BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
     Chunk* currentChunk;
     if(RaycastBlockPos(rayOrigin, rayDirection, localPos, currentChunk))
     {
-        currentChunk->SetBlock(localPos, 0);
+        if(currentChunk->GetBlockID(localPos) == 45) {
+            currentChunk->SetBlock(localPos, 0);
+            const auto worldPos = glm::ivec3(localPos.x + currentChunk->chunkPosition.x * Chunk::SIZE, localPos.y, localPos.z + currentChunk->chunkPosition.y * Chunk::SIZE);
+            //ChunkLighting::clearLight(*currentChunk, worldPos);
+            ChunkLighting::recalculateLightWithNeighbours(*currentChunk);
+        }
+        else {
+            currentChunk->SetBlock(localPos, 0);
+        }
+
+
+        //ChunkLighting::recalculateLightWithNeighbours(*currentChunk);
+
+
+
         WorldThreading::updateLoadData(currentChunk);
         Chunk* tempChunk1 = nullptr;
         Chunk* tempChunk2 = nullptr;

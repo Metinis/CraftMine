@@ -522,6 +522,8 @@ add_executable(CraftMine
         "src/World Gen/WorldThreading.h"
         "src/World Gen/Frustum.cpp"
         "src/World Gen/Frustum.h"
+        "src/World Gen/ChunkLighting.cpp"
+        "src/World Gen/ChunkLighting.h"
 )
 
 target_link_libraries(CraftMine PRIVATE

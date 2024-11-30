@@ -1,14 +1,14 @@
 #include "Mesh.h"
 
 #include <utility>
-void Mesh::setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec3> _normals, std::vector<glm::vec2> UVs_, std::vector<GLuint> _indices, std::vector<float> _brightnessFloats)
+void Mesh::setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec3> _normals, std::vector<glm::vec2> UVs_, std::vector<GLuint> _indices, std::vector<glm::vec4> _rgbiValues)
 {
     std::lock_guard<std::mutex> lock(meshMutex);
     vertices = std::move(_vertices);
     normals = std::move(_normals);
     UVs = std::move(UVs_);
     indices = std::move(_indices);
-    brightnessFloats = std::move(_brightnessFloats);
+    rgbiValues = std::move(_rgbiValues);
 }
 bool Mesh::clearData()
 {
@@ -113,9 +113,9 @@ void Mesh::loadData(const Shader& _shader){
         meshVAO->LinkToVAO(1, 3, *meshNormalVBO);
         VBO::Unbind();
 
-        meshBrightnessVBO = new VBO(brightnessFloats);
+        meshBrightnessVBO = new VBO(rgbiValues);
         meshBrightnessVBO->Bind();
-        meshVAO->LinkToVAO(_shader.getAttribLocation("aBrightness"), 1, *meshBrightnessVBO);
+        meshVAO->LinkToVAO(3, 4, *meshBrightnessVBO);
         VBO::Unbind();
         meshIBO = new IBO(indices);
         // Unbind the VAO after setting up the main shader

@@ -23,7 +23,7 @@ private:
     std::vector<glm::vec3> normals;
     std::vector<glm::vec2> UVs;
     std::vector<GLuint> indices;
-    std::vector<float> brightnessFloats;
+    std::vector<glm::vec4> rgbiValues;
 
     std::mutex meshMutex;
 
@@ -33,7 +33,7 @@ public:
     bool loadedData = false;
     bool deletedData = false;
     bool beingRendered = false;
-    void setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec3> _normals, std::vector<glm::vec2> UVs_, std::vector<GLuint> _indices, std::vector<float> _brightnessFloats);
+    void setData(std::vector<glm::vec3> _vertices, std::vector<glm::vec3> _normals, std::vector<glm::vec2> UVs_, std::vector<GLuint> _indices, std::vector<glm::vec4> _rgbiValues);
     void render(const Shader& _shader);
     //void renderShadow(Shader& _shader);
     void loadData(const Shader& _shader);

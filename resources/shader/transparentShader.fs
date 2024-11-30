@@ -117,7 +117,7 @@ void main()
 
     //result
 
-    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse)) * sampledColor.rgb * brightness;
+    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse)) * sampledColor.rgb * ourColor * brightness;
     //vec3 lighting = (ambient + 1 * (diffuse)) * sampledColor.rgb * brightness;
 
     vec3 finalColor = mix(lighting, fogColor, fogFactor);

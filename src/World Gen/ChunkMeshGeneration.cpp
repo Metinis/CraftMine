@@ -48,14 +48,16 @@ void ChunkMeshGeneration::AddFaces(int x, int y, int z, int &numFaces, bool isSo
     const glm::vec3 blockWorldPos = glm::ivec3(x + chunk.chunkPosition.x * Chunk::SIZE, y,
                                         z + chunk.chunkPosition.y * Chunk::SIZE);
 
+    const glm::vec4 rgbiLight = chunk.getBlockLightNormalised(glm::ivec3(x,y,z));
+
     if (Block::hasCustomMesh(id)) {
-        IntegrateFace(Block::GetFace(CraftMine::Faces::FRONT, type, blockWorldPos), isSolid, chunk);
+        IntegrateFace(Block::GetFace(CraftMine::Faces::FRONT, type, blockWorldPos), rgbiLight, isSolid, chunk);
 
-        IntegrateFace(Block::GetFace(CraftMine::Faces::BACK, type, blockWorldPos), isSolid, chunk);
+        IntegrateFace(Block::GetFace(CraftMine::Faces::BACK, type, blockWorldPos), rgbiLight, isSolid, chunk);
 
-        IntegrateFace(Block::GetFace(CraftMine::Faces::RIGHT, type, blockWorldPos), isSolid, chunk);
+        IntegrateFace(Block::GetFace(CraftMine::Faces::RIGHT, type, blockWorldPos), rgbiLight, isSolid, chunk);
 
-        IntegrateFace(Block::GetFace(CraftMine::Faces::LEFT, type, blockWorldPos), isSolid, chunk);
+        IntegrateFace(Block::GetFace(CraftMine::Faces::LEFT, type, blockWorldPos), rgbiLight, isSolid, chunk);
         numFaces += 4;
         return;
     }
@@ -73,28 +75,28 @@ void ChunkMeshGeneration::AddFaces(int x, int y, int z, int &numFaces, bool isSo
     const int bottomYoffset = y - 1;
 
     if (CheckFace(leftXoffset, y, z, isSolid, id, chunk)) {
-        IntegrateFace(Block::GetFace(CraftMine::Faces::LEFT, type, blockWorldPos), isSolid, chunk);
+        IntegrateFace(Block::GetFace(CraftMine::Faces::LEFT, type, blockWorldPos), rgbiLight, isSolid, chunk);
         numFaces++;
     }
     if (CheckFace(rightXoffset, y, z, isSolid, id, chunk)) {
-        IntegrateFace(Block::GetFace(CraftMine::Faces::RIGHT, type, blockWorldPos), isSolid, chunk);
+        IntegrateFace(Block::GetFace(CraftMine::Faces::RIGHT, type, blockWorldPos), rgbiLight, isSolid, chunk);
         numFaces++;
     }
     if (CheckFace(x, y, frontZoffset, isSolid, id, chunk)) {
-        IntegrateFace(Block::GetFace(CraftMine::Faces::FRONT, type, blockWorldPos), isSolid, chunk);
+        IntegrateFace(Block::GetFace(CraftMine::Faces::FRONT, type, blockWorldPos), rgbiLight, isSolid, chunk);
         numFaces++;
     }
     if (CheckFace(x, y, backZoffset, isSolid, id, chunk)) {
-        IntegrateFace(Block::GetFace(CraftMine::Faces::BACK, type, blockWorldPos), isSolid, chunk);
+        IntegrateFace(Block::GetFace(CraftMine::Faces::BACK, type, blockWorldPos), rgbiLight, isSolid, chunk);
         numFaces++;
     }
     //Seperate check for liquid tops
     if ((CheckFace(x, topYoffset, z, isSolid, id, chunk)) || (!isSolid && Block::isSolid(chunk.GetBlockID(glm::ivec3(x, topYoffset, z))))) {
-        IntegrateFace(Block::GetFace(CraftMine::Faces::TOP, type, blockWorldPos), isSolid, chunk);
+        IntegrateFace(Block::GetFace(CraftMine::Faces::TOP, type, blockWorldPos), rgbiLight, isSolid, chunk);
         numFaces++;
     }
     if (CheckFace(x, bottomYoffset, z, isSolid, id, chunk)) {
-        IntegrateFace(Block::GetFace(CraftMine::Faces::BOTTOM, type, blockWorldPos), isSolid, chunk);
+        IntegrateFace(Block::GetFace(CraftMine::Faces::BOTTOM, type, blockWorldPos), rgbiLight, isSolid, chunk);
         numFaces++;
     }
 }
@@ -179,6 +181,8 @@ void ChunkMeshGeneration::AddEdgeFaces(const glm::ivec3 localBlockPos, int &numF
 
     const unsigned char neighbourBlockID = tempChunk->GetBlockID(glm::ivec3(neighbourX, localBlockPos.y, neighbourZ));
 
+    const glm::vec4 rgbiLight = chunk.getBlockLightNormalised(localBlockPos);
+
     if (Block::hasCustomMesh(blockID) || blockID == 0)
         return;
 
@@ -188,11 +192,11 @@ void ChunkMeshGeneration::AddEdgeFaces(const glm::ivec3 localBlockPos, int &numF
         (Block::isSolid(blockID) && !Block::isTransparent(blockID) && Block::isTransparent(neighbourBlockID)) ||
         (Block::isSolid(blockID) && Block::isTransparent(blockID) && !Block::isTransparent(neighbourBlockID)))
     {
-        IntegrateFace(Block::GetFace(face, type, blockWorldPos), true, chunk);
+        IntegrateFace(Block::GetFace(face, type, blockWorldPos), rgbiLight, true, chunk);
         numFaces++;
     }
     else if (!Block::isSolid(blockID) && neighbourBlockID == 0) {
-        IntegrateFace(Block::GetFace(face, type, blockWorldPos), false, chunk);
+        IntegrateFace(Block::GetFace(face, type, blockWorldPos), rgbiLight, false, chunk);
         numFaces++;
     }
 }
@@ -281,6 +285,30 @@ void ChunkMeshGeneration::UpdateNeighbours(Chunk &chunk) {
         chunk.chunkBools.backUpdated = true;
     }
 }
+void ChunkMeshGeneration::IntegrateFace(FaceData faceData, const glm::vec4 rgbiLight, const bool isSolid, Chunk &chunk) {
+    if (isSolid) {
+        chunk.chunkData.chunkVerts.insert(chunk.chunkData.chunkVerts.end(), faceData.vertices.begin(),
+                                          faceData.vertices.end());
+        chunk.chunkData.chunkUVs.insert(chunk.chunkData.chunkUVs.end(), faceData.texCoords.begin(),
+                                        faceData.texCoords.end());
+        chunk.chunkData.chunkNormals.insert(chunk.chunkData.chunkNormals.end(), faceData.normals.begin(),
+                                            faceData.normals.end());
+        //each vert has 4 points so need to repeat 4 times, can be adjusted to make nicer lighting later
+        for (int i = 0; i < 4; i++) {
+            chunk.chunkData.chunkRGBIValues.push_back(faceData.brightness * rgbiLight);
+        }
+    } else if (&chunk != nullptr) {
+        chunk.chunkData.nonSolidVerts.insert(chunk.chunkData.nonSolidVerts.end(), faceData.vertices.begin(),
+                                             faceData.vertices.end());
+        chunk.chunkData.nonSolidUVs.insert(chunk.chunkData.nonSolidUVs.end(), faceData.texCoords.begin(),
+                                           faceData.texCoords.end());
+        chunk.chunkData.nonSolidNormals.insert(chunk.chunkData.nonSolidNormals.end(), faceData.normals.begin(),
+                                               faceData.normals.end());
+        for (int i = 0; i < 4; i++) {
+            chunk.chunkData.nonSolidRGBIValues.push_back(faceData.brightness * rgbiLight);
+        }
+    }
+}
 
 void ChunkMeshGeneration::IntegrateFace(FaceData faceData, const bool isSolid, Chunk &chunk) {
     if (isSolid) {
@@ -292,7 +320,7 @@ void ChunkMeshGeneration::IntegrateFace(FaceData faceData, const bool isSolid, C
                                             faceData.normals.end());
         //each vert has 4 points so need to repeat 4 times, can be adjusted to make nicer lighting later
         for (int i = 0; i < 4; i++) {
-            chunk.chunkData.chunkBrightnessFloats.push_back(faceData.brightness);
+            chunk.chunkData.chunkRGBIValues.push_back(faceData.brightness * glm::vec4(1.0f,1.0f,1.0f, 1.0f));
         }
     } else if (&chunk != nullptr) {
         chunk.chunkData.nonSolidVerts.insert(chunk.chunkData.nonSolidVerts.end(), faceData.vertices.begin(),
@@ -302,7 +330,7 @@ void ChunkMeshGeneration::IntegrateFace(FaceData faceData, const bool isSolid, C
         chunk.chunkData.nonSolidNormals.insert(chunk.chunkData.nonSolidNormals.end(), faceData.normals.begin(),
                                                faceData.normals.end());
         for (int i = 0; i < 4; i++) {
-            chunk.chunkData.nonSolidBrightnessFloats.push_back(faceData.brightness);
+            chunk.chunkData.nonSolidRGBIValues.push_back(faceData.brightness * glm::vec4(1.0f,1.0f,1.0f, 1.0f));
         }
     }
 }

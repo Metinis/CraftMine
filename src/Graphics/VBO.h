@@ -14,6 +14,7 @@ class VBO
 {
 	public:
 		unsigned int ID{};
+		explicit VBO(const std::vector<glm::vec4>& data);
 		explicit VBO(const std::vector<glm::vec3>& data);
 		// Constructor for Vector2 data
 		explicit VBO(const std::vector<glm::vec2>& data);

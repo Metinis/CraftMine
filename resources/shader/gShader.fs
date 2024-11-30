@@ -16,7 +16,7 @@ void main()
     if(texture(ourTexture, TexCoord).a < 0.5){
         discard;
     }
-    gAlbedoSpec.rgb = texture(ourTexture, TexCoord).rgb * brightness;
+    gAlbedoSpec.rgb = texture(ourTexture, TexCoord).rgb * brightness * ourColor;
     // store specular intensity in gAlbedoSpec's alpha component
     gAlbedoSpec.a = texture(ourTexture, TexCoord).a;
     // store the fragment position vector in the first gbuffer texture
