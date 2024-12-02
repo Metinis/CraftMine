@@ -3,8 +3,85 @@ void ChunkLighting::initialiseLight(Chunk& chunk) {
     for (int y = Chunk::HEIGHT - 1; y >= 0; y--) {
         for (int z = 0; z < Chunk::SIZE; z++) {
             for (int x = 0; x < Chunk::SIZE; x++) {
-                constexpr std::array<unsigned char, 4> rgbaLight = {16, 16, 16, 0}; // Default (no light)
+                constexpr std::array<unsigned char, 4> rgbaLight = {16, 16, 16, 2}; // Default (no light)
                 chunk.SetBlockLighting(glm::ivec3(x, y, z), rgbaLight);
+            }
+        }
+    }
+    addSunlightValues(chunk);
+}
+void ChunkLighting::addSunlightValues(Chunk& chunk) {
+    for (int z = 0; z < Chunk::SIZE; z++) {
+        for (int x = 0; x < Chunk::SIZE; x++) {
+            bool isBlocked = false;
+            for (int y = Chunk::HEIGHT - 1; y >= 0; y--) {
+
+                const glm::ivec3 pos(x, y, z);
+
+                if(isBlocked) {
+                    continue;
+                }
+
+                constexpr std::array<unsigned char, 4> rgbaLight = {16, 16, 16, 16}; // Default (no light)
+                chunk.SetBlockLighting(glm::ivec3(x, y, z), rgbaLight);
+
+                if(!Block::isTransparent(chunk.GetBlockID(pos))) {
+                    isBlocked = true;
+                }
+
+            }
+        }
+    }
+    for (int z = 0; z < Chunk::SIZE; z++) {
+        for (int x = 0; x < Chunk::SIZE; x++) {
+            bool isBlocked = false;
+            for (int y = Chunk::HEIGHT - 1; y >= 0; y--) {
+
+                const glm::ivec3 pos(x, y, z);
+
+                if(!Block::isTransparent(chunk.GetBlockID(pos))) {
+                    isBlocked = true;
+                }
+
+                if(isBlocked) {
+                    //need to check bordering light values here
+                    constexpr std::array<glm::ivec3, 6> directions = {
+                        glm::ivec3(1, 0, 0), glm::ivec3(-1, 0, 0), glm::ivec3(0, 1, 0),
+                        glm::ivec3(0, -1, 0), glm::ivec3(0, 0, 1), glm::ivec3(0, 0, -1)
+                    };
+                    auto worldPos = glm::ivec3(pos.x + chunk.chunkPosition.x * Chunk::SIZE, pos.y, pos.z + chunk.chunkPosition.y * Chunk::SIZE);
+                    for (const auto& direction : directions) {
+
+                        const glm::ivec3 neighborWorldPos = worldPos + direction;
+                        if(neighborWorldPos.y >= Chunk::HEIGHT || neighborWorldPos.y < 0) {
+                            continue;
+                        }
+                        const auto neighborChunkXZ = glm::ivec2(
+                        (static_cast<float>(neighborWorldPos.x) / Chunk::SIZE),
+                        (static_cast<float>(neighborWorldPos.z) / Chunk::SIZE)
+                        );
+                        const Chunk* neighborChunk = chunk.world.GetChunk(neighborChunkXZ.x, neighborChunkXZ.y);
+                        if(!neighborChunk) {
+                            constexpr std::array<unsigned char, 4> rgbaLight = {16, 16, 16, 16}; // Default (no light)
+                            chunk.SetBlockLighting(glm::ivec3(x, y, z), rgbaLight);
+                            continue;
+                        }
+
+                        glm::ivec3 neighborLocalPos;
+                        neighborLocalPos.x = neighborWorldPos.x - neighborChunkXZ.x * Chunk::SIZE;
+                        neighborLocalPos.y = neighborWorldPos.y;
+                        neighborLocalPos.z = neighborWorldPos.z - neighborChunkXZ.y * Chunk::SIZE;
+
+                        std::array<unsigned char, 4> neighborLight = neighborChunk->getBlockLightValue(neighborLocalPos);
+
+                        if(neighborLight[3] > chunk.getBlockLightValue(pos)[3]) {
+                            chunk.SetBlockLighting(pos, {neighborLight[0], neighborLight[1], neighborLight[2]
+                                , static_cast<unsigned char>(neighborLight[3] - 1)});
+                        }
+                    }
+
+                }
+
             }
         }
     }
@@ -48,6 +125,7 @@ void ChunkLighting::recalculateLightWithNeighbours(const Chunk& chunk) {
                 continue;
             }
             addLightingValues(*currentChunk);
+            WorldThreading::updateLoadData(currentChunk);
         }
     }
 

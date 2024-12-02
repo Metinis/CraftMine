@@ -20,6 +20,7 @@ namespace std {
 class ChunkLighting {
 public:
     static void initialiseLight(Chunk& chunk);
+    static void addSunlightValues(Chunk& chunk);
     static void addLightingValues(Chunk& chunk);
     static void recalculateLightWithNeighbours(const Chunk& chunk);
     static void propagateLight(Chunk& chunk, const glm::ivec3& startWorldPos);
