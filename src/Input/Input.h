@@ -3,8 +3,8 @@
 //
 #pragma once
 #include "Camera.h"
-#include "Chunk.h"
-#include "World.h"
+#include "WorldGen/Chunk.h"
+#include "WorldGen/World.h"
 #include"glfw/include/GLFW/glfw3.h"
 #include "Game.h"
 

@@ -3,9 +3,9 @@
 #include <vector>
 #include <array>
 #include "Block.h"
-#include "Shader.h"
-#include "VBO.h"
-#include "Mesh.h"
+#include "Graphics/Shader.h"
+#include "Graphics/VBO.h"
+#include "Graphics/Mesh.h"
 #include "FastNoise/FastNoise.h"
 #include <random>
 #include <mutex>

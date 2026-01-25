@@ -1,6 +1,6 @@
 #ifndef FRUSTUM_H
 #define FRUSTUM_H
-#include "dual_quaternion.hpp"
+#include "glm.hpp"
 #include "vec3.hpp"
 #include <array>
 #include "Input/Camera.h"

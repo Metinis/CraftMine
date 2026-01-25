@@ -3,7 +3,7 @@
 //
 
 #include "Inventory.h"
-#include "ChunkMeshGeneration.h"
+#include "WorldGen/ChunkMeshGeneration.h"
 
 Inventory::Inventory(Toolbar& _toolbar) : toolbar(_toolbar){
     // Define the vertices of the inventory

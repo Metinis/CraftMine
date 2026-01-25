@@ -3,7 +3,7 @@
 //
 
 #include "CursorBlock.h"
-#include "ChunkMeshGeneration.h"
+#include "WorldGen/ChunkMeshGeneration.h"
 
 void CursorBlock::loadBlockRendering(unsigned char blockID) {
     deleteBuffers();

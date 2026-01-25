@@ -1,5 +1,5 @@
 #pragma once
-#include"Shader.h"
+#include"Graphics/Shader.h"
 #include<glm/vec3.hpp>
 #include"Input/Camera.h"
 #include "SceneRenderer.h"

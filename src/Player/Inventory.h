@@ -6,10 +6,10 @@
 #define CRAFTMINE_INVENTORY_H
 
 
-#include "VBO.h"
-#include "VAO.h"
-#include "IBO.h"
-#include "Shader.h"
+#include "Graphics/VBO.h"
+#include "Graphics/VAO.h"
+#include "Graphics/IBO.h"
+#include "Graphics/Shader.h"
 #include "Toolbar.h"
 
 class Inventory {

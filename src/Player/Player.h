@@ -2,8 +2,8 @@
 #define CRAFTMINE_PLAYER_H
 #pragma once
 #include "Input/Camera.h"
-#include "Chunk.h"
-#include "World.h"
+#include "WorldGen/Chunk.h"
+#include "WorldGen/World.h"
 #include "Inventory.h"
 
 class Player {

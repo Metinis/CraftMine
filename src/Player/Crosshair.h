@@ -5,10 +5,10 @@
 #ifndef CRAFTMINE_CROSSHAIR_H
 #define CRAFTMINE_CROSSHAIR_H
 
-#include "VBO.h"
-#include "IBO.h"
-#include "VAO.h"
-#include "Shader.h"
+#include "Graphics/VBO.h"
+#include "Graphics/IBO.h"
+#include "Graphics/VAO.h"
+#include "Graphics/Shader.h"
 
 
 class Crosshair {

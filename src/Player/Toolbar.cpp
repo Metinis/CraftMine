@@ -3,7 +3,7 @@
 //
 
 #include "Toolbar.h"
-#include "ChunkMeshGeneration.h"
+#include "WorldGen/ChunkMeshGeneration.h"
 
 Toolbar::Toolbar()
 {

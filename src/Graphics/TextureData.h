@@ -2,7 +2,7 @@
 #include <vector>
 #include <glm/vec2.hpp>
 #include <map>
-#include "BlockData.h"
+#include "WorldGen/BlockData.h"
 #include <cmath>
 
 class TextureData

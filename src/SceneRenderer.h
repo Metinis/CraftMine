@@ -1,17 +1,17 @@
 #pragma once
-#include "Shader.h"
-#include "Texture.h"
+#include "Graphics/Shader.h"
+#include "Graphics/Texture.h"
 #include "Input/Camera.h"
-#include "FBO.h"
-#include "Mesh.h"
-#include "Chunk.h"
-#include "World.h"
+#include "Graphics/FBO.h"
+#include "Graphics/Mesh.h"
+#include "WorldGen/Chunk.h"
+#include "WorldGen/World.h"
 #include "Game.h"
-#include "ScreenQuad.h"
+#include "Graphics/ScreenQuad.h"
 #include "Player/Crosshair.h"
 #include "Player/Toolbar.h"
 #include "Player/Inventory.h"
-#include "CursorBlock.h"
+#include "Graphics/CursorBlock.h"
 
 class UBO;
 

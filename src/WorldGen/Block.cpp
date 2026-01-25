@@ -1,5 +1,5 @@
 #include "Block.h"
-#include "TextureData.h"
+#include "Graphics/TextureData.h"
 
 FaceData Block::GetFace(Faces face, BlockType type, glm::vec3 position)
 {

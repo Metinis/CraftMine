@@ -11,12 +11,12 @@
 #include <vector>
 
 #include "Input/Camera.h"
-#include "Chunk.h"
-#include "World.h"
+#include "WorldGen/Chunk.h"
+#include "WorldGen/World.h"
 #include "Player/Crosshair.h"
 #include "Input/Input.h"
 #include "Player/Player.h"
-#include "ScreenQuad.h"
+#include "Graphics/ScreenQuad.h"
 #include "SceneRenderer.h"
 
 class SceneRenderer;

@@ -1,7 +1,7 @@
 #include "SceneRenderer.h"
 
-#include "Chunk.h"
-#include "UBO.h"
+#include "WorldGen/Chunk.h"
+#include "Graphics/UBO.h"
 
 float SceneRenderer::cameraNearPlane = 0.1f;
 float SceneRenderer::cameraFarPlane = 500.0f;
@@ -399,6 +399,7 @@ void SceneRenderer::renderWorld(const World& world){
 
     renderBlockOutline(world);
     //render toolbar to world frame buffer for post processing if inventory open
+    glActiveTexture(GL_TEXTURE0);
     if(inventoryOpen){
         glDisable(GL_DEPTH_TEST);
 
@@ -462,6 +463,7 @@ void SceneRenderer::renderQuad() const{
     //depthFBO->bindForRender();
     screenQuad->renderQuad(*frameShader);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glActiveTexture(GL_TEXTURE0);
 }
 
 void SceneRenderer::changeSlotToolbar(const int slot) const {

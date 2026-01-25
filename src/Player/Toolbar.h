@@ -6,10 +6,10 @@
 #define CRAFTMINE_TOOLBAR_H
 
 
-#include "Shader.h"
-#include "VBO.h"
-#include "VAO.h"
-#include "IBO.h"
+#include "Graphics/Shader.h"
+#include "Graphics/VBO.h"
+#include "Graphics/VAO.h"
+#include "Graphics/IBO.h"
 
 class Toolbar {
 private:
