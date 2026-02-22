@@ -62,6 +62,21 @@ void World::UpdateViewDistance(const glm::ivec2& cameraChunkPos)
     //delete inactive chunks from threads
     WorldThreading::deleteInActiveChunks(*this, chunksLoading, newActiveChunks, activeChunks);
 
+    // Unload chunks that are no longer in view distance
+    {
+        std::unordered_set<int> keepSet;
+        for (const auto& pos : newActiveChunks) keepSet.insert(pos.x + SIZE * pos.y);
+        for (const auto& pos : chunksLoading) keepSet.insert(pos.x + SIZE * pos.y);
+        for (const auto& pos : generateChunks) keepSet.insert(pos.x + SIZE * pos.y);
+
+        for (const auto& pos : activeChunks) {
+            int idx = pos.x + SIZE * pos.y;
+            if (keepSet.find(idx) == keepSet.end()) {
+                deleteChunk(pos);
+            }
+        }
+    }
+
     //Sort chunks
     std::sort(generateChunks.begin(), generateChunks.end(), compareChunks);
     std::sort(chunksLoading.begin(), chunksLoading.end(), compareChunks);

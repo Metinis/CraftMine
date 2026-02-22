@@ -25,6 +25,8 @@ namespace PacketType {
     static const uint8_t S2C_BLOCK_CHANGE = 0x21;
     static const uint8_t S2C_CHUNK_DATA = 0x30;
     static const uint8_t C2S_REQUEST_CHUNK = 0x31;
+    static const uint8_t C2S_CHAT_MESSAGE = 0x40;
+    static const uint8_t S2C_CHAT_MESSAGE = 0x41;
     static const uint8_t C2S_PING = 0x70;
     static const uint8_t S2C_PONG = 0x71;
 }
@@ -82,6 +84,12 @@ struct PlayerPositionPayload {
 struct BlockChangePayload {
     int32_t x, y, z;
     uint8_t blockId;
+};
+
+struct ChatMessagePayload {
+    uint32_t playerId;
+    std::string username;
+    std::string message;
 };
 
 namespace PacketSerializer {
@@ -245,6 +253,28 @@ inline bool deserializeBlockChange(const std::vector<uint8_t>& payload, BlockCha
     out.y = static_cast<int32_t>(ntohl(rawY));
     out.z = static_cast<int32_t>(ntohl(rawZ));
     out.blockId = payload[12];
+    return true;
+}
+
+inline std::vector<uint8_t> serializeChatMessage(const std::string& message) {
+    std::vector<uint8_t> payload;
+    payload.push_back(static_cast<uint8_t>(message.size()));
+    payload.insert(payload.end(), message.begin(), message.end());
+    return payload;
+}
+
+inline bool deserializeChatMessage(const std::vector<uint8_t>& payload, ChatMessagePayload& out) {
+    if (payload.size() < 6) return false;
+    uint32_t rawId;
+    std::memcpy(&rawId, payload.data(), 4);
+    out.playerId = ntohl(rawId);
+    uint8_t nameLen = payload[4];
+    if (payload.size() < 5u + nameLen + 1) return false;
+    out.username = std::string(payload.begin() + 5, payload.begin() + 5 + nameLen);
+    size_t offset = 5 + nameLen;
+    uint8_t msgLen = payload[offset];
+    if (payload.size() < offset + 1 + msgLen) return false;
+    out.message = std::string(payload.begin() + offset + 1, payload.begin() + offset + 1 + msgLen);
     return true;
 }
 

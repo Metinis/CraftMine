@@ -3,6 +3,7 @@
 //
 
 #include "Input.h"
+#include "Player/Chat.h"
 
 Input::Input(Camera& _camera, World& _world, SceneRenderer& _scene, Player& _player, Game& _game) : lastX(1280 / 2.0f), lastY(720 / 2.0f),
                                                                                             camera(_camera), world(_world), scene(_scene), player(_player), game(_game), firstMouse(true) {}
@@ -131,7 +132,30 @@ void Input::key_callback(GLFWwindow* window, const int key, int scancode, const 
     input->processKey(key, action, window);
 
 }
+void Input::char_callback(GLFWwindow* window, unsigned int codepoint) {
+    auto* input = static_cast<Input*>(glfwGetWindowUserPointer(window));
+    if (input->chat != nullptr && input->chat->isInputActive()) {
+        input->chat->handleCharInput(codepoint);
+    }
+}
+
 void Input::processKey(const int key, const int action, GLFWwindow* window) {
+    // When chat is active, forward specific keys to chat and suppress game keys
+    if (chat != nullptr && chat->isInputActive()) {
+        if (key == GLFW_KEY_ENTER || key == GLFW_KEY_ESCAPE || key == GLFW_KEY_BACKSPACE) {
+            chat->handleKeyInput(key, action);
+        }
+        return;
+    }
+
+    // T key opens chat when not in inventory
+    if (key == GLFW_KEY_T && action == GLFW_PRESS && !scene.inventoryOpen) {
+        if (chat != nullptr) {
+            chat->openInput();
+            return;
+        }
+    }
+
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
         const double currentTime = glfwGetTime();
         if(currentTime - lastPressTime <= timeFrame)
@@ -268,8 +292,10 @@ void Input::processKey(const int key, const int action, GLFWwindow* window) {
         }
     }
 }
-void Input::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, bool* _isFullscreen, Player& player, World& world, const float& deltaTime, SceneRenderer& scene)
+void Input::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccessed, bool* _isFullscreen, Player& player, World& world, const float& deltaTime, SceneRenderer& scene, Chat* chat)
 {
+    // Skip movement input when chat is active
+    if (chat != nullptr && chat->isInputActive()) return;
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         player.ProcessKeyboardMovement(FORWARD, deltaTime);

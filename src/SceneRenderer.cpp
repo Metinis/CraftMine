@@ -13,6 +13,7 @@ SceneRenderer::SceneRenderer(Camera& _camera, Player& _player) : camera(_camera)
     initialiseGBuffer();
     ui = new Crosshair();
     playerBoxRenderer = new PlayerBoxRenderer();
+    textRenderer = new TextRenderer(SOURCE_DIR "/resources/fonts/default.ttf", 18.0f);
 }
 
 
@@ -445,6 +446,11 @@ void SceneRenderer::renderGUI() const{
         }
     }
 
+    // Render chat overlay
+    if (textRenderer != nullptr && chatPtr != nullptr) {
+        textRenderer->setScreenDimensions(Game::currentWidth, Game::currentHeight);
+        chatPtr->render(*textRenderer, Game::currentWidth, Game::currentHeight, glfwGetTime());
+    }
 
     glEnable(GL_DEPTH_TEST);
 }

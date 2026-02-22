@@ -52,13 +52,15 @@ Game::Game(const std::string& username) {
     World::viewDistance = 12;
     player = new Player();
     camera = &player->camera;
+    chat = new Chat();
     scene = new SceneRenderer(*camera, *player);
     scene->remotePlayersPtr = &remotePlayers;
+    scene->chatPtr = chat;
     world = new World(*camera, *scene, *player);
     player->world = world;
 
-
     mouseInput = new Input(*camera, *world, *scene, *player, *this);
+    mouseInput->chat = chat;
 
 
     glfwSetWindowUserPointer(window, mouseInput);
@@ -68,6 +70,7 @@ Game::Game(const std::string& username) {
     glfwSetMouseButtonCallback(window, Input::mouse_button_callback);
     glfwSetScrollCallback(window, Input::scroll_callback);
     glfwSetKeyCallback(window, Input::key_callback);
+    glfwSetCharCallback(window, Input::char_callback);
 
     deltaTime = 0.0f;
     lastFrame = 0.0f;
@@ -116,6 +119,13 @@ void Game::run() {
 
         if (multiplayerMode) {
             processNetworkPackets();
+
+            // Send pending chat messages
+            std::string chatMsg;
+            if (chat->consumeSendBuffer(chatMsg) && network != nullptr && network->isConnected()) {
+                std::vector<uint8_t> payload = PacketSerializer::serializeChatMessage(chatMsg);
+                network->sendPacket(PacketType::C2S_CHAT_MESSAGE, payload);
+            }
         }
 
         currentTime = static_cast<float>(glfwGetTime());
@@ -173,7 +183,7 @@ void Game::run() {
         camera->updatePosition(player->lastPosition, player->position, alpha);
 
         // Process user input
-        Input::processInput(window, &wireframe, &keyProcessed, &isFullscreen, *player, *world, deltaTime, *scene);
+        Input::processInput(window, &wireframe, &keyProcessed, &isFullscreen, *player, *world, deltaTime, *scene, chat);
 
         if (deltaTime >= tickSpeed) {
             // Update sun offset for shadows
@@ -244,6 +254,9 @@ void Game::run() {
         delete network;
         network = nullptr;
     }
+
+    delete chat;
+    chat = nullptr;
 
     glfwTerminate();
 }
@@ -357,6 +370,13 @@ void Game::processNetworkPackets() {
                             }
                         }
                     }
+                }
+                break;
+            }
+            case PacketType::S2C_CHAT_MESSAGE: {
+                ChatMessagePayload chatData;
+                if (PacketSerializer::deserializeChatMessage(pkt.payload, chatData)) {
+                    chat->addMessage(chatData.username, chatData.message);
                 }
                 break;
             }

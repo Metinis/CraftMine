@@ -15,6 +15,7 @@ class GLFWwindow;
 class World;
 class SceneRenderer;
 class Game;
+class Chat;
 
 class Input {
 private:
@@ -59,8 +60,12 @@ public:
 
     static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
+    static void char_callback(GLFWwindow* window, unsigned int codepoint);
+
     static void processInput(GLFWwindow *window, bool *wireframe, bool *keyProccessed, bool *_isFullscreen, Player &player,
-                             World &world, const float &deltaTime, SceneRenderer &scene);
+                             World &world, const float &deltaTime, SceneRenderer &scene, Chat* chat);
+
+    Chat* chat = nullptr;
 };
 
 #endif //CRAFTMINE_MOUSEINPUT_H

@@ -20,6 +20,7 @@
 #include "SceneRenderer.h"
 #include "Network/NetworkClient.h"
 #include "Player/RemotePlayer.h"
+#include "Player/Chat.h"
 #include <string>
 #include <unordered_map>
 
@@ -40,6 +41,7 @@ public:
     Input* mouseInput;
     SceneRenderer* scene;
     NetworkClient* network;
+    Chat* chat;
     bool multiplayerMode;
     bool spawnChunkReady = false;
     std::unordered_map<uint32_t, RemotePlayer> remotePlayers;

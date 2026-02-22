@@ -13,7 +13,9 @@
 #include "Player/Inventory.h"
 #include "Graphics/CursorBlock.h"
 #include "Graphics/PlayerBoxRenderer.h"
+#include "Graphics/TextRenderer.h"
 #include "Player/RemotePlayer.h"
+#include "Player/Chat.h"
 
 class UBO;
 
@@ -76,6 +78,8 @@ public:
     Texture* inventoryTexture{};
     CursorBlock* cursorBlock{};
     PlayerBoxRenderer* playerBoxRenderer = nullptr;
+    TextRenderer* textRenderer = nullptr;
+    Chat* chatPtr = nullptr;
     std::unordered_map<uint32_t, RemotePlayer>* remotePlayersPtr = nullptr;
 
     Player& player;
