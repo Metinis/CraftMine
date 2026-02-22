@@ -26,7 +26,7 @@ Crosshair::Crosshair()
             glm::vec2(0.98828125f,  0.01171875f ), // top right
             glm::vec2(0.98828125f, 0.046875f), // bottom right
     };
-    shader = new Shader("../resources/shader/crosshair.vs", "../resources/shader/crosshair.fs");
+    shader = new Shader(SOURCE_DIR "/resources/shader/crosshair.vs", SOURCE_DIR "/resources/shader/crosshair.fs");
     CrosshairVAO = new VAO();
     CrosshairVBO = new VBO(vertices);
     shader->use();

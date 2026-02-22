@@ -12,6 +12,7 @@ SceneRenderer::SceneRenderer(Camera& _camera, Player& _player) : camera(_camera)
     initialiseShadowMap();
     initialiseGBuffer();
     ui = new Crosshair();
+    playerBoxRenderer = new PlayerBoxRenderer();
 }
 
 
@@ -19,19 +20,19 @@ int SceneRenderer::SHADOW_RESOLUTION = 1024 * 4;
 
 
 void SceneRenderer::initialiseWorldShaders(){
-    shader = new Shader("../resources/shader/shader.vs", "../resources/shader/shader.fs");
+    shader = new Shader(SOURCE_DIR "/resources/shader/shader.vs", SOURCE_DIR "/resources/shader/shader.fs");
 
-    outlineShader = new Shader("../resources/shader/OutlineShader.vs", "../resources/shader/OutlineShader.fs");
+    outlineShader = new Shader(SOURCE_DIR "/resources/shader/OutlineShader.vs", SOURCE_DIR "/resources/shader/OutlineShader.fs");
 
-    transparentShader = new Shader("../resources/shader/transparentShader.vs", "../resources/shader/transparentShader.fs");
+    transparentShader = new Shader(SOURCE_DIR "/resources/shader/transparentShader.vs", SOURCE_DIR "/resources/shader/transparentShader.fs");
 
-    geometryShader = new Shader("../resources/shader/gShader.vs", "../resources/shader/gShader.fs");
+    geometryShader = new Shader(SOURCE_DIR "/resources/shader/gShader.vs", SOURCE_DIR "/resources/shader/gShader.fs");
 
-    worldTexture = new Texture("../resources/texture/terrain1.png");
+    worldTexture = new Texture(SOURCE_DIR "/resources/texture/terrain1.png");
 
-    guiTexture = new Texture("../resources/gui/gui.png");
+    guiTexture = new Texture(SOURCE_DIR "/resources/gui/gui.png");
 
-    inventoryTexture = new Texture("../resources/gui/inventory.png");
+    inventoryTexture = new Texture(SOURCE_DIR "/resources/gui/inventory.png");
 
     cursorBlock = new CursorBlock();
 
@@ -107,13 +108,13 @@ void SceneRenderer::initialiseShadowMap(){
     fbo->bindForRender();
     fbo->initialiseTextureFBO();
 
-    frameShader = new Shader("../resources/shader/framebuffer.vs", "../resources/shader/framebuffer.fs");
+    frameShader = new Shader(SOURCE_DIR "/resources/shader/framebuffer.vs", SOURCE_DIR "/resources/shader/framebuffer.fs");
 
     frameShader->use();
 
     glUniform1i(glGetUniformLocation(frameShader->ID, "sampledTexture"), 0);
 
-    shadowMapShader = new Shader("../resources/shader/shadowMap.vs", "../resources/shader/shadowMap.fs", "../resources/shader/shadowMap.gs");
+    shadowMapShader = new Shader(SOURCE_DIR "/resources/shader/shadowMap.vs", SOURCE_DIR "/resources/shader/shadowMap.fs", SOURCE_DIR "/resources/shader/shadowMap.gs");
 
     shadowMapShader->use();
 
@@ -192,7 +193,7 @@ void SceneRenderer::changeGlobalTexture()
         }
         lastTime = currentTime;
         std::stringstream path;
-        path << "../resources/texture/terrain" << lastTexture << ".png";
+        path << SOURCE_DIR "/resources/texture/terrain" << lastTexture << ".png";
         const std::string texturePath = path.str();
         worldTexture->setTexture(texturePath.c_str());
     }
@@ -396,6 +397,10 @@ void SceneRenderer::renderWorld(const World& world){
     glUniform1i(glGetUniformLocation(transparentShader->ID, "shadowMap"), 4);
 
     world.renderTransparentMeshes(*transparentShader);
+
+    if (remotePlayersPtr != nullptr && playerBoxRenderer != nullptr) {
+        playerBoxRenderer->render(*remotePlayersPtr, view, proj);
+    }
 
     renderBlockOutline(world);
     //render toolbar to world frame buffer for post processing if inventory open

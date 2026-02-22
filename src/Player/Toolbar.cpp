@@ -41,7 +41,7 @@ Toolbar::Toolbar()
             glm::vec2(0.09375f, 0.0859375f), // top right
             glm::vec2(0.09375f, 0.1796875f), // bottom right
     };
-    shader = new Shader("../resources/shader/UIShader.vs", "../resources/shader/UIShader.fs");
+    shader = new Shader(SOURCE_DIR "/resources/shader/UIShader.vs", SOURCE_DIR "/resources/shader/UIShader.fs");
     ToolBarVAO = new VAO();
     ToolBarVBO = new VBO(vertices);
     shader->use();
@@ -232,7 +232,7 @@ void Toolbar::loadItemsRendering() {
 
 
     }
-    itemShader = new Shader("../resources/shader/itemUI.vs", "../resources/shader/itemUI.fs");
+    itemShader = new Shader(SOURCE_DIR "/resources/shader/itemUI.vs", SOURCE_DIR "/resources/shader/itemUI.fs");
     itemShader->use();
 
     GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();

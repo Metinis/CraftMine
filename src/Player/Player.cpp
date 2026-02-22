@@ -54,7 +54,9 @@ void Player::updateShifting() {
 }
 void Player::checkIfSwimming(const glm::ivec3 pos){
     const glm::vec3 posInChunk = positionInChunk();
-    const unsigned char playerBlockID = world->GetChunk(chunkPosition.x, chunkPosition.y)->GetBlockID(glm::round(glm::vec3(posInChunk.x, pos.y - 1, posInChunk.z)));
+    Chunk* chunk = world->GetChunk(chunkPosition.x, chunkPosition.y);
+    if (chunk == nullptr || !chunk->generatedBlockData) return;
+    const unsigned char playerBlockID = chunk->GetBlockID(glm::round(glm::vec3(posInChunk.x, pos.y - 1, posInChunk.z)));
     if(playerBlockID == 5 || playerBlockID == 67){ //water or lava, TODO change to block id map to be clearer
         isSwimming = true;
         if(!isFlying)
@@ -453,7 +455,7 @@ void Player::savePosToFile() const {
     memcpy(serializedData + sizeof(position) + sizeof(camera.Front), &toolbar->toolbarItems, sizeof(toolbar->toolbarItems));
 
     // Write the serialized data to a file
-    const std::string filename = "../save/playerData.bin";
+    const std::string filename = SOURCE_DIR "/save/playerData.bin";
     std::ofstream outfile(filename, std::ios::binary | std::ios::trunc);
     if (!outfile) {
         delete[] serializedData;
@@ -468,7 +470,7 @@ void Player::savePosToFile() const {
 
 
 bool Player::loadPlayerPosFromFile() {
-    const std::string filename = "../save/playerData.bin";
+    const std::string filename = SOURCE_DIR "/save/playerData.bin";
     std::ifstream infile(filename, std::ios::binary);
     if (!infile) {
         return false;
