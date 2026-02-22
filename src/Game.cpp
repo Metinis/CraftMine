@@ -3,6 +3,7 @@
 //
 
 #include "Game.h"
+#include "Network/PacketTypes.h"
 
 
 Game::Game() {
@@ -73,6 +74,21 @@ Game::Game() {
     newChunkPos = glm::ivec2(player->position.x / Chunk::SIZE, player->position.z / Chunk::SIZE);
 
     updateingInt = 1;
+
+    network = new NetworkClient();
+    multiplayerMode = false;
+    if (network->connect("127.0.0.1", 25565)) {
+        multiplayerMode = true;
+        world->multiplayerMode = true;
+        world->networkClient = network;
+
+        std::vector<uint8_t> helloPayload = PacketSerializer::serializeHello("Player", "");
+        network->sendPacket(PacketType::C2S_HELLO, helloPayload);
+        std::cout << "[Game] Multiplayer mode enabled, sent Hello" << std::endl;
+    } else {
+        std::cout << "[Game] No server found, running singleplayer" << std::endl;
+    }
+
     world->UpdateViewDistance(newChunkPos);
 }
 
@@ -94,6 +110,10 @@ void Game::run() {
     while (!glfwWindowShouldClose(window)) {
         if (!window) {
             break;
+        }
+
+        if (multiplayerMode) {
+            processNetworkPackets();
         }
 
         currentTime = static_cast<float>(glfwGetTime());
@@ -194,7 +214,68 @@ void Game::run() {
             fpsTime = 0.0;
         }*/
     }
+    if (network != nullptr) {
+        network->disconnect();
+        delete network;
+        network = nullptr;
+    }
+
     glfwTerminate();
+}
+
+void Game::processNetworkPackets() {
+    if (network == nullptr || !network->isConnected()) {
+        if (multiplayerMode) {
+            std::cout << "[Game] Lost connection to server, falling back to singleplayer" << std::endl;
+            multiplayerMode = false;
+            world->multiplayerMode = false;
+            world->networkClient = nullptr;
+        }
+        return;
+    }
+
+    std::vector<Packet> packets = network->processIncoming();
+    for (size_t i = 0; i < packets.size(); i++) {
+        const Packet& pkt = packets[i];
+        switch (pkt.type) {
+            case PacketType::S2C_HELLO_ACK: {
+                HelloAckPayload ack;
+                if (PacketSerializer::deserializeHelloAck(pkt.payload, ack)) {
+                    std::cout << "[Game] Received HelloAck: spawn=("
+                              << ack.spawnX << ", " << ack.spawnY << ", " << ack.spawnZ
+                              << ") health=" << ack.health << std::endl;
+                    player->position = glm::vec3(ack.spawnX, ack.spawnY, ack.spawnZ);
+                    player->camera.position = player->position;
+                }
+                break;
+            }
+            case PacketType::S2C_REJECT: {
+                RejectPayload reject;
+                if (PacketSerializer::deserializeReject(pkt.payload, reject)) {
+                    std::cerr << "[Game] Server rejected connection: " << reject.reason << std::endl;
+                }
+                multiplayerMode = false;
+                world->multiplayerMode = false;
+                world->networkClient = nullptr;
+                network->disconnect();
+                break;
+            }
+            case PacketType::S2C_CHUNK_DATA: {
+                ChunkDataPayload chunkData;
+                if (PacketSerializer::deserializeChunkData(pkt.payload, chunkData)) {
+                    world->receiveServerChunk(chunkData.chunkX, chunkData.chunkZ, chunkData.compressedData);
+                }
+                break;
+            }
+            case PacketType::S2C_PONG: {
+                break;
+            }
+            default:
+                std::cerr << "[Game] Unknown packet type: 0x"
+                          << std::hex << static_cast<int>(pkt.type) << std::dec << std::endl;
+                break;
+        }
+    }
 }
 
 int Game::currentWidth = 0;

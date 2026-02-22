@@ -18,6 +18,7 @@
 #include "Player/Player.h"
 #include "Graphics/ScreenQuad.h"
 #include "SceneRenderer.h"
+#include "Network/NetworkClient.h"
 
 class SceneRenderer;
 
@@ -35,8 +36,12 @@ public:
     World* world;
     Input* mouseInput;
     SceneRenderer* scene;
+    NetworkClient* network;
+    bool multiplayerMode;
     static int currentWidth;
     static int currentHeight;
+
+    void processNetworkPackets();
 private:
     GLFWwindow* window;
     glm::ivec2 lastChunkPos{};

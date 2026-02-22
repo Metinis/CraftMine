@@ -20,7 +20,7 @@ endif()
 
 FetchContent_Declare(
         zlib
-        URL https://zlib.net/zlib-1.3.1.tar.gz
+        URL https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz
 )
 
 FetchContent_MakeAvailable(zlib)
@@ -49,6 +49,10 @@ target_link_libraries(CraftMine PRIVATE
         glfw
         zlibstatic
 )
+
+if(WIN32)
+    target_link_libraries(CraftMine PRIVATE ws2_32)
+endif()
 
 target_compile_definitions(CraftMine PRIVATE
         SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
