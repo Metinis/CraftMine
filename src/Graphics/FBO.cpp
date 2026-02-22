@@ -123,15 +123,15 @@ void FBO::bindForReadDepth() const {
     glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
 }
 
-void FBO::Unbind(){
+void FBO::unbind(){
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
-void FBO::UnbindDepth() {
+void FBO::unbindDepth() {
 
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
-void FBO::Delete() const
+void FBO::deleteFBO() const
 {
     glDeleteBuffers(1, &ID);
     glDeleteBuffers(1, &texture);

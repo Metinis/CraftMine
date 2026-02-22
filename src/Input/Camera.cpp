@@ -10,11 +10,11 @@ Camera::Camera()
     Pitch = 0.0f;
 
 }
-glm::mat4 Camera::GetViewMatrix() const
+glm::mat4 Camera::getViewMatrix() const
 {
 	return glm::lookAt(position, position + Front, Up);
 }
-void Camera::ProcessMouseMovement(float xoffset, float yoffset)
+void Camera::processMouseMovement(float xoffset, float yoffset)
 {
 	xoffset *= MouseSensitivity;
 	yoffset *= MouseSensitivity;

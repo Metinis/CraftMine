@@ -15,39 +15,20 @@ SceneRenderer::SceneRenderer(Camera& _camera, Player& _player) : camera(_camera)
 }
 
 
-int SceneRenderer::SHADOW_RESOLUTION = 1024 * 4;
-
-
 void SceneRenderer::initialiseWorldShaders(){
     shader = new Shader("../resources/shader/shader.vs", "../resources/shader/shader.fs");
-
-    outlineShader = new Shader("../resources/shader/OutlineShader.vs", "../resources/shader/OutlineShader.fs");
-
+    outlineShader = new Shader("../resources/shader/outlineShader.vs", "../resources/shader/outlineShader.fs");
     transparentShader = new Shader("../resources/shader/transparentShader.vs", "../resources/shader/transparentShader.fs");
-
     geometryShader = new Shader("../resources/shader/gShader.vs", "../resources/shader/gShader.fs");
-
     worldTexture = new Texture("../resources/texture/terrain1.png");
-
     guiTexture = new Texture("../resources/gui/gui.png");
-
     inventoryTexture = new Texture("../resources/gui/inventory.png");
-
     cursorBlock = new CursorBlock();
 
-    // Get the primary monitor
-    GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
-
-    // Get the video mode of the primary monitor
-    const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
-
-    // Calculate the aspect ratio
-    const float aspectRatio = static_cast<float>(mode->width) / static_cast<float>(mode->height);
-
+    updateProjection();
 
     model = glm::mat4(1.0f);
     view = glm::mat4(1.0f);
-    proj = glm::perspective(glm::radians(65.0f), aspectRatio, cameraNearPlane, cameraFarPlane);
 
     outlineShader->use();
     outlineShader->setMat4("model", model);
@@ -119,7 +100,7 @@ void SceneRenderer::initialiseShadowMap(){
 
     shadowMapShader->setMat4("model", model);
 
-    depthFBO = new FBO(SHADOW_RESOLUTION, SHADOW_RESOLUTION);
+    depthFBO = new FBO(shadowRes, shadowRes);
 
     depthFBO->initialiseDepthFBO();
 
@@ -151,7 +132,7 @@ void SceneRenderer::updateShadowProjection(){
     UBO::unbind();
 
     const glm::vec3 normalizedLightDir = glm::normalize(lightDir);
-    view = camera.GetViewMatrix();
+    view = camera.getViewMatrix();
     shader->use();
     shader->setMat4("view", view);
     shader->setFloat("minBrightness", minBrightness);
@@ -163,6 +144,14 @@ void SceneRenderer::updateShadowProjection(){
     transparentShader->setFloat("minBrightness", minBrightness);
     transparentShader->setFloat("maxBrightnessFactor", maxBrightnessFactor);
     transparentShader->setVec3("lightDir", normalizedLightDir);
+}
+
+void SceneRenderer::updateProjection() {
+    int x, y, width, height;
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    glfwGetMonitorWorkarea(monitor, &x, &y, &width, &height);
+    const float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+    proj = glm::perspective(glm::radians(65.0f), aspectRatio, cameraNearPlane, cameraFarPlane);
 }
 
 void SceneRenderer::renderMesh(Mesh& mesh, Shader& _shader){
@@ -226,7 +215,7 @@ void SceneRenderer::updateShaders(){
         transparentShader->setVec3("fogColor", fogColor);
     }
     transparentShader->use();
-    view = camera.GetViewMatrix();
+    view = camera.getViewMatrix();
     outlineShader->use();
     outlineShader->setMat4("view", view);
     transparentShader->use();
@@ -240,11 +229,11 @@ void SceneRenderer::renderBlockOutline(const World& world)
 {
     glm::ivec3 result;
     Chunk* currentChunk;
-    if(world.RaycastBlockPos(camera.position, camera.Front, result, currentChunk)){
+    if(world.raycastBlockPos(camera.position, camera.Front, result, currentChunk)){
         const auto globalPos = glm::ivec3(result.x + currentChunk->chunkPosition.x * Chunk::SIZE, result.y, result.z + currentChunk->chunkPosition.y * Chunk::SIZE);
         if(globalPos != lastOutlinePos)
         {
-            updateOutlineBuffers(globalPos, currentChunk->GetBlockID(result));
+            updateOutlineBuffers(globalPos, currentChunk->getBlockID(result));
             drawOutline();
         }
         else
@@ -255,24 +244,24 @@ void SceneRenderer::renderBlockOutline(const World& world)
     }
 }
 void SceneRenderer::updateOutlineBuffers(const glm::ivec3& globalPos, const unsigned char blockID){
-    const std::vector<glm::vec3> vertices = Block::GetOutline(globalPos, blockID);
+    const std::vector<glm::vec3> vertices = Block::getOutline(globalPos, blockID);
     std::vector<GLuint> indices;
 
     if(outlineVAO != nullptr)
     {
-        outlineVAO->Delete();
+        outlineVAO->deleteVAO();
         delete outlineVAO;
         outlineVAO = nullptr;
     }
     if(outlineVBO != nullptr)
     {
-        outlineVBO->Delete();
+        outlineVBO->deleteVBO();
         delete outlineVBO;
         outlineVBO = nullptr;
     }
     if(outlineIBO != nullptr)
     {
-        outlineIBO->Delete();
+        outlineIBO->deleteIBO();
         delete outlineIBO;
         outlineIBO = nullptr;
     }
@@ -295,12 +284,12 @@ void SceneRenderer::updateOutlineBuffers(const glm::ivec3& globalPos, const unsi
     outlineVAO = new VAO();
 
     outlineVBO = new VBO(vertices);
-    outlineVBO->Bind();
+    outlineVBO->bind();
 
-    outlineVAO->LinkToVAO(outlineShader->getAttribLocation("aPos"), 3, *outlineVBO);
+    outlineVAO->linkToVAO(outlineShader->getAttribLocation("aPos"), 3, *outlineVBO);
 
-    VBO::Unbind();
-    VAO::Unbind();
+    VBO::unbind();
+    VAO::unbind();
 
     outlineIBO = new IBO(indices);
 }
@@ -309,11 +298,11 @@ void SceneRenderer::drawOutline() const
 {
     constexpr int indexCount = 48;
     outlineShader->use();
-    outlineVAO->Bind();
-    outlineIBO->Bind();
+    outlineVAO->bind();
+    outlineIBO->bind();
     glDrawElements(GL_LINES, static_cast<GLsizei>(indexCount), GL_UNSIGNED_INT, nullptr);
-    VAO::Unbind();
-    IBO::Unbind();
+    VAO::unbind();
+    IBO::unbind();
 }
 
 void SceneRenderer::render(Shader& _shader, const World& world){
@@ -351,7 +340,7 @@ void SceneRenderer::renderWorld(const World& world){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glActiveTexture(GL_TEXTURE0);
-    worldTexture->Bind();
+    worldTexture->bind();
     geometryShader->use();
     world.renderSolidMeshes(*geometryShader);
     //world.renderChunksToShader(*geometryShader);
@@ -378,8 +367,8 @@ void SceneRenderer::renderWorld(const World& world){
     glActiveTexture(GL_TEXTURE3);
     depthFBO->bindForReadDepth();
     screenQuad->renderQuad(*shader);
-    FBO::UnbindDepth();
-    FBO::Unbind();
+    FBO::unbindDepth();
+    FBO::unbind();
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo->ID);
@@ -390,7 +379,7 @@ void SceneRenderer::renderWorld(const World& world){
 
     transparentShader->use();
     glActiveTexture(GL_TEXTURE0);
-    worldTexture->Bind();
+    worldTexture->bind();
     glActiveTexture(GL_TEXTURE4);  // Transparency depth map
     glBindTexture(GL_TEXTURE_2D_ARRAY, depthFBO->texture);
     glUniform1i(glGetUniformLocation(transparentShader->ID, "shadowMap"), 4);
@@ -403,37 +392,37 @@ void SceneRenderer::renderWorld(const World& world){
     if(inventoryOpen){
         glDisable(GL_DEPTH_TEST);
 
-        guiTexture->Bind();
+        guiTexture->bind();
         player.toolbar->renderToolbar();
-        worldTexture->Bind();
+        worldTexture->bind();
         player.toolbar->renderItems();
-        guiTexture->Bind();
+        guiTexture->bind();
         player.toolbar->renderSlot();
-        worldTexture->Bind();
+        worldTexture->bind();
 
         glEnable(GL_DEPTH_TEST);
     }
-    FBO::Unbind();
+    FBO::unbind();
 }
 void SceneRenderer::renderGUI() const{
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDisable(GL_DEPTH_TEST);
     //render cross hair/ui
-    guiTexture->Bind();
+    guiTexture->bind();
     ui->renderCrosshair();
     if(!inventoryOpen) {
         player.toolbar->renderToolbar();
-        worldTexture->Bind();
+        worldTexture->bind();
         player.toolbar->renderItems();
-        guiTexture->Bind();
+        guiTexture->bind();
         player.toolbar->renderSlot();
-        worldTexture->Bind();
+        worldTexture->bind();
     }
 
     if(inventoryOpen){
-        inventoryTexture->Bind();
+        inventoryTexture->bind();
         player.inventory->renderInventory();
-        worldTexture->Bind();
+        worldTexture->bind();
         player.inventory->renderItems();
         if(cursorBlock->currentBlock != 0){
             cursorBlock->renderBlockOnCursor();
@@ -581,7 +570,7 @@ glm::mat4 SceneRenderer::getLightSpaceMatrix(const float nearPlane, const float 
 
     const auto proj = glm::perspective(glm::radians(65.0f), aspectRatio, nearPlane, farPlane);
 
-    const auto corners = getFrustumCornersWorldSpace(proj, camera.GetViewMatrix());
+    const auto corners = getFrustumCornersWorldSpace(proj, camera.getViewMatrix());
 
     auto center = glm::vec3(0, 0, 0);
     for (const auto& v : corners)

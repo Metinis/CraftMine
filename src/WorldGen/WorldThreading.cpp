@@ -38,7 +38,7 @@ void WorldThreading::GenerateChunkThread(const World& world)
         {
             Chunk* chunk;
             {
-                chunk = world.GetChunk(chunksToLoadData.back());
+                chunk = world.getChunk(chunksToLoadData.back());
             }
             if(chunk == nullptr){
 
@@ -56,7 +56,7 @@ void WorldThreading::GenerateChunkThread(const World& world)
                 chunk->inThread = true;
 
                 CheckForBlocksToBeAdded(chunk);
-                chunk->LoadChunkData();
+                chunk->loadChunkData();
                 chunk->inThread = false;
                 {
                     std::lock_guard<std::mutex> _lock(mutexLoadedChunks);
@@ -84,7 +84,7 @@ void WorldThreading::GenerateWorldThread(const World& world)
         {
             Chunk* chunk;
             {
-                chunk = world.GetChunk(chunksToGenerate.back());
+                chunk = world.getChunk(chunksToGenerate.back());
             }
             if(chunk == nullptr){
 
@@ -99,7 +99,7 @@ void WorldThreading::GenerateWorldThread(const World& world)
                 chunk->inThread = true;
 
                 if (!chunk->generatedBlockData) {
-                    chunk->GenBlocks();
+                    chunk->genBlocks();
                 }
                 CheckForBlocksToBeAdded(chunk);
 
@@ -129,7 +129,7 @@ bool WorldThreading::CheckForBlocksToBeAdded(Chunk* chunk)
     {
         if(_blocksToBeAdded.chunkPosition == chunk->chunkPosition)
         {
-            chunk->SetBlock(glm::ivec3(_blocksToBeAdded.localPosition.x, _blocksToBeAdded.localPosition.y, _blocksToBeAdded.localPosition.z), _blocksToBeAdded.blockID);
+            chunk->setBlock(glm::ivec3(_blocksToBeAdded.localPosition.x, _blocksToBeAdded.localPosition.y, _blocksToBeAdded.localPosition.z), _blocksToBeAdded.blockID);
             hasBlocksToBeAdded = true;
         }
         else
@@ -152,7 +152,7 @@ void WorldThreading::deleteInActiveChunks(World& world, const std::vector<glm::i
     {
         std::lock_guard<std::mutex> lock(mutexChunksToLoadData);
         for (glm::ivec2 chunkPos : chunksToLoadData) {
-            const Chunk* chunk = world.GetChunk(chunkPos);
+            const Chunk* chunk = world.getChunk(chunkPos);
             if (chunk == nullptr) {
                 continue;
             }
@@ -162,7 +162,7 @@ void WorldThreading::deleteInActiveChunks(World& world, const std::vector<glm::i
         }
     }
     for (glm::ivec2 chunkPos : activeChunks) {
-        const Chunk* chunk = world.GetChunk(chunkPos);
+        const Chunk* chunk = world.getChunk(chunkPos);
         if (chunk == nullptr) {
             continue;
         }
@@ -196,7 +196,7 @@ std::vector<Chunk*> WorldThreading::GetAddedThreadChunks(const World& world)
         Chunk* chunk;
         {
             std::lock_guard<std::mutex> lock(mutexLoadedChunks);
-            chunk = world.GetChunk(loadedChunks.front());
+            chunk = world.getChunk(loadedChunks.front());
 
             loadedChunks.pop();
         }
@@ -213,7 +213,7 @@ std::vector<Chunk*> WorldThreading::GetAddedThreadChunks(const World& world)
             }
             else if(!chunk->getIsAllSidesUpdated()){
                 {
-                    ChunkMeshGeneration::UpdateNeighbours(*chunk);
+                    ChunkMeshGeneration::updateNeighbours(*chunk);
                     addedChunks.push_back(chunk);
                 }
             }

@@ -19,10 +19,10 @@ class VBO
 		explicit VBO(const std::vector<glm::vec2>& data);
         //constructor for brightness
         explicit VBO(const std::vector<float>& data);
-		void SetNewData(const std::vector<glm::vec3>& data) const;
-		void SetNewData(const std::vector<glm::vec2>& data) const;
-		void Bind() const;
-		static void Unbind();
-		void Delete() const;
+		void setNewData(const std::vector<glm::vec3>& data) const;
+		void setNewData(const std::vector<glm::vec2>& data) const;
+		void bind() const;
+		static void unbind();
+		void deleteVBO() const;
 };
 

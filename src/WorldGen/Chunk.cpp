@@ -9,7 +9,7 @@ Chunk::Chunk(const glm::ivec2 Position, World& _world) : world(_world)
     chunkPosition = Position;
 }
 
-unsigned char Chunk::GetBlockID(const glm::ivec3 pos) const
+unsigned char Chunk::getBlockID(const glm::ivec3 pos) const
 {
     if (pos.x < 0 || pos.x > SIZE - 1 || pos.y < 0 || pos.y > HEIGHT - 1 || pos.z < 0 || pos.z > SIZE - 1) {
         return 0;
@@ -19,7 +19,7 @@ unsigned char Chunk::GetBlockID(const glm::ivec3 pos) const
 }
 
 
-void Chunk::SetBlock(const glm::ivec3 pos, const unsigned char id)
+void Chunk::setBlock(const glm::ivec3 pos, const unsigned char id)
 {
     {
         std::lock_guard<std::mutex> lock(chunkBlockMutex);
@@ -33,18 +33,18 @@ void Chunk::SetBlock(const glm::ivec3 pos, const unsigned char id)
     saveData();
 }
 
-void Chunk::GenBlocks()
+void Chunk::genBlocks()
 {
     {
         if (!loadData()) {
-            ChunkGeneration::GenBlocks(*this);
+            ChunkGeneration::genBlocks(*this);
         }
         generatedBlockData = true;
     }
     saveData();
 }
 
-void Chunk::ClearVertexData()
+void Chunk::clearVertexData()
 {
     chunkData.indexCount = 0;
     chunkData.chunkVerts.clear();
@@ -128,7 +128,7 @@ void Chunk::sortTransparentMeshData() {
             }
         }
         chunkData.nonSolidIndexCount = 0;
-        ChunkMeshGeneration::AddIndices(static_cast<int>(combinedData.size()), chunkData.nonSolidIndices,
+        ChunkMeshGeneration::addIndices(static_cast<int>(combinedData.size()), chunkData.nonSolidIndices,
                                         chunkData.nonSolidIndexCount);
     }
 }
@@ -172,9 +172,9 @@ void Chunk::sortTransparentMeshData(glm::vec3 position) {
         }
     }
     chunkData.nonSolidIndexCount = 0;
-    ChunkMeshGeneration::AddIndices(static_cast<int>(combinedData.size()), chunkData.nonSolidIndices, chunkData.nonSolidIndexCount);
+    ChunkMeshGeneration::addIndices(static_cast<int>(combinedData.size()), chunkData.nonSolidIndices, chunkData.nonSolidIndexCount);
 }
-void Chunk::LoadBufferData()
+void Chunk::loadBufferData()
 {
 
     std::lock_guard<std::mutex> lock(chunkMeshMutex);
@@ -199,14 +199,14 @@ void Chunk::LoadBufferData()
     generatedBuffData = true;
 }
 
-void Chunk::LoadChunkData() {
+void Chunk::loadChunkData() {
     std::lock_guard<std::mutex> lock(chunkMeshMutex);
-    ClearVertexData();
-    ChunkMeshGeneration::GenFaces(*this);
-    ChunkMeshGeneration::UpdateNeighbours(*this);
+    clearVertexData();
+    ChunkMeshGeneration::genFaces(*this);
+    ChunkMeshGeneration::updateNeighbours(*this);
 }
 
-void Chunk::Delete()
+void Chunk::deleteChunk()
 {
     if(mesh != nullptr){
         delete mesh;
@@ -225,7 +225,7 @@ Chunk::~Chunk()
         std::lock_guard<std::mutex> lock(chunkMeshMutex);
         std::lock_guard<std::mutex> _lock(chunkDeleteMutex);
         std::lock_guard<std::mutex> alock(chunkBlockMutex);
-        Delete();
+        deleteChunk();
     }
 }
 

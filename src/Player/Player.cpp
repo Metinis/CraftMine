@@ -15,7 +15,7 @@ Player::Player(){
 
     inventory = new Inventory(*toolbar);
 }
-void Player::Update(const float deltaTime){
+void Player::update(const float deltaTime){
 
     savePosToFile();
     checkIfSwimming(glm::round(position));
@@ -28,11 +28,11 @@ void Player::Update(const float deltaTime){
     calculateNewPositionY(deltaTime);
 
     if(glm::length(playerVelocity) != 0 || !isGrounded){
-        UpdatePositionXZ(newPosition);
+        updatePositionXZ(newPosition);
     }
 
     if(glm::length(playerVelocity) > 0)
-        UpdateDeceleration(deltaTime);
+        updateDeceleration(deltaTime);
 
     updateShifting();
 
@@ -54,7 +54,7 @@ void Player::updateShifting() {
 }
 void Player::checkIfSwimming(const glm::ivec3 pos){
     const glm::vec3 posInChunk = positionInChunk();
-    const unsigned char playerBlockID = world->GetChunk(chunkPosition.x, chunkPosition.y)->GetBlockID(glm::round(glm::vec3(posInChunk.x, pos.y - 1, posInChunk.z)));
+    const unsigned char playerBlockID = world->getChunk(chunkPosition.x, chunkPosition.y)->getBlockID(glm::round(glm::vec3(posInChunk.x, pos.y - 1, posInChunk.z)));
     if(playerBlockID == 5 || playerBlockID == 67){ //water or lava, TODO change to block id map to be clearer
         isSwimming = true;
         if(!isFlying)
@@ -119,7 +119,7 @@ void Player::applyNewPositionY(const glm::vec3 &newPosition) {
     }
     isGrounded = checkNewPositionY(position);
 }
-void Player::UpdatePositionXZ(const glm::vec3& newPosition) {
+void Player::updatePositionXZ(const glm::vec3& newPosition) {
 
     const auto newPosX = glm::vec3(newPosition.x, newPosition.y, position.z);
     const auto newPosZ = glm::vec3(position.x, newPosition.y, newPosition.z);
@@ -168,7 +168,7 @@ void Player::UpdatePositionXZ(const glm::vec3& newPosition) {
         }
     }
 }
-void Player::UpdateDeceleration(const float &deltaTime){
+void Player::updateDeceleration(const float &deltaTime){
     // Calculate the magnitude of the velocity vector in the XZ plane
     float velocityMagnitudeXZ = glm::length(glm::vec2(playerVelocity.x, playerVelocity.z));
 
@@ -190,7 +190,7 @@ void Player::UpdateDeceleration(const float &deltaTime){
         playerVelocity.z = 0.0f;
     }
 }
-void Player::ProcessKeyboardMovement(const cameraMovement dir, const float deltaTime)
+void Player::processKeyboardMovement(const cameraMovement dir, const float deltaTime)
 {
     glm::vec2 playerVelocityXZ;
     playerVelocityXZ.x = playerVelocity.x;
@@ -281,7 +281,7 @@ bool Player::checkNewPositionZ(const float newZ) const
         _chunkPosition.x = static_cast<int>(glm::round(position.x + xWidth) / Chunk::SIZE);
         _chunkPosition.y = static_cast<int>(glm::round(newZ + zWidth) / Chunk::SIZE);
 
-        const Chunk* currentChunk = world->GetChunk(_chunkPosition.x, _chunkPosition.y);
+        const Chunk* currentChunk = world->getChunk(_chunkPosition.x, _chunkPosition.y);
 
         if(currentChunk != nullptr) {
 
@@ -294,9 +294,9 @@ bool Player::checkNewPositionZ(const float newZ) const
 
             const int newChunkPosZ = static_cast<int>(glm::round((newZ - static_cast<float>(currentChunk->chunkPosition.y * Chunk::SIZE)) + zWidth));
 
-            if (Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y1, newChunkPosZ))) ||
-                Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y2, newChunkPosZ)))||
-                Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y3, newChunkPosZ)))) {
+            if (Block::isSolid(currentChunk->getBlockID(glm::vec3(newChunkPosX, y1, newChunkPosZ))) ||
+                Block::isSolid(currentChunk->getBlockID(glm::vec3(newChunkPosX, y2, newChunkPosZ)))||
+                Block::isSolid(currentChunk->getBlockID(glm::vec3(newChunkPosX, y3, newChunkPosZ)))) {
                 return true;
             }
         }
@@ -313,7 +313,7 @@ bool Player::checkNewPositionX(const float newX) const
         _chunkPosition.x = static_cast<int>(glm::round(newX + xWidth) / Chunk::SIZE);
         _chunkPosition.y = static_cast<int>(glm::round(position.z + zWidth) / Chunk::SIZE);
 
-        const Chunk* currentChunk = world->GetChunk(_chunkPosition.x, _chunkPosition.y);
+        const Chunk* currentChunk = world->getChunk(_chunkPosition.x, _chunkPosition.y);
         if(currentChunk != nullptr) {
 
             const int newChunkPosX = static_cast<int>(glm::round((newX - static_cast<float>(currentChunk->chunkPosition.x * Chunk::SIZE)) + xWidth));
@@ -325,9 +325,9 @@ bool Player::checkNewPositionX(const float newX) const
             const int newChunkPosZ = static_cast<int>(glm::round(
                     (position.z - static_cast<float>(currentChunk->chunkPosition.y * Chunk::SIZE)) + zWidth));
 
-            if (Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y1, newChunkPosZ))) ||
-                Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y2, newChunkPosZ)))||
-                Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPosX, y3, newChunkPosZ)))) {
+            if (Block::isSolid(currentChunk->getBlockID(glm::vec3(newChunkPosX, y1, newChunkPosZ))) ||
+                Block::isSolid(currentChunk->getBlockID(glm::vec3(newChunkPosX, y2, newChunkPosZ)))||
+                Block::isSolid(currentChunk->getBlockID(glm::vec3(newChunkPosX, y3, newChunkPosZ)))) {
                 return true;
             }
         }
@@ -344,7 +344,7 @@ bool Player::checkNewPositionXZ(const glm::vec3& newPosition) const
 
     _chunkPosition.x = static_cast<int>(glm::round(newPosition.x + _widthX) / Chunk::SIZE);
     _chunkPosition.y = static_cast<int>(glm::round(newPosition.z + _widthZ) / Chunk::SIZE);
-    const Chunk* currentChunk = world->GetChunk(_chunkPosition.x, _chunkPosition.y);
+    const Chunk* currentChunk = world->getChunk(_chunkPosition.x, _chunkPosition.y);
 
     if(currentChunk != nullptr) {
         glm::vec3 newChunkPos;
@@ -353,10 +353,10 @@ bool Player::checkNewPositionXZ(const glm::vec3& newPosition) const
         newChunkPos.y = glm::round(position.y);
         newChunkPos.z = ((newPosition.z - static_cast<float>(currentChunk->chunkPosition.y * Chunk::SIZE)) + _widthZ);
 
-        if (Block::isSolid(currentChunk->GetBlockID(glm::vec3(newChunkPos.x, newChunkPos.y, newChunkPos.z))) ||
-            Block::isSolid(currentChunk->GetBlockID(
+        if (Block::isSolid(currentChunk->getBlockID(glm::vec3(newChunkPos.x, newChunkPos.y, newChunkPos.z))) ||
+            Block::isSolid(currentChunk->getBlockID(
                     glm::round(glm::vec3(newChunkPos.x, newChunkPos.y - 1.5f, newChunkPos.z)))) ||
-                Block::isSolid(currentChunk->GetBlockID(
+                Block::isSolid(currentChunk->getBlockID(
                         glm::round(glm::vec3(newChunkPos.x, newChunkPos.y - 1.0f, newChunkPos.z))))) {
             return true;
         }
@@ -376,14 +376,14 @@ bool Player::checkNewPositionY(const glm::vec3& newPosition) const
 
             _chunkPosition.x = static_cast<int>(std::round(position.x + xWidth) / Chunk::SIZE);
             _chunkPosition.y = static_cast<int>(std::round(position.z + zWidth) / Chunk::SIZE);
-            const Chunk* currentChunk= world->GetChunk(_chunkPosition.x, _chunkPosition.y);
+            const Chunk* currentChunk= world->getChunk(_chunkPosition.x, _chunkPosition.y);
             if(currentChunk != nullptr) {
 
                 glm::vec3 localChunkPos; //position in chunk
                 localChunkPos.x = ((newPosition.x - static_cast<float>(currentChunk->chunkPosition.x * Chunk::SIZE)) + xWidth);
                 localChunkPos.z = ((newPosition.z - static_cast<float>(currentChunk->chunkPosition.y * Chunk::SIZE)) + zWidth);
 
-                if (Block::isSolid(currentChunk->GetBlockID(glm::round(glm::vec3(localChunkPos.x, newPosition.y - HEIGHT, localChunkPos.z))))){
+                if (Block::isSolid(currentChunk->getBlockID(glm::round(glm::vec3(localChunkPos.x, newPosition.y - HEIGHT, localChunkPos.z))))){
                     return true;
                 }
             }
@@ -424,11 +424,11 @@ bool Player::checkCollisionWithBlockLocal(const glm::ivec3 localPos) const{
 
 bool Player::isHeadInWater() const{
     const glm::vec3 posInChunk = positionInChunk();
-    const Chunk* chunk = world->GetChunk(chunkPosition.x, chunkPosition.y);
+    const Chunk* chunk = world->getChunk(chunkPosition.x, chunkPosition.y);
     if(chunk == nullptr){
         return false;
     }
-    if(chunk->GetBlockID(glm::round(posInChunk)) == 5){
+    if(chunk->getBlockID(glm::round(posInChunk)) == 5){
         return true;
     }
     else

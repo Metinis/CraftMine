@@ -89,7 +89,7 @@ Game::Game() {
         std::cout << "[Game] No server found, running singleplayer" << std::endl;
     }
 
-    world->UpdateViewDistance(newChunkPos);
+    world->updateViewDistance(newChunkPos);
 }
 
 void Game::run() {
@@ -112,6 +112,7 @@ void Game::run() {
             break;
         }
 
+
         if (multiplayerMode) {
             processNetworkPackets();
         }
@@ -123,10 +124,10 @@ void Game::run() {
         accumulator += deltaTime;
 
 
-
         while (accumulator >= timeStep) {
+            scene->updateProjection();
             // Update player physics
-            player->Update(timeStep);
+            player->update(timeStep);
 
             // Handle chunk position update
             newChunkPos = (glm::vec2(glm::round(player->position.x) / Chunk::SIZE,
@@ -136,7 +137,7 @@ void Game::run() {
                 std::abs(newChunkPos.y - lastChunkPos.y) >= updateingInt) {
                 lastChunkPos = newChunkPos;
                 std::cout << newChunkPos.x << "x " << newChunkPos.y << "z \n";
-                world->UpdateViewDistance(newChunkPos);
+                world->updateViewDistance(newChunkPos);
             }
             accumulator -= timeStep;
         }
@@ -285,4 +286,5 @@ void Game::framebuffer_size_callback(GLFWwindow *window, int width, int height) 
     glViewport(0, 0, width, height);
     currentWidth = width;
     currentHeight = height;
+
 }

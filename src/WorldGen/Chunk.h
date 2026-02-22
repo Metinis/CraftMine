@@ -82,22 +82,22 @@ public:
 
 	Chunk(glm::ivec2 Position, World& _world);
 	~Chunk();
-    unsigned char GetBlockID(glm::ivec3 pos) const;
-    void SetBlock(glm::ivec3 pos, unsigned char id);
-	void GenBlocks();
-	void ClearVertexData();
+    unsigned char getBlockID(glm::ivec3 pos) const;
+    void setBlock(glm::ivec3 pos, unsigned char id);
+	void genBlocks();
+	void clearVertexData();
     static bool compareDistanceToPlayer(const ChunkDataPair& pair1, const ChunkDataPair& pair2, glm::vec3 playerPos);
     void sortTransparentMeshData();
     void sortTransparentMeshData(glm::vec3 position);
 	//OpenGL stuff
-	void LoadChunkData();
-	void LoadBufferData();
+	void loadChunkData();
+	void loadBufferData();
     void saveData();
     bool loadData();
 	static std::string getRegionFilename(int regionX, int regionY);
 	static int getChunkOffset(int chunkX, int chunkY);
 
-	void Delete();
+	void deleteChunk();
     struct CompareFaces;
 
     bool getIsAllSidesUpdated();

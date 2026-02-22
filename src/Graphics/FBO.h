@@ -42,11 +42,11 @@ public:
 
     void bindForReadDepth() const;
 
-    static void Unbind();
+    static void unbind();
 
-    static void UnbindDepth();
+    static void unbindDepth();
 
-    void Delete() const;
+    void deleteFBO() const;
 
     void setDimensionDepthMap(int _width, int _height);
     void bindFBOTextureLayer(int layer) const;

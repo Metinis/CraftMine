@@ -41,11 +41,11 @@ public:
     glm::vec3 playerVelocity{};
 
     Player();
-    void Update(float deltaTime);
+    void update(float deltaTime);
     void calculateNewPositionY(const float& deltaTime);
-    void UpdatePositionXZ(const glm::vec3& newPosition);
-    void UpdateDeceleration(const float& deltaTime);
-    void ProcessKeyboardMovement(cameraMovement dir, float deltaTime);
+    void updatePositionXZ(const glm::vec3& newPosition);
+    void updateDeceleration(const float& deltaTime);
+    void processKeyboardMovement(cameraMovement dir, float deltaTime);
     bool isColliding(glm::vec3 newPosition) const;
     bool isHeadInWater() const;
     bool checkNewPositionZ(float newZ) const;

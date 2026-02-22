@@ -30,21 +30,21 @@ Crosshair::Crosshair()
     CrosshairVAO = new VAO();
     CrosshairVBO = new VBO(vertices);
     shader->use();
-    CrosshairVAO->Bind();
-    CrosshairVBO->Bind();
-    CrosshairVAO->LinkToVAO(shader->getAttribLocation("aPos"), 2, *CrosshairVBO);
-    VBO::Unbind();
+    CrosshairVAO->bind();
+    CrosshairVBO->bind();
+    CrosshairVAO->linkToVAO(shader->getAttribLocation("aPos"), 2, *CrosshairVBO);
+    VBO::unbind();
 
     UVVBO = new VBO(UVCoords);
-    CrosshairVAO->Bind();
-    UVVBO->Bind();
-    CrosshairVAO->LinkToVAO(shader->getAttribLocation("aTexCoord"), 2, *UVVBO);
-    VBO::Unbind();
+    CrosshairVAO->bind();
+    UVVBO->bind();
+    CrosshairVAO->linkToVAO(shader->getAttribLocation("aTexCoord"), 2, *UVVBO);
+    VBO::unbind();
 }
 void Crosshair::renderCrosshair() const
 {
     shader->use();
-    CrosshairVAO->Bind();
+    CrosshairVAO->bind();
     glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(vertices.size()));
-    VAO::Unbind();
+    VAO::unbind();
 }

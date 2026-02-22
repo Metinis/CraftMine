@@ -3,33 +3,33 @@
 VAO::VAO()
 {
 	glGenVertexArrays(1, &ID);
-	Bind();
+	bind();
 }
-void VAO::LinkToVAO(const int location, const int size, VBO vbo) const
+void VAO::linkToVAO(const int location, const int size, VBO vbo) const
 {
-	Bind();
-	vbo.Bind();
+	bind();
+	vbo.bind();
     glEnableVertexAttribArray(location);
 	glVertexAttribPointer(location, size, GL_FLOAT, GL_FALSE, 0, nullptr);
-	Unbind();
+	unbind();
 }
-void VAO::LinkToVAO(const int location, const int size, const float stride, const void* pointer, VBO vbo) const
+void VAO::linkToVAO(const int location, const int size, const float stride, const void* pointer, VBO vbo) const
 {
-    Bind();
-    vbo.Bind();
+    bind();
+    vbo.bind();
     glEnableVertexAttribArray(location);
     glVertexAttribPointer(location, size, GL_FLOAT, GL_FALSE, static_cast<int>(stride), pointer);
-    Unbind();
+    unbind();
 }
-void VAO::Bind() const
+void VAO::bind() const
 {
 	glBindVertexArray(ID);
 }
-void VAO::Unbind()
+void VAO::unbind()
 {
 	glBindVertexArray(0);
 }
-void VAO::Delete() const
+void VAO::deleteVAO() const
 {
 	glDeleteVertexArrays(1, &ID);
 }

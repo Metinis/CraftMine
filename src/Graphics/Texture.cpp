@@ -6,7 +6,7 @@ Texture::Texture(const char* fileLocation)
 	data = stbi_load(fileLocation, &width, &height, &nrChannels, 0);
 
 	glGenTextures(1, &ID);
-	Bind();
+	bind();
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_NEAREST);
@@ -17,12 +17,12 @@ Texture::Texture(const char* fileLocation)
 
 	stbi_image_free(data);
 
-	Unbind();
+	unbind();
 }
 void Texture::setTexture(const char* fileLocation)
 {
     data = stbi_load(fileLocation, &width, &height, &nrChannels, 0);
-    Bind();
+    bind();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -32,15 +32,15 @@ void Texture::setTexture(const char* fileLocation)
 
     stbi_image_free(data);
 }
-void Texture::Bind() const
+void Texture::bind() const
 {
 	glBindTexture(GL_TEXTURE_2D, ID);
 }
-void Texture::Unbind()
+void Texture::unbind()
 {
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
-void Texture::Delete() const
+void Texture::deleteTex() const
 {
 	glDeleteTextures(1, &ID);
 }

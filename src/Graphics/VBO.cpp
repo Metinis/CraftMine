@@ -20,27 +20,27 @@ VBO::VBO(const std::vector<float>& data)
     glBindBuffer(GL_ARRAY_BUFFER, ID);
     glBufferData(GL_ARRAY_BUFFER, static_cast<long>(data.size() * sizeof(float)), data.data(), GL_STATIC_DRAW);
 }
-void VBO::SetNewData(const std::vector<glm::vec3>& data) const
+void VBO::setNewData(const std::vector<glm::vec3>& data) const
 {
 	glBindBuffer(GL_ARRAY_BUFFER, ID);
 	glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_STATIC_DRAW);
 	glBufferData(GL_ARRAY_BUFFER, static_cast<long>(data.size() * sizeof(glm::vec3)), data.data(), GL_STATIC_DRAW);
 }
-void VBO::SetNewData(const std::vector<glm::vec2>& data) const
+void VBO::setNewData(const std::vector<glm::vec2>& data) const
 {
 	glBindBuffer(GL_ARRAY_BUFFER, ID);
 	glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_STATIC_DRAW);
 	glBufferData(GL_ARRAY_BUFFER, static_cast<long>(data.size() * sizeof(glm::vec2)), data.data(), GL_STATIC_DRAW);
 }
-void VBO::Bind() const
+void VBO::bind() const
 {
 	glBindBuffer(GL_ARRAY_BUFFER, ID);
 }
-void VBO::Unbind()
+void VBO::unbind()
 {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
-void VBO::Delete() const
+void VBO::deleteVBO() const
 {
 	glDeleteBuffers(1, &ID);
 }

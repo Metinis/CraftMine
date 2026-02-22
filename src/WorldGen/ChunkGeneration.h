@@ -14,15 +14,15 @@ private:
     static bool shouldGenTree();
     static void genTree(glm::ivec3 treeCoord, Chunk& chunk);
     static void generateLeaves(int startX, int endX, int startZ, int endZ, int y, Chunk& chunk);
-    static void GenChunk(float* heightMap, const Chunk& chunk);
+    static void genChunk(float* heightMap, const Chunk& chunk);
 public:
-    static void GenBlocks(Chunk& chunk);
+    static void genBlocks(Chunk& chunk);
 
     static bool shouldGenFlower();
 
     static void addWaterBorderingChunk();
 
-    static void UpdateWater(Chunk &chunk, glm::ivec3 waterPos);
+    static void updateWater(Chunk &chunk, glm::ivec3 waterPos);
 };
 
 

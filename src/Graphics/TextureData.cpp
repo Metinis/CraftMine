@@ -571,7 +571,7 @@ const std::map<CraftMine::BlockType, std::map<CraftMine::Faces, int>> TextureDat
           {CraftMine::Faces::BOTTOM, 13}}
         }
 };
-std::vector<glm::vec2> TextureData::GetUVs(int atlasID)
+std::vector<glm::vec2> TextureData::getUVs(int atlasID)
 {
  const int row = (atlasID / 16) + 1;
  const float left = static_cast<float>(atlasID) / 16.0f;
@@ -587,9 +587,9 @@ std::vector<glm::vec2> TextureData::GetUVs(int atlasID)
 	};
 	return uvs;
 }
-std::vector<glm::vec2> TextureData::GetBlockTypeUV(CraftMine::BlockType type, CraftMine::Faces face)
+std::vector<glm::vec2> TextureData::getBlockTypeUV(CraftMine::BlockType type, CraftMine::Faces face)
 {
 	std::map<CraftMine::Faces, int> faceMap = blockIDMap.at(type);
 
-	return GetUVs(faceMap[face]);
+	return getUVs(faceMap[face]);
 }

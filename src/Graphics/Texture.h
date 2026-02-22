@@ -13,9 +13,9 @@ class Texture
 	explicit Texture(const char* fileLocation);
 
     void setTexture(const char* fileLocation);
-	void Bind() const;
-	static void Unbind();
-	void Delete() const;
+	void bind() const;
+	static void unbind();
+	void deleteTex() const;
 
 	private:
 	unsigned char* data;

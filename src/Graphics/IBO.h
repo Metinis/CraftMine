@@ -14,9 +14,9 @@ class IBO
 		unsigned int ID{};
 
 		explicit IBO(const std::vector<GLuint>& data);
-		void SetNewData(const std::vector<GLuint>& data) const;
-		void Bind() const;
-		static void Unbind();
-		void Delete() const;
+		void setNewData(const std::vector<GLuint>& data) const;
+		void bind() const;
+		static void unbind();
+		void deleteIBO() const;
 };
 

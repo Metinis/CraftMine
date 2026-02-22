@@ -24,11 +24,11 @@ void CursorBlock::loadBlockRendering(unsigned char blockID) {
 
         std::vector<float> brightness;
         if (!Block::hasCustomMesh(currentBlock)) {
-            FaceData faceDataFront = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[blockID],
+            FaceData faceDataFront = Block::getFace(CraftMine::Faces::FRONT, BlockIDMap[blockID],
                                                     blockCenter);
-            FaceData faceDataRight = Block::GetFace(CraftMine::Faces::RIGHT, BlockIDMap[blockID],
+            FaceData faceDataRight = Block::getFace(CraftMine::Faces::RIGHT, BlockIDMap[blockID],
                                                     blockCenter);
-            FaceData faceDataTop = Block::GetFace(CraftMine::Faces::TOP, BlockIDMap[blockID],
+            FaceData faceDataTop = Block::getFace(CraftMine::Faces::TOP, BlockIDMap[blockID],
                                                   blockCenter);
 
             verts.insert(verts.end(), faceDataFront.vertices.begin(), faceDataFront.vertices.end());
@@ -49,9 +49,9 @@ void CursorBlock::loadBlockRendering(unsigned char blockID) {
                 itemBrightness.push_back(faceDataTop.brightness);
             }
 
-            ChunkMeshGeneration::AddIndices(3, indices, indexCount);
+            ChunkMeshGeneration::addIndices(3, indices, indexCount);
         } else {
-            FaceData faceDataFront = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[blockID],
+            FaceData faceDataFront = Block::getFace(CraftMine::Faces::FRONT, BlockIDMap[blockID],
                                                     blockCenter);
 
             verts.insert(verts.end(), faceDataFront.vertices.begin(), faceDataFront.vertices.end());
@@ -62,7 +62,7 @@ void CursorBlock::loadBlockRendering(unsigned char blockID) {
                 itemBrightness.push_back(faceDataFront.brightness);
             }
 
-            ChunkMeshGeneration::AddIndices(1, indices, indexCount);
+            ChunkMeshGeneration::addIndices(1, indices, indexCount);
         }
         for (glm::vec3 vert: verts) {
                 glm::mat4 translationToOrigin = glm::translate(glm::mat4(1.0f), -blockCenter);
@@ -92,22 +92,22 @@ void CursorBlock::loadBlockRendering(unsigned char blockID) {
 
         itemVAO = new VAO();
         itemVBO = new VBO(itemVertices);
-        itemVAO->Bind();
-        itemVBO->Bind();
-        itemVAO->LinkToVAO(itemShader->getAttribLocation("aPos"), 3, *itemVBO);
-        itemVBO->Unbind();
+        itemVAO->bind();
+        itemVBO->bind();
+        itemVAO->linkToVAO(itemShader->getAttribLocation("aPos"), 3, *itemVBO);
+        itemVBO->unbind();
 
         itemUVVBO = new VBO(itemUVCoords);
-        itemVAO->Bind();
-        itemUVVBO->Bind();
-        itemVAO->LinkToVAO(itemShader->getAttribLocation("aTexCoord"), 2, *itemUVVBO);
-        itemUVVBO->Unbind();
+        itemVAO->bind();
+        itemUVVBO->bind();
+        itemVAO->linkToVAO(itemShader->getAttribLocation("aTexCoord"), 2, *itemUVVBO);
+        itemUVVBO->unbind();
 
         itemBrightnessVBO = new VBO(itemBrightness);
-        itemVAO->Bind();
-        itemBrightnessVBO->Bind();
-        itemVAO->LinkToVAO(itemShader->getAttribLocation("aBrightness"), 1, *itemBrightnessVBO);
-        itemBrightnessVBO->Unbind();
+        itemVAO->bind();
+        itemBrightnessVBO->bind();
+        itemVAO->linkToVAO(itemShader->getAttribLocation("aBrightness"), 1, *itemBrightnessVBO);
+        itemBrightnessVBO->unbind();
 
         itemIBO = new IBO(indices);
     }
@@ -125,11 +125,11 @@ void CursorBlock::renderBlockOnCursor() const{
     itemShader->use();
 
     itemShader->setMat4("model", model);
-    itemVAO->Bind();
-    itemIBO->Bind();
+    itemVAO->bind();
+    itemIBO->bind();
     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, nullptr);
-    itemVAO->Unbind();
-    IBO::Unbind();
+    itemVAO->unbind();
+    IBO::unbind();
 }
 
 void CursorBlock::deleteBuffers() {

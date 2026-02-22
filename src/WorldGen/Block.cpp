@@ -1,7 +1,7 @@
 #include "Block.h"
 #include "Graphics/TextureData.h"
 
-FaceData Block::GetFace(Faces face, BlockType type, glm::vec3 position)
+FaceData Block::getFace(Faces face, BlockType type, glm::vec3 position)
 {
     if(type == CraftMine::EMPTY)
     {
@@ -9,27 +9,27 @@ FaceData Block::GetFace(Faces face, BlockType type, glm::vec3 position)
     }
     //TODO update this check for custom mesh
     if(type == ROSE_FLOWER || type == DANDELION_FLOWER){
-        return FaceData{ AddTransformedVertices(FaceDataRaw::rawVertexDataFlower.at(face), position, type), TextureData::GetBlockTypeUV(type, face),
+        return FaceData{ addTransformedVertices(FaceDataRaw::rawVertexDataFlower.at(face), position, type), TextureData::getBlockTypeUV(type, face),
                          CraftMine::brightnessMap.at(face), CraftMine::normalsMap.at(face) };
     }
-	return FaceData{ AddTransformedVertices(FaceDataRaw::rawVertexData.at(face), position, type), TextureData::GetBlockTypeUV(type, face),
+	return FaceData{ addTransformedVertices(FaceDataRaw::rawVertexData.at(face), position, type), TextureData::getBlockTypeUV(type, face),
                      CraftMine::brightnessMap.at(face), CraftMine::normalsMap.at(face) };
 }
-std::vector<glm::vec3> Block::GetOutline(glm::vec3 position, unsigned char id)
+std::vector<glm::vec3> Block::getOutline(glm::vec3 position, unsigned char id)
 {
     std::vector<glm::vec3> newVertices;
     auto it = customMeshDataMap.find(id);
     if (it != customMeshDataMap.end()) {
         const auto &faceDataMap = it->second;
         for (const auto &faceData: faceDataMap) {
-            std::vector<glm::vec3> vertices = AddOutlineVertices(faceData.second, position, true);
+            std::vector<glm::vec3> vertices = addOutlineVertices(faceData.second, position, true);
             newVertices.insert(newVertices.end(), vertices.begin(), vertices.end());
         }
     }
     else{
         for (int i = 0; i < 6; i++) {
             auto currentFace = static_cast<Faces>(i);
-            std::vector<glm::vec3> vertices = AddOutlineVertices(FaceDataRaw::rawVertexData.at(currentFace),
+            std::vector<glm::vec3> vertices = addOutlineVertices(FaceDataRaw::rawVertexData.at(currentFace),
                                                                  position, false);
             newVertices.insert(newVertices.end(), vertices.begin(), vertices.end());
         }
@@ -38,7 +38,7 @@ std::vector<glm::vec3> Block::GetOutline(glm::vec3 position, unsigned char id)
     return newVertices;
 }
 std::vector<glm::vec3>
-Block::AddOutlineVertices(const std::vector<glm::vec3>& vertices, glm::vec3 Position, bool hasCustomMesh)
+Block::addOutlineVertices(const std::vector<glm::vec3>& vertices, glm::vec3 Position, bool hasCustomMesh)
 {
     std::vector<glm::vec3> newVerts;
 
@@ -56,7 +56,7 @@ Block::AddOutlineVertices(const std::vector<glm::vec3>& vertices, glm::vec3 Posi
     }
     return newVerts;
 }
-std::vector<glm::vec3> Block::AddTransformedVertices(const std::vector<glm::vec3>& vertices, glm::vec3 Position, BlockType type)
+std::vector<glm::vec3> Block::addTransformedVertices(const std::vector<glm::vec3>& vertices, glm::vec3 Position, BlockType type)
 {
 	std::vector<glm::vec3> newVerts;
 

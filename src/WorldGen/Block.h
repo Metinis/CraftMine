@@ -11,15 +11,15 @@ using namespace CraftMine;
 class Block
 {
 public:
-	static FaceData GetFace(Faces face, BlockType type, glm::vec3 position);
-	static std::vector<glm::vec3> AddTransformedVertices(const std::vector<glm::vec3>& vertices, glm::vec3 Position, BlockType type);
+	static FaceData getFace(Faces face, BlockType type, glm::vec3 position);
+	static std::vector<glm::vec3> addTransformedVertices(const std::vector<glm::vec3>& vertices, glm::vec3 Position, BlockType type);
     static std::vector<glm::vec3>
-    AddOutlineVertices(const std::vector<glm::vec3>& vertices, glm::vec3 Position, bool hasCustomMesh);
+    addOutlineVertices(const std::vector<glm::vec3>& vertices, glm::vec3 Position, bool hasCustomMesh);
     static bool isTransparent(int id);
     static bool isSolid(int id);
 
     static bool hasCustomMesh(unsigned char id);
 
-    static std::vector<glm::vec3> GetOutline(glm::vec3 position, unsigned char id);
+    static std::vector<glm::vec3> getOutline(glm::vec3 position, unsigned char id);
 };
 

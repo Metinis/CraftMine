@@ -25,7 +25,7 @@ void Input::processMouse(GLFWwindow *window, const double xposIn, const double y
         lastY = yPos;
 
         // Assuming camera is an instance of some camera class
-        camera.ProcessMouseMovement(xOffset, yOffset);
+        camera.processMouseMovement(xOffset, yOffset);
     }
     if(scene.inventoryOpen){
         scene.cursorBlock->setMousePosCoordinates(xposIn, yposIn);
@@ -54,7 +54,7 @@ void Input::mouseButtonCallback(GLFWwindow* window, const int button, const int 
     if(button == GLFW_MOUSE_BUTTON_LEFT && !scene.inventoryOpen){
         if(action == GLFW_PRESS && isCursorLocked)
         {
-            world.BreakBlocks(camera.position, camera.Front);
+            world.breakBlocks(camera.position, camera.Front);
         }
         else{
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -110,7 +110,7 @@ void Input::mouseButtonCallback(GLFWwindow* window, const int button, const int 
     if(button == GLFW_MOUSE_BUTTON_RIGHT && !scene.inventoryOpen){
         if(action == GLFW_PRESS && isCursorLocked)
         {
-            world.PlaceBlocks(camera.position, camera.Front);
+            world.placeBlocks(camera.position, camera.Front);
         }
     }
 }
@@ -230,13 +230,13 @@ void Input::processKey(const int key, const int action, GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS){
         if(World::viewDistance >= 8){
             World::viewDistance = 2;
-            world.UpdateViewDistance(player.chunkPosition);
+            world.updateViewDistance(player.chunkPosition);
             scene.loadShader(*scene.shader, World::viewDistance);
             scene.loadShader(*scene.transparentShader, World::viewDistance);
         }
         else {
             World::viewDistance += 2;
-            world.UpdateViewDistance(player.chunkPosition);
+            world.updateViewDistance(player.chunkPosition);
             scene.loadShader(*scene.shader, World::viewDistance);
             scene.loadShader(*scene.transparentShader, World::viewDistance);
         }
@@ -272,19 +272,19 @@ void Input::processInput(GLFWwindow* window, bool* wireframe, bool* keyProccesse
 {
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        player.ProcessKeyboardMovement(FORWARD, deltaTime);
+        player.processKeyboardMovement(FORWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        player.ProcessKeyboardMovement(BACKWARD, deltaTime);
+        player.processKeyboardMovement(BACKWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        player.ProcessKeyboardMovement(cameraMovement::LEFT, deltaTime);
+        player.processKeyboardMovement(cameraMovement::LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        player.ProcessKeyboardMovement(cameraMovement::RIGHT, deltaTime);
+        player.processKeyboardMovement(cameraMovement::RIGHT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        player.ProcessKeyboardMovement(cameraMovement::DOWN, deltaTime);
+        player.processKeyboardMovement(cameraMovement::DOWN, deltaTime);
     else if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE){
         player.isShifting = false;
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        player.ProcessKeyboardMovement(cameraMovement::UP, deltaTime);
+        player.processKeyboardMovement(cameraMovement::UP, deltaTime);
     }
 }

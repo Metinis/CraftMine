@@ -28,16 +28,16 @@ Inventory::Inventory(Toolbar& _toolbar) : toolbar(_toolbar){
     vao = new VAO();
     vbo = new VBO(vertices);
     shader->use();
-    vao->Bind();
-    vbo->Bind();
-    vao->LinkToVAO(shader->getAttribLocation("aPos"), 2, *vbo);
-    VBO::Unbind();
+    vao->bind();
+    vbo->bind();
+    vao->linkToVAO(shader->getAttribLocation("aPos"), 2, *vbo);
+    VBO::unbind();
 
     textureVBO = new VBO(UVCoords);
-    vao->Bind();
-    textureVBO->Bind();
-    vao->LinkToVAO(shader->getAttribLocation("aTexCoord"), 2, *textureVBO);
-    VBO::Unbind();
+    vao->bind();
+    textureVBO->bind();
+    vao->linkToVAO(shader->getAttribLocation("aTexCoord"), 2, *textureVBO);
+    VBO::unbind();
 
     loadItemsRendering();
 
@@ -45,9 +45,9 @@ Inventory::Inventory(Toolbar& _toolbar) : toolbar(_toolbar){
 void Inventory::renderInventory() const
 {
     shader->use();
-    vao->Bind();
+    vao->bind();
     glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(vertices.size()));
-    VAO::Unbind();
+    VAO::unbind();
 }
 void Inventory::loadItemsRendering() {
     deleteItemBuffers();
@@ -72,22 +72,22 @@ void Inventory::loadItemsRendering() {
 
     itemVAO = new VAO();
     itemVBO = new VBO(itemVertices);
-    itemVAO->Bind();
-    itemVBO->Bind();
-    itemVAO->LinkToVAO(itemShader->getAttribLocation("aPos"), 3, *itemVBO);
-    VBO::Unbind();
+    itemVAO->bind();
+    itemVBO->bind();
+    itemVAO->linkToVAO(itemShader->getAttribLocation("aPos"), 3, *itemVBO);
+    VBO::unbind();
 
     itemUVVBO = new VBO(itemUVCoords);
-    itemVAO->Bind();
-    itemUVVBO->Bind();
-    itemVAO->LinkToVAO(itemShader->getAttribLocation("aTexCoord"), 2, *itemUVVBO);
-    VBO::Unbind();
+    itemVAO->bind();
+    itemUVVBO->bind();
+    itemVAO->linkToVAO(itemShader->getAttribLocation("aTexCoord"), 2, *itemUVVBO);
+    VBO::unbind();
 
     itemBrightnessVBO = new VBO(itemBrightness);
-    itemVAO->Bind();
-    itemBrightnessVBO->Bind();
-    itemVAO->LinkToVAO(itemShader->getAttribLocation("aBrightness"), 1, *itemBrightnessVBO);
-    VBO::Unbind();
+    itemVAO->bind();
+    itemBrightnessVBO->bind();
+    itemVAO->linkToVAO(itemShader->getAttribLocation("aBrightness"), 1, *itemBrightnessVBO);
+    VBO::unbind();
 
     itemIBO = new IBO(indices);
 }
@@ -117,11 +117,11 @@ void Inventory::addItemDataToBuffers(int i, int j){
 
         inventorySlots[i][j-1] = i * 8 + j;
         if(getItemAtSlot(i, j-1) != 0 && !Block::hasCustomMesh(getItemAtSlot(i, j-1))) {
-            FaceData faceDataFront = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[getItemAtSlot(i, j-1)],
+            FaceData faceDataFront = Block::getFace(CraftMine::Faces::FRONT, BlockIDMap[getItemAtSlot(i, j-1)],
                                                     blockCenter);
-            FaceData faceDataRight = Block::GetFace(CraftMine::Faces::RIGHT, BlockIDMap[getItemAtSlot(i, j-1)],
+            FaceData faceDataRight = Block::getFace(CraftMine::Faces::RIGHT, BlockIDMap[getItemAtSlot(i, j-1)],
                                                     blockCenter);
-            FaceData faceDataTop = Block::GetFace(CraftMine::Faces::TOP, BlockIDMap[getItemAtSlot(i, j-1)],
+            FaceData faceDataTop = Block::getFace(CraftMine::Faces::TOP, BlockIDMap[getItemAtSlot(i, j-1)],
                                                   blockCenter);
             std::vector<glm::vec3> verts;
             verts.insert(verts.end(), faceDataFront.vertices.begin(), faceDataFront.vertices.end());
@@ -154,10 +154,10 @@ void Inventory::addItemDataToBuffers(int i, int j){
             for (glm::vec2 uvCoord: uvCoords) {
                 itemUVCoords.push_back(uvCoord);
             }
-            ChunkMeshGeneration::AddIndices(3, indices, indexCount);
+            ChunkMeshGeneration::addIndices(3, indices, indexCount);
         }
         else if(Block::hasCustomMesh(getItemAtSlot(i, j-1))){
-            FaceData faceDataFront = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[getItemAtSlot(i, j-1)],
+            FaceData faceDataFront = Block::getFace(CraftMine::Faces::FRONT, BlockIDMap[getItemAtSlot(i, j-1)],
                                                     blockCenter);
             std::vector<glm::vec3> verts;
             verts.insert(verts.end(), faceDataFront.vertices.begin(), faceDataFront.vertices.end());
@@ -180,7 +180,7 @@ void Inventory::addItemDataToBuffers(int i, int j){
             for (glm::vec2 uvCoord: uvCoords) {
                 itemUVCoords.push_back(uvCoord);
             }
-            ChunkMeshGeneration::AddIndices(1, indices, indexCount);
+            ChunkMeshGeneration::addIndices(1, indices, indexCount);
         }
     }
 }
@@ -217,7 +217,7 @@ void Inventory::loadItemsRenderingToolbar() {
             for (glm::vec2 uvCoord: uvCoords) {
                 itemUVCoords.push_back(uvCoord);
             }
-            ChunkMeshGeneration::AddIndices(3, indices, indexCount);
+            ChunkMeshGeneration::addIndices(3, indices, indexCount);
 
         }
         else if(Block::hasCustomMesh(toolbar.getID(i))){
@@ -235,18 +235,18 @@ void Inventory::loadItemsRenderingToolbar() {
             for (glm::vec2 uvCoord: uvCoords) {
                 itemUVCoords.push_back(uvCoord);
             }
-            ChunkMeshGeneration::AddIndices(3, indices, indexCount);
+            ChunkMeshGeneration::addIndices(3, indices, indexCount);
         }
 
     }
 }
 void Inventory::loadBlockData(const int i, std::vector<glm::vec3> &verts, std::vector<glm::vec2> &uvCoords, std::vector<float> &brightness, const glm::vec3 &blockCenter){
 
-    FaceData faceDataFront = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[toolbar.getID(i)],
+    FaceData faceDataFront = Block::getFace(CraftMine::Faces::FRONT, BlockIDMap[toolbar.getID(i)],
                                             blockCenter);
-    FaceData faceDataRight = Block::GetFace(CraftMine::Faces::RIGHT, BlockIDMap[toolbar.getID(i)],
+    FaceData faceDataRight = Block::getFace(CraftMine::Faces::RIGHT, BlockIDMap[toolbar.getID(i)],
                                             blockCenter);
-    FaceData faceDataTop = Block::GetFace(CraftMine::Faces::TOP, BlockIDMap[toolbar.getID(i)],
+    FaceData faceDataTop = Block::getFace(CraftMine::Faces::TOP, BlockIDMap[toolbar.getID(i)],
                                           blockCenter);
     verts.insert(verts.end(), faceDataFront.vertices.begin(), faceDataFront.vertices.end());
     verts.insert(verts.end(), faceDataRight.vertices.begin(), faceDataRight.vertices.end());
@@ -269,7 +269,7 @@ void Inventory::loadBlockData(const int i, std::vector<glm::vec3> &verts, std::v
 }
 void Inventory::loadCustomData(const int i, std::vector<glm::vec3> &verts, std::vector<glm::vec2> &uvCoords, std::vector<float> &brightness, const glm::vec3 &blockCenter){
 
-    FaceData faceDataFront = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[toolbar.getID(i)],
+    FaceData faceDataFront = Block::getFace(CraftMine::Faces::FRONT, BlockIDMap[toolbar.getID(i)],
                                             blockCenter);
     verts.insert(verts.end(), faceDataFront.vertices.begin(), faceDataFront.vertices.end());
 
@@ -282,11 +282,11 @@ void Inventory::loadCustomData(const int i, std::vector<glm::vec3> &verts, std::
 
 void Inventory::renderItems() const{
     itemShader->use();
-    itemVAO->Bind();
-    itemIBO->Bind();
+    itemVAO->bind();
+    itemIBO->bind();
     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, nullptr);
-    VAO::Unbind();
-    IBO::Unbind();
+    VAO::unbind();
+    IBO::unbind();
 }
 
 unsigned char Inventory::getItemAtSlot(const int x, const int y) const {

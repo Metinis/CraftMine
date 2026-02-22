@@ -18,21 +18,21 @@ ScreenQuad::ScreenQuad(){
             };
     quadVAO = new VAO();
     quadVBO = new VBO(rectangleVertices);
-    quadVAO->Bind();
-    quadVBO->Bind();
-    quadVAO->LinkToVAO(0, 3, 5 * sizeof(float), ((void*)0), *quadVBO);
-    quadVAO->LinkToVAO(1, 2, 5 * sizeof(float), (void*)(3 * sizeof(float)), *quadVBO);
-    quadVAO->Unbind();
-    quadVBO->Unbind();
+    quadVAO->bind();
+    quadVBO->bind();
+    quadVAO->linkToVAO(0, 3, 5 * sizeof(float), ((void*)0), *quadVBO);
+    quadVAO->linkToVAO(1, 2, 5 * sizeof(float), (void*)(3 * sizeof(float)), *quadVBO);
+    quadVAO->unbind();
+    quadVBO->unbind();
 }
 void ScreenQuad::renderQuad(Shader& shader) const {
     shader.use();
-    quadVAO->Bind();
+    quadVAO->bind();
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 ScreenQuad::~ScreenQuad(){
-    quadVAO->Delete();
-    quadVBO->Delete();
+    quadVAO->deleteVAO();
+    quadVBO->deleteVBO();
     delete quadVAO;
     delete quadVBO;
 }

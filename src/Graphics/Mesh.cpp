@@ -14,7 +14,7 @@ bool Mesh::clearData()
 {
         loadedData = false;
         if (meshVAO != nullptr) {
-            meshVAO->Delete();
+            meshVAO->deleteVAO();
             delete meshVAO;
             meshVAO = nullptr;
         }
@@ -24,7 +24,7 @@ bool Mesh::clearData()
         }
 
         if (meshVBO != nullptr) {
-            meshVBO->Delete();
+            meshVBO->deleteVBO();
             delete meshVBO;
             meshVBO = nullptr;
         }
@@ -34,7 +34,7 @@ bool Mesh::clearData()
             return false;
         }
         if (meshUVVBO != nullptr) {
-            meshUVVBO->Delete();
+            meshUVVBO->deleteVBO();
             delete meshUVVBO;
             meshUVVBO = nullptr;
         }
@@ -44,7 +44,7 @@ bool Mesh::clearData()
             return false;
         }
         if (meshIBO != nullptr) {
-            meshIBO->Delete();
+            meshIBO->deleteIBO();
             delete meshIBO;
             meshIBO = nullptr;
         }
@@ -54,7 +54,7 @@ bool Mesh::clearData()
             return false;
         }
         if (meshBrightnessVBO != nullptr) {
-            meshBrightnessVBO->Delete();
+            meshBrightnessVBO->deleteVBO();
             delete meshBrightnessVBO;
             meshBrightnessVBO = nullptr;
         }
@@ -64,7 +64,7 @@ bool Mesh::clearData()
             return false;
         }
         if (meshNormalVBO != nullptr) {
-            meshNormalVBO->Delete();
+            meshNormalVBO->deleteVBO();
             delete meshNormalVBO;
             meshNormalVBO = nullptr;
 
@@ -82,11 +82,11 @@ void Mesh::render(const Shader& _shader)
     std::lock_guard<std::mutex> lock(meshMutex);
     if(loadedData && meshVAO != nullptr && meshIBO != nullptr && meshUVVBO != nullptr && meshVBO != nullptr && meshBrightnessVBO != nullptr && meshNormalVBO != nullptr) {
         _shader.use();
-        meshVAO->Bind();
-        meshIBO->Bind();
+        meshVAO->bind();
+        meshIBO->bind();
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, nullptr);
-        VAO::Unbind();
-        IBO::Unbind();
+        VAO::unbind();
+        IBO::unbind();
     }
 }
 void Mesh::loadData(const Shader& _shader){
@@ -96,30 +96,30 @@ void Mesh::loadData(const Shader& _shader){
         _shader.use();
 
         meshVAO = new VAO();
-        meshVAO->Bind();
+        meshVAO->bind();
 
         meshVBO = new VBO(vertices);
-        meshVBO->Bind();
-        meshVAO->LinkToVAO(0, 3, *meshVBO);
-        VBO::Unbind();
+        meshVBO->bind();
+        meshVAO->linkToVAO(0, 3, *meshVBO);
+        VBO::unbind();
 
         meshUVVBO = new VBO(UVs);
-        meshUVVBO->Bind();
-        meshVAO->LinkToVAO(2, 2, *meshUVVBO);
-        VBO::Unbind();
+        meshUVVBO->bind();
+        meshVAO->linkToVAO(2, 2, *meshUVVBO);
+        VBO::unbind();
 
         meshNormalVBO = new VBO(normals);
-        meshNormalVBO->Bind();
-        meshVAO->LinkToVAO(1, 3, *meshNormalVBO);
-        VBO::Unbind();
+        meshNormalVBO->bind();
+        meshVAO->linkToVAO(1, 3, *meshNormalVBO);
+        VBO::unbind();
 
         meshBrightnessVBO = new VBO(brightnessFloats);
-        meshBrightnessVBO->Bind();
-        meshVAO->LinkToVAO(_shader.getAttribLocation("aBrightness"), 1, *meshBrightnessVBO);
-        VBO::Unbind();
+        meshBrightnessVBO->bind();
+        meshVAO->linkToVAO(_shader.getAttribLocation("aBrightness"), 1, *meshBrightnessVBO);
+        VBO::unbind();
         meshIBO = new IBO(indices);
         // Unbind the VAO after setting up the main shader
-        VAO::Unbind();
+        VAO::unbind();
         loadedData = true;
     }
 

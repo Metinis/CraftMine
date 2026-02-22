@@ -45,29 +45,29 @@ Toolbar::Toolbar()
     ToolBarVAO = new VAO();
     ToolBarVBO = new VBO(vertices);
     shader->use();
-    ToolBarVAO->Bind();
-    ToolBarVBO->Bind();
-    ToolBarVAO->LinkToVAO(shader->getAttribLocation("aPos"), 2, *ToolBarVBO);
-    VBO::Unbind();
+    ToolBarVAO->bind();
+    ToolBarVBO->bind();
+    ToolBarVAO->linkToVAO(shader->getAttribLocation("aPos"), 2, *ToolBarVBO);
+    VBO::unbind();
 
     textureVBO = new VBO(UVCoords);
-    ToolBarVAO->Bind();
-    textureVBO->Bind();
-    ToolBarVAO->LinkToVAO(shader->getAttribLocation("aTexCoord"), 2, *textureVBO);
-    VBO::Unbind();
+    ToolBarVAO->bind();
+    textureVBO->bind();
+    ToolBarVAO->linkToVAO(shader->getAttribLocation("aTexCoord"), 2, *textureVBO);
+    VBO::unbind();
 
     slotVAO = new VAO();
     slotVBO = new VBO(slotVertices);
-    slotVAO->Bind();
-    slotVBO->Bind();
-    slotVAO->LinkToVAO(shader->getAttribLocation("aPos"), 2, *slotVBO);
-    VBO::Unbind();
+    slotVAO->bind();
+    slotVBO->bind();
+    slotVAO->linkToVAO(shader->getAttribLocation("aPos"), 2, *slotVBO);
+    VBO::unbind();
 
     slotTextureVBO = new VBO(slotUVCoords);
-    slotVAO->Bind();
-    slotTextureVBO->Bind();
-    slotVAO->LinkToVAO(shader->getAttribLocation("aTexCoord"), 2, *slotTextureVBO);
-    VBO::Unbind();
+    slotVAO->bind();
+    slotTextureVBO->bind();
+    slotVAO->linkToVAO(shader->getAttribLocation("aTexCoord"), 2, *slotTextureVBO);
+    VBO::unbind();
 
 
 
@@ -102,11 +102,11 @@ void Toolbar::changeSlot(const int currentSlot) {
             glm::vec2(toolbarCenterX + halfSlotWidth + offset, toolbarBottomY + toolbarHeight + offset), // Top right
             glm::vec2(toolbarCenterX + halfSlotWidth + offset, toolbarBottomY - offset),  // Bottom right
     };
-    slotVAO->Bind();
-    slotVBO->SetNewData(slotVertices);
-    slotVBO->Bind();
-    slotVAO->LinkToVAO(shader->getAttribLocation("aPos"), 2, *slotVBO);
-    VBO::Unbind();
+    slotVAO->bind();
+    slotVBO->setNewData(slotVertices);
+    slotVBO->bind();
+    slotVAO->linkToVAO(shader->getAttribLocation("aPos"), 2, *slotVBO);
+    VBO::unbind();
 }
 void Toolbar::changeSlotPositive() {
     if(slot == 8){
@@ -130,15 +130,15 @@ void Toolbar::changeSlotNegative() {
 void Toolbar::renderToolbar() const
 {
     shader->use();
-    ToolBarVAO->Bind();
+    ToolBarVAO->bind();
     glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(vertices.size()));
-    VAO::Unbind();
+    VAO::unbind();
 }
 void Toolbar::renderSlot() const{
     shader->use();
-    slotVAO->Bind();
+    slotVAO->bind();
     glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(slotVertices.size()));
-    VAO::Unbind();
+    VAO::unbind();
 }
 
 unsigned char Toolbar::getID(const unsigned char _slot) const{
@@ -151,11 +151,11 @@ void Toolbar::setID(const unsigned char id, const unsigned char _slot) {
 
 void Toolbar::renderItems() const{
     itemShader->use();
-    itemVAO->Bind();
-    itemIBO->Bind();
+    itemVAO->bind();
+    itemIBO->bind();
     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, nullptr);
-    VAO::Unbind();
-    IBO::Unbind();
+    VAO::unbind();
+    IBO::unbind();
 }
 
 void Toolbar::loadItemsRendering() {
@@ -178,11 +178,11 @@ void Toolbar::loadItemsRendering() {
             std::vector<float> brightness;
 
             if(!Block::hasCustomMesh(toolbarItems[i])){
-                FaceData faceDataFront = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[toolbarItems[i]],
+                FaceData faceDataFront = Block::getFace(CraftMine::Faces::FRONT, BlockIDMap[toolbarItems[i]],
                                                         blockCenter);
-                FaceData faceDataRight = Block::GetFace(CraftMine::Faces::RIGHT, BlockIDMap[toolbarItems[i]],
+                FaceData faceDataRight = Block::getFace(CraftMine::Faces::RIGHT, BlockIDMap[toolbarItems[i]],
                                                         blockCenter);
-                FaceData faceDataTop = Block::GetFace(CraftMine::Faces::TOP, BlockIDMap[toolbarItems[i]],
+                FaceData faceDataTop = Block::getFace(CraftMine::Faces::TOP, BlockIDMap[toolbarItems[i]],
                                                       blockCenter);
                 verts.insert(verts.end(), faceDataFront.vertices.begin(), faceDataFront.vertices.end());
                 verts.insert(verts.end(), faceDataRight.vertices.begin(), faceDataRight.vertices.end());
@@ -202,10 +202,10 @@ void Toolbar::loadItemsRendering() {
                     itemBrightness.push_back(faceDataTop.brightness);
                 }
 
-                ChunkMeshGeneration::AddIndices(3, indices, indexCount);
+                ChunkMeshGeneration::addIndices(3, indices, indexCount);
             }
             else{
-                FaceData faceDataFront = Block::GetFace(CraftMine::Faces::FRONT, BlockIDMap[toolbarItems[i]],
+                FaceData faceDataFront = Block::getFace(CraftMine::Faces::FRONT, BlockIDMap[toolbarItems[i]],
                                                         blockCenter);
                 verts.insert(verts.end(), faceDataFront.vertices.begin(), faceDataFront.vertices.end());
 
@@ -215,7 +215,7 @@ void Toolbar::loadItemsRendering() {
                     itemBrightness.push_back(faceDataFront.brightness);
                 }
 
-                ChunkMeshGeneration::AddIndices(1, indices, indexCount);
+                ChunkMeshGeneration::addIndices(1, indices, indexCount);
             }
 
 
@@ -250,22 +250,22 @@ void Toolbar::loadItemsRendering() {
 
     itemVAO = new VAO();
     itemVBO = new VBO(itemVertices);
-    itemVAO->Bind();
-    itemVBO->Bind();
-    itemVAO->LinkToVAO(itemShader->getAttribLocation("aPos"), 3, *itemVBO);
-    VBO::Unbind();
+    itemVAO->bind();
+    itemVBO->bind();
+    itemVAO->linkToVAO(itemShader->getAttribLocation("aPos"), 3, *itemVBO);
+    VBO::unbind();
 
     itemUVVBO = new VBO(itemUVCoords);
-    itemVAO->Bind();
-    itemUVVBO->Bind();
-    itemVAO->LinkToVAO(itemShader->getAttribLocation("aTexCoord"), 2, *itemUVVBO);
-    VBO::Unbind();
+    itemVAO->bind();
+    itemUVVBO->bind();
+    itemVAO->linkToVAO(itemShader->getAttribLocation("aTexCoord"), 2, *itemUVVBO);
+    VBO::unbind();
 
     itemBrightnessVBO = new VBO(itemBrightness);
-    itemVAO->Bind();
-    itemBrightnessVBO->Bind();
-    itemVAO->LinkToVAO(itemShader->getAttribLocation("aBrightness"), 1, *itemBrightnessVBO);
-    VBO::Unbind();
+    itemVAO->bind();
+    itemBrightnessVBO->bind();
+    itemVAO->linkToVAO(itemShader->getAttribLocation("aBrightness"), 1, *itemBrightnessVBO);
+    VBO::unbind();
 
     itemIBO = new IBO(indices);
 }

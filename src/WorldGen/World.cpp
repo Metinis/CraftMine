@@ -20,7 +20,7 @@ World::World(Camera& _camera, SceneRenderer& _scene, Player& _player) : camera(_
 int World::viewDistance = 6;
 
 
-void World::UpdateViewDistance(const glm::ivec2& cameraChunkPos)
+void World::updateViewDistance(const glm::ivec2& cameraChunkPos)
 {
     //update comparator to current chunkPos
     playerChunkPos = cameraChunkPos;
@@ -114,11 +114,11 @@ void World::receiveServerChunk(int cx, int cz, const std::vector<uint8_t>& compr
     std::cout << "[World] Received server chunk (" << cx << ", " << cz << ")" << std::endl;
 }
 
-void World::GenerateChunkBuffers(std::vector<Chunk*>& addedChunks)
+void World::generateChunkBuffers(std::vector<Chunk*>& addedChunks)
 {
     for (Chunk* chunk : addedChunks)
     {
-            chunk->LoadBufferData();
+            chunk->loadBufferData();
             {
                 chunk->chunkHasMeshes = true;
                 if(std::find(activeChunks.begin(), activeChunks.end(), chunk->chunkPosition) == activeChunks.end())
@@ -128,14 +128,14 @@ void World::GenerateChunkBuffers(std::vector<Chunk*>& addedChunks)
     addedChunks.clear();
 
 }
-Chunk* World::GetChunk(const int x, const int y) const
+Chunk* World::getChunk(const int x, const int y) const
 {
     if(x >= 0 && x < SIZE && y >= 0 && y < SIZE)
         return chunks[x + SIZE * y];
     else
         return nullptr;
 }
-Chunk* World::GetChunk(const glm::ivec2 pos) const
+Chunk* World::getChunk(const glm::ivec2 pos) const
 {
     if(pos.x >= 0 && pos.x < SIZE && pos.y >= 0 && pos.y < SIZE)
         return chunks[pos.x + SIZE * pos.y];
@@ -143,7 +143,7 @@ Chunk* World::GetChunk(const glm::ivec2 pos) const
         return nullptr;
 }
 //used for breaking blocks
-bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, glm::ivec3& result, Chunk*& currentChunk) const {
+bool World::raycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, glm::ivec3& result, Chunk*& currentChunk) const {
     float step = 0.0f;
     constexpr float reach = 5.0f;
 
@@ -158,18 +158,18 @@ bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDire
         const auto posInChunks = glm::ivec2(roundedGlobalPos.x / Chunk::SIZE, roundedGlobalPos.z / Chunk::SIZE);
 
         if(posInChunks.x >= 0 && posInChunks.x < World::SIZE && posInChunks.y >= 0 && posInChunks.y < World::SIZE){
-            currentChunk = GetChunk(posInChunks.x, posInChunks.y);
+            currentChunk = getChunk(posInChunks.x, posInChunks.y);
             if (currentChunk != nullptr && currentChunk->generatedBlockData) {
 
                 glm::ivec3 localPos;
                 localPos.x = roundedGlobalPos.x - currentChunk->chunkPosition.x * Chunk::SIZE;
                 localPos.y = roundedGlobalPos.y;
                 localPos.z = roundedGlobalPos.z - currentChunk->chunkPosition.y * Chunk::SIZE;
-                if (Block::isSolid(currentChunk->GetBlockID(localPos))) {
+                if (Block::isSolid(currentChunk->getBlockID(localPos))) {
                     result = localPos;
                     return true;
                 }
-                if (Block::hasCustomMesh(currentChunk->GetBlockID(localPos))) {
+                if (Block::hasCustomMesh(currentChunk->getBlockID(localPos))) {
                     if(std::abs(static_cast<float>(roundedGlobalPos.x) - globalPos.x) < 0.2f &&
                         std::abs(static_cast<float>(roundedGlobalPos.y) - globalPos.y) < 0.3f &&
                         std::abs(static_cast<float>(roundedGlobalPos.z) - globalPos.z) < 0.3f
@@ -187,7 +187,7 @@ bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDire
     return false;
 }
 //Used for place blocks
-bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, glm::ivec3& result, Chunk*& currentChunk, glm::ivec3& lastEmptyPos) const {
+bool World::raycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, glm::ivec3& result, Chunk*& currentChunk, glm::ivec3& lastEmptyPos) const {
 
     float step = 0.0f;
     constexpr float reach = 5.0f;
@@ -198,14 +198,14 @@ bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDire
         globalPos.y = static_cast<int>(std::round(rayOrigin.y + rayDirection.y * step));
         globalPos.z = static_cast<int>(std::round(rayOrigin.z + rayDirection.z * step));
 
-        const Chunk* tempCurrentChunk = GetChunk(globalPos.x / Chunk::SIZE, globalPos.z / Chunk::SIZE);
+        const Chunk* tempCurrentChunk = getChunk(globalPos.x / Chunk::SIZE, globalPos.z / Chunk::SIZE);
         if (tempCurrentChunk!= nullptr && tempCurrentChunk->generatedBlockData) {
 
             glm::ivec3 localPos;
             localPos.x = globalPos.x - tempCurrentChunk->chunkPosition.x * Chunk::SIZE;
             localPos.y = globalPos.y;
             localPos.z = globalPos.z - tempCurrentChunk->chunkPosition.y * Chunk::SIZE;
-            const unsigned char currentBlockID = tempCurrentChunk->GetBlockID(localPos);
+            const unsigned char currentBlockID = tempCurrentChunk->getBlockID(localPos);
             if (Block::isSolid(currentBlockID)){
                 result = localPos;
                 return true;
@@ -213,7 +213,7 @@ bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDire
             else if(!Block::hasCustomMesh(currentBlockID))
             {
                 lastEmptyPos = localPos;
-                currentChunk = GetChunk(globalPos.x / Chunk::SIZE, globalPos.z / Chunk::SIZE);
+                currentChunk = getChunk(globalPos.x / Chunk::SIZE, globalPos.z / Chunk::SIZE);
             }
             else {
                 return true;
@@ -224,39 +224,39 @@ bool World::RaycastBlockPos(const glm::vec3& rayOrigin, const glm::vec3& rayDire
 
     return false;
 }
-void World::PlaceBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirection) const{
+void World::placeBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirection) const{
     glm::ivec3 localPos;
     glm::ivec3 lastEmptyPos;
     Chunk* currentChunk;
 
     // Raycast to find the block to place the face on
-    if (RaycastBlockPos(rayOrigin, rayDirection, localPos, currentChunk, lastEmptyPos) &&
+    if (raycastBlockPos(rayOrigin, rayDirection, localPos, currentChunk, lastEmptyPos) &&
         !player.checkCollisionWithBlockLocal(lastEmptyPos)){
 
         if(currentChunk->generatedBlockData) {
-            currentChunk->SetBlock(lastEmptyPos, player.getBlockID());
+            currentChunk->setBlock(lastEmptyPos, player.getBlockID());
             //ChunkLighting::addLightingValues(*currentChunk);
             if(player.getBlockID() == 5) {
-                ChunkGeneration::UpdateWater(*currentChunk, lastEmptyPos);
+                ChunkGeneration::updateWater(*currentChunk, lastEmptyPos);
             }
             WorldThreading::updateLoadData(currentChunk);
         }
     }
 }
-void World::BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirection) const{
+void World::breakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirection) const{
 
     glm::ivec3 localPos;
     Chunk* currentChunk;
-    if(RaycastBlockPos(rayOrigin, rayDirection, localPos, currentChunk))
+    if(raycastBlockPos(rayOrigin, rayDirection, localPos, currentChunk))
     {
-        if(currentChunk->GetBlockID(localPos) == 45) {
-            currentChunk->SetBlock(localPos, 0);
+        if(currentChunk->getBlockID(localPos) == 45) {
+            currentChunk->setBlock(localPos, 0);
             const auto worldPos = glm::ivec3(localPos.x + currentChunk->chunkPosition.x * Chunk::SIZE, localPos.y, localPos.z + currentChunk->chunkPosition.y * Chunk::SIZE);
             //ChunkLighting::clearLight(*currentChunk, worldPos);
             //ChunkLighting::recalculateLightWithNeighbours(*currentChunk);
         }
         else {
-            currentChunk->SetBlock(localPos, 0);
+            currentChunk->setBlock(localPos, 0);
         }
 
 
@@ -270,12 +270,12 @@ void World::BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
         if(localPos.x == 0 || localPos.x == Chunk::SIZE-1)
         {
             const int tempChunkX = (localPos.x == 0) ? currentChunk->chunkPosition.x-1 : currentChunk->chunkPosition.x+1;
-            tempChunk1 = GetChunk(tempChunkX, currentChunk->chunkPosition.y);
+            tempChunk1 = getChunk(tempChunkX, currentChunk->chunkPosition.y);
         }
         if(localPos.z == 0 || localPos.z == Chunk::SIZE-1)
         {
             const int tempChunkZ = (localPos.z == 0) ? currentChunk->chunkPosition.y-1 : currentChunk->chunkPosition.y+1;
-            tempChunk2 = GetChunk(currentChunk->chunkPosition.x, tempChunkZ);
+            tempChunk2 = getChunk(currentChunk->chunkPosition.x, tempChunkZ);
         }
         if(tempChunk1 != nullptr && tempChunk1->generatedBlockData)
         {
@@ -289,12 +289,12 @@ void World::BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
 
 }
 
-void World::LoadThreadDataToMain()
+void World::loadThreadDataToMain()
 {
     std::vector<Chunk*> addedChunks = WorldThreading::GetAddedThreadChunks(*this);
 
     if (!addedChunks.empty()){
-        GenerateChunkBuffers(addedChunks); //adds to active chunks
+        generateChunkBuffers(addedChunks); //adds to active chunks
     }
 }
 void World::sortChunks(){
@@ -311,7 +311,7 @@ void World::sortChunks(const glm::vec3 pos){
 }
 void World::sortTransparentFaces() const{
     if(player.chunkPosition.x > 0 && player.chunkPosition.x < World::SIZE && player.chunkPosition.y > 0 && player.chunkPosition.y < World::SIZE) {
-        const Chunk *currentChunk = GetChunk(static_cast<int>(playerChunkPos.x),static_cast<int>(playerChunkPos.y));
+        const Chunk *currentChunk = getChunk(static_cast<int>(playerChunkPos.x),static_cast<int>(playerChunkPos.y));
         if(currentChunk != nullptr) {
 
             //when moving inbetween chunks, sort surrounding chunks
@@ -321,7 +321,7 @@ void World::sortTransparentFaces() const{
                      x < (int) player.chunkPosition.x + 2 && x > 0 && x < World::SIZE; x++) {
                     for (int z = (int) player.chunkPosition.y - 2;
                          z < (int) player.chunkPosition.y + 2 && z > 0 && z < World::SIZE; z++) {
-                        const Chunk *currentChunkToSort = GetChunk(x, z);
+                        const Chunk *currentChunkToSort = getChunk(x, z);
                         if (currentChunkToSort != nullptr && !currentChunkToSort->inThread &&
                             currentChunkToSort->generatedBuffData) {
 
@@ -347,7 +347,7 @@ void World::sortTransparentFaces() const{
 void World::renderChunksToNormalShaders() const
 {
     for (const glm::ivec2 &chunkPos : activeChunks) {
-        const Chunk* chunk = GetChunk(chunkPos);
+        const Chunk* chunk = getChunk(chunkPos);
 
         if (chunk != nullptr) {
             {
@@ -367,7 +367,7 @@ void World::renderChunksToNormalShaders() const
 }
 void World::renderTransparentMeshes(Shader& shader) const{
     for (const glm::ivec2 &chunkPos : activeChunks) {
-        const Chunk* chunk = GetChunk(chunkPos);
+        const Chunk* chunk = getChunk(chunkPos);
         if(chunk != nullptr) {
             if (chunk->chunkHasMeshes && chunk->transparentMesh != nullptr &&
             chunk->transparentMesh->loadedData && !chunk->toBeDeleted) {
@@ -381,7 +381,7 @@ void World::renderTransparentMeshes(Shader& shader) const{
 void World::renderChunksToShader(Shader& shader) const
 {
     for (const glm::ivec2 &chunkPos : activeChunks) {
-        const Chunk* chunk = GetChunk(chunkPos);
+        const Chunk* chunk = getChunk(chunkPos);
         if(chunk != nullptr) {
             if (chunk->chunkHasMeshes && chunk->mesh != nullptr && chunk->mesh->loadedData &&
             !chunk->toBeDeleted) {
@@ -399,7 +399,7 @@ void World::renderChunksToShader(Shader& shader) const
 }
 void World::renderChunksToShadow(Shader& shader) const {
     for (const glm::ivec2 &chunkPos : activeChunks) {
-        const Chunk* chunk = GetChunk(chunkPos);
+        const Chunk* chunk = getChunk(chunkPos);
         if(chunk != nullptr) {
             if (chunk->chunkHasMeshes && chunk->mesh != nullptr && chunk->mesh->loadedData &&
             !chunk->toBeDeleted) {
@@ -426,7 +426,7 @@ void World::update()
     //changes global texture every second that passes
     scene.changeGlobalTexture();
 
-    LoadThreadDataToMain();
+    loadThreadDataToMain();
 
     sortChunks();
 }
@@ -447,21 +447,21 @@ void World::updateTick() {
         liquidToBeChecked.clear();
 
         for(const BlocksToBeAdded block : thisLiquidToBeChecked) {
-            Chunk* currentChunk = GetChunk(block.chunkPosition);
+            Chunk* currentChunk = getChunk(block.chunkPosition);
             if(currentChunk == nullptr) {
                 continue;
             }
             if(currentChunk->generatedBlockData) {
 
-                currentChunk->SetBlock(block.localPosition, block.blockID);
-                ChunkGeneration::UpdateWater(*currentChunk, block.localPosition);
+                currentChunk->setBlock(block.localPosition, block.blockID);
+                ChunkGeneration::updateWater(*currentChunk, block.localPosition);
                 if(std::find(updatedChunks.begin(), updatedChunks.end(), currentChunk->chunkPosition) == updatedChunks.end()) {
                     updatedChunks.push_back(currentChunk->chunkPosition);
                 }
             }
         }
         for(const glm::ivec2 chunkPos : updatedChunks) {
-            Chunk* currentChunk = GetChunk(chunkPos);
+            Chunk* currentChunk = getChunk(chunkPos);
             WorldThreading::updateLoadData(currentChunk);
         }
     }
@@ -469,7 +469,7 @@ void World::updateTick() {
 
 void World::renderSolidMeshes(Shader &shader) const{
     for (const glm::ivec2 chunkPos : activeChunks) {
-        const Chunk* chunk = GetChunk(chunkPos);
+        const Chunk* chunk = getChunk(chunkPos);
         if(chunk != nullptr) {
                 if (chunk->chunkHasMeshes && chunk->mesh != nullptr && chunk->mesh->loadedData && 
                     !chunk->toBeDeleted) {

@@ -8,10 +8,10 @@
 class TextureData
 {
 private:
-	static std::vector<glm::vec2> GetUVs(int atlasID);
+	static std::vector<glm::vec2> getUVs(int atlasID);
 public:
 	static const std::map<CraftMine::BlockType, std::map<CraftMine::Faces, int>> blockIDMap;
 
-	static std::vector<glm::vec2> GetBlockTypeUV(CraftMine::BlockType type, CraftMine::Faces face);
+	static std::vector<glm::vec2> getBlockTypeUV(CraftMine::BlockType type, CraftMine::Faces face);
 };
 

@@ -32,8 +32,8 @@ public:
     glm::vec3 position{};
 	Camera();
 
-	glm::mat4 GetViewMatrix() const;
-	void ProcessMouseMovement(float xoffset, float yoffset);
+	glm::mat4 getViewMatrix() const;
+	void processMouseMovement(float xoffset, float yoffset);
     void updatePosition(glm::vec3 lastPlayerPos, glm::vec3 playerPos, double alpha);
 
 };
