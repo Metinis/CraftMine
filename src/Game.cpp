@@ -4,9 +4,10 @@
 
 #include "Game.h"
 #include "Network/PacketTypes.h"
+#include "WorldGen/WorldThreading.h"
 
 
-Game::Game() {
+Game::Game(const std::string& username) {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -52,6 +53,7 @@ Game::Game() {
     player = new Player();
     camera = &player->camera;
     scene = new SceneRenderer(*camera, *player);
+    scene->remotePlayersPtr = &remotePlayers;
     world = new World(*camera, *scene, *player);
     player->world = world;
 
@@ -82,7 +84,7 @@ Game::Game() {
         world->multiplayerMode = true;
         world->networkClient = network;
 
-        std::vector<uint8_t> helloPayload = PacketSerializer::serializeHello("Player", "");
+        std::vector<uint8_t> helloPayload = PacketSerializer::serializeHello(username, "");
         network->sendPacket(PacketType::C2S_HELLO, helloPayload);
         std::cout << "[Game] Multiplayer mode enabled, sent Hello" << std::endl;
     } else {
@@ -125,8 +127,31 @@ void Game::run() {
 
 
         while (accumulator >= timeStep) {
+            // In multiplayer, wait for the spawn chunk to load before applying physics
+            if (multiplayerMode && !spawnChunkReady) {
+                glm::ivec2 spawnChunk(player->position.x / Chunk::SIZE, player->position.z / Chunk::SIZE);
+                Chunk* c = world->GetChunk(spawnChunk);
+                if (c != nullptr && c->generatedBlockData) {
+                    spawnChunkReady = true;
+                } else {
+                    accumulator -= timeStep;
+                    continue;
+                }
+            }
             // Update player physics
             player->Update(timeStep);
+
+            if (multiplayerMode && network != nullptr && network->isConnected()) {
+                positionSendTimer += timeStep;
+                if (positionSendTimer >= 0.05f) {
+                    std::vector<uint8_t> posPayload = PacketSerializer::serializePlayerPosition(
+                        player->position.x, player->position.y, player->position.z,
+                        camera->Yaw, camera->Pitch
+                    );
+                    network->sendPacket(PacketType::C2S_PLAYER_POSITION, posPayload);
+                    positionSendTimer = 0.0f;
+                }
+            }
 
             // Handle chunk position update
             newChunkPos = (glm::vec2(glm::round(player->position.x) / Chunk::SIZE,
@@ -241,11 +266,16 @@ void Game::processNetworkPackets() {
             case PacketType::S2C_HELLO_ACK: {
                 HelloAckPayload ack;
                 if (PacketSerializer::deserializeHelloAck(pkt.payload, ack)) {
+                    localPlayerId = ack.playerId;
                     std::cout << "[Game] Received HelloAck: spawn=("
                               << ack.spawnX << ", " << ack.spawnY << ", " << ack.spawnZ
                               << ") health=" << ack.health << std::endl;
                     player->position = glm::vec3(ack.spawnX, ack.spawnY, ack.spawnZ);
+                    player->lastPosition = player->position;
                     player->camera.position = player->position;
+                    newChunkPos = glm::ivec2(player->position.x / Chunk::SIZE, player->position.z / Chunk::SIZE);
+                    lastChunkPos = newChunkPos;
+                    world->UpdateViewDistance(newChunkPos);
                 }
                 break;
             }
@@ -264,6 +294,69 @@ void Game::processNetworkPackets() {
                 ChunkDataPayload chunkData;
                 if (PacketSerializer::deserializeChunkData(pkt.payload, chunkData)) {
                     world->receiveServerChunk(chunkData.chunkX, chunkData.chunkZ, chunkData.compressedData);
+                }
+                break;
+            }
+            case PacketType::S2C_PLAYER_JOIN: {
+                PlayerJoinPayload join;
+                if (PacketSerializer::deserializePlayerJoin(pkt.payload, join)) {
+                    std::cout << "[Game] Player joined: " << join.username << " (id=" << join.playerId << ")" << std::endl;
+                    remotePlayers[join.playerId] = RemotePlayer(
+                        join.playerId, join.username,
+                        glm::vec3(join.x, join.y, join.z), join.yaw, join.pitch
+                    );
+                }
+                break;
+            }
+            case PacketType::S2C_PLAYER_LEAVE: {
+                PlayerLeavePayload leave;
+                if (PacketSerializer::deserializePlayerLeave(pkt.payload, leave)) {
+                    std::cout << "[Game] Player left: id=" << leave.playerId << std::endl;
+                    remotePlayers.erase(leave.playerId);
+                }
+                break;
+            }
+            case PacketType::S2C_PLAYER_POSITION: {
+                PlayerPositionPayload pos;
+                if (PacketSerializer::deserializePlayerPosition(pkt.payload, pos)) {
+                    auto it = remotePlayers.find(pos.playerId);
+                    if (it != remotePlayers.end()) {
+                        it->second.lastPosition = it->second.position;
+                        it->second.position = glm::vec3(pos.x, pos.y, pos.z);
+                        it->second.yaw = pos.yaw;
+                        it->second.pitch = pos.pitch;
+                        it->second.interpTimer = 0.0f;
+                    }
+                }
+                break;
+            }
+            case PacketType::S2C_BLOCK_CHANGE: {
+                BlockChangePayload bc;
+                if (PacketSerializer::deserializeBlockChange(pkt.payload, bc)) {
+                    int chunkX = bc.x / Chunk::SIZE;
+                    int chunkZ = bc.z / Chunk::SIZE;
+                    int localX = bc.x % Chunk::SIZE;
+                    int localZ = bc.z % Chunk::SIZE;
+                    Chunk* chunk = world->GetChunk(chunkX, chunkZ);
+                    if (chunk != nullptr && chunk->generatedBlockData) {
+                        glm::ivec3 localPos(localX, bc.y, localZ);
+                        chunk->SetBlock(localPos, bc.blockId);
+                        WorldThreading::updateLoadData(chunk);
+                        if (localX == 0 || localX == Chunk::SIZE - 1) {
+                            int neighborX = (localX == 0) ? chunkX - 1 : chunkX + 1;
+                            Chunk* neighbor = world->GetChunk(neighborX, chunkZ);
+                            if (neighbor != nullptr && neighbor->generatedBlockData) {
+                                WorldThreading::updateLoadData(neighbor);
+                            }
+                        }
+                        if (localZ == 0 || localZ == Chunk::SIZE - 1) {
+                            int neighborZ = (localZ == 0) ? chunkZ - 1 : chunkZ + 1;
+                            Chunk* neighbor = world->GetChunk(chunkX, neighborZ);
+                            if (neighbor != nullptr && neighbor->generatedBlockData) {
+                                WorldThreading::updateLoadData(neighbor);
+                            }
+                        }
+                    }
                 }
                 break;
             }

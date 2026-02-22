@@ -237,7 +237,7 @@ bool Chunk::getIsAllSidesUpdated() {
 
 
 std::string Chunk::getRegionFilename(const int regionX, const int regionY) {
-    return "../save/chunkData/" + std::to_string(regionX) + "-" + std::to_string(regionY) + ".bin";
+    return SOURCE_DIR "/save/chunkData/" + std::to_string(regionX) + "-" + std::to_string(regionY) + ".bin";
 }
 
 int Chunk::getChunkOffset(const int chunkX, const int chunkY) {
