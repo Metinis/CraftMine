@@ -75,7 +75,7 @@ void PlayerBoxRenderer::render(const std::unordered_map<uint32_t, RemotePlayer>&
     glBindVertexArray(vao);
     for (const auto& pair : players) {
         const RemotePlayer& rp = pair.second;
-        glm::mat4 model = glm::translate(glm::mat4(1.0f), rp.position);
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), rp.position - glm::vec3(0.0f, 1.75f, 0.0f));
         shader->setMat4("model", model);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
     }
