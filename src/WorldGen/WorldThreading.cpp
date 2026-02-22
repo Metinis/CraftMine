@@ -97,7 +97,10 @@ void WorldThreading::GenerateWorldThread(const World& world)
                 chunksToGenerate.pop_back();
                 lock.unlock();
                 chunk->inThread = true;
-                chunk->GenBlocks();
+
+                if (!chunk->generatedBlockData) {
+                    chunk->GenBlocks();
+                }
                 CheckForBlocksToBeAdded(chunk);
 
                 {

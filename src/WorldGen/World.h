@@ -8,6 +8,8 @@
 #include "Frustum.h"
 #include "WorldThreading.h"
 
+class NetworkClient;
+
 class Player;
 
 class Input;
@@ -47,6 +49,11 @@ public:
 
 	static constexpr int SIZE = 1000;
 	static int viewDistance;
+
+	bool multiplayerMode = false;
+	NetworkClient* networkClient = nullptr;
+
+	void receiveServerChunk(int cx, int cz, const std::vector<uint8_t>& compressedData);
 
 	std::vector<glm::ivec2> activeChunks;	 //chunks that are currently being rendered, any loaded chunks need to be sent from thread to here
     std::vector<glm::ivec2> chunksToSortFaces;

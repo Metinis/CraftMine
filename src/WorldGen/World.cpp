@@ -4,6 +4,9 @@
 #include "ChunkGeneration.h"
 #include "Frustum.h"
 #include "Player/Player.h"
+#include "Network/NetworkClient.h"
+#include "Network/PacketTypes.h"
+#include "zlib.h"
 
 
 World::World(Camera& _camera, SceneRenderer& _scene, Player& _player) : camera(_camera), scene(_scene), player(_player)
@@ -63,8 +66,15 @@ void World::UpdateViewDistance(const glm::ivec2& cameraChunkPos)
     std::sort(generateChunks.begin(), generateChunks.end(), compareChunks);
     std::sort(chunksLoading.begin(), chunksLoading.end(), compareChunks);
 
-    //Set new chunk data
-    WorldThreading::setChunksToGenerate(generateChunks);
+    if (multiplayerMode && networkClient != nullptr) {
+        for (size_t i = 0; i < generateChunks.size(); i++) {
+            const glm::ivec2& pos = generateChunks[i];
+            std::vector<uint8_t> payload = PacketSerializer::serializeRequestChunk(pos.x, pos.y);
+            networkClient->sendPacket(PacketType::C2S_REQUEST_CHUNK, payload);
+        }
+    } else {
+        WorldThreading::setChunksToGenerate(generateChunks);
+    }
     WorldThreading::setChunksToLoadData(chunksLoading);
 
     activeChunks.clear();
@@ -77,6 +87,32 @@ void World::deleteChunk(const glm::ivec2 pos) {
     chunks[pos.x + SIZE * pos.y] = nullptr;
 }
 
+void World::receiveServerChunk(int cx, int cz, const std::vector<uint8_t>& compressedData) {
+    if (cx < 0 || cx >= SIZE || cz < 0 || cz >= SIZE) {
+        std::cerr << "[World] Received chunk at invalid position: " << cx << ", " << cz << std::endl;
+        return;
+    }
+
+    Chunk* chunk = chunks[cx + SIZE * cz];
+    if (chunk == nullptr) {
+        chunk = new Chunk(glm::ivec2(cx, cz), *this);
+        chunks[cx + SIZE * cz] = chunk;
+    }
+
+    uLongf decompressedSize = sizeof(chunk->blockIDs);
+    int result = uncompress(chunk->blockIDs, &decompressedSize,
+                            compressedData.data(), static_cast<uLong>(compressedData.size()));
+    if (result != Z_OK) {
+        std::cerr << "[World] Failed to decompress chunk data for (" << cx << ", " << cz << ")" << std::endl;
+        return;
+    }
+
+    chunk->generatedBlockData = true;
+
+    WorldThreading::updateLoadData(chunk);
+
+    std::cout << "[World] Received server chunk (" << cx << ", " << cz << ")" << std::endl;
+}
 
 void World::GenerateChunkBuffers(std::vector<Chunk*>& addedChunks)
 {
