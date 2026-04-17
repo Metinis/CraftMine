@@ -9,7 +9,7 @@ Currently, been working on it in and out for ~5 months when I find free time.
 ## The Game
 The game is basically a clone of Minecraft classic but with infinite worlds and
 shadow mapping. 
-
+![screenshot3.png](screenshot3.png)
 ![screenshot2.png](screenshot2.png)
 
 ## Current Features
