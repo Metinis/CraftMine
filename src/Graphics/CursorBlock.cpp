@@ -75,7 +75,7 @@ void CursorBlock::loadBlockRendering(unsigned char blockID) {
                 itemUVCoords.push_back(uvCoord);
             }
 
-        itemShader = new Shader("../resources/shader/itemUI.vs", "../resources/shader/itemUI.fs");
+        itemShader = new Shader(SOURCE_DIR "/resources/shader/itemUI.vs", SOURCE_DIR "/resources/shader/itemUI.fs");
         itemShader->use();
         // Get the primary monitor
         GLFWmonitor *primaryMonitor = glfwGetPrimaryMonitor();

@@ -235,6 +235,13 @@ void World::PlaceBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
 
         if(currentChunk->generatedBlockData) {
             currentChunk->SetBlock(lastEmptyPos, player.getBlockID());
+            if (multiplayerMode && networkClient != nullptr) {
+                int worldX = lastEmptyPos.x + currentChunk->chunkPosition.x * Chunk::SIZE;
+                int worldY = lastEmptyPos.y;
+                int worldZ = lastEmptyPos.z + currentChunk->chunkPosition.y * Chunk::SIZE;
+                std::vector<uint8_t> payload = PacketSerializer::serializeBlockChange(worldX, worldY, worldZ, player.getBlockID());
+                networkClient->sendPacket(PacketType::C2S_BLOCK_CHANGE, payload);
+            }
             //ChunkLighting::addLightingValues(*currentChunk);
             if(player.getBlockID() == 5) {
                 ChunkGeneration::UpdateWater(*currentChunk, lastEmptyPos);
@@ -259,10 +266,13 @@ void World::BreakBlocks(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
             currentChunk->SetBlock(localPos, 0);
         }
 
-
-        //ChunkLighting::recalculateLightWithNeighbours(*currentChunk);
-
-
+        if (multiplayerMode && networkClient != nullptr) {
+            int worldX = localPos.x + currentChunk->chunkPosition.x * Chunk::SIZE;
+            int worldY = localPos.y;
+            int worldZ = localPos.z + currentChunk->chunkPosition.y * Chunk::SIZE;
+            std::vector<uint8_t> payload = PacketSerializer::serializeBlockChange(worldX, worldY, worldZ, 0);
+            networkClient->sendPacket(PacketType::C2S_BLOCK_CHANGE, payload);
+        }
 
         WorldThreading::updateLoadData(currentChunk);
         Chunk* tempChunk1 = nullptr;
@@ -471,7 +481,7 @@ void World::renderSolidMeshes(Shader &shader) const{
     for (const glm::ivec2 chunkPos : activeChunks) {
         const Chunk* chunk = GetChunk(chunkPos);
         if(chunk != nullptr) {
-                if (chunk->chunkHasMeshes && chunk->mesh != nullptr && chunk->mesh->loadedData && 
+                if (chunk->chunkHasMeshes && chunk->mesh != nullptr && chunk->mesh->loadedData &&
                     !chunk->toBeDeleted) {
 
                     if(Frustum::isChunkInFrustum(chunk->getChunkMinBounds(), chunk->getChunkMaxBounds(), frustum))
@@ -483,7 +493,7 @@ void World::renderSolidMeshes(Shader &shader) const{
 void World::loadDataFromFile() {
 
     std::lock_guard<std::mutex> lock(WorldThreading::mutexBlocksToBeAddedList);
-    const std::string filename = "../save/blocksToBeAdded.bin";
+    const std::string filename = SOURCE_DIR "/save/blocksToBeAdded.bin";
     std::ifstream infile(filename, std::ios::binary | std::ios::ate);
     if (!infile) {
         return;
@@ -519,7 +529,7 @@ void World::saveBlocksToBeAddedToFile() {
     memcpy(serializedData, WorldThreading::blocksToBeAddedList.data(), dataSize);
 
     // Write the serialized data to a file
-    const std::string filename = "../save/blocksToBeAdded.bin";
+    const std::string filename = SOURCE_DIR "/save/blocksToBeAdded.bin";
     std::ofstream outfile(filename, std::ios::binary | std::ios::trunc);
     if (!outfile) {
         delete[] serializedData;

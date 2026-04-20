@@ -24,7 +24,7 @@ Inventory::Inventory(Toolbar& _toolbar) : toolbar(_toolbar){
             glm::vec2(0.6875f, 0.80859375f), // bottom right
     };
 
-    shader = new Shader("../resources/shader/UIShader.vs", "../resources/shader/UIShader.fs");
+    shader = new Shader(SOURCE_DIR "/resources/shader/UIShader.vs", SOURCE_DIR "/resources/shader/UIShader.fs");
     vao = new VAO();
     vbo = new VBO(vertices);
     shader->use();
@@ -55,7 +55,7 @@ void Inventory::loadItemsRendering() {
     loadItemsRenderingToolbar();
     constexpr auto model = glm::mat4(1.0f);
     constexpr auto view = glm::mat4(1.0f);
-    itemShader = new Shader("../resources/shader/itemUI.vs", "../resources/shader/itemUI.fs");
+    itemShader = new Shader(SOURCE_DIR "/resources/shader/itemUI.vs", SOURCE_DIR "/resources/shader/itemUI.fs");
     itemShader->use();
 
     GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();

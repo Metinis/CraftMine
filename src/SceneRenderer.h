@@ -12,6 +12,8 @@
 #include "Player/Toolbar.h"
 #include "Player/Inventory.h"
 #include "Graphics/CursorBlock.h"
+#include "Graphics/PlayerBoxRenderer.h"
+#include "Player/RemotePlayer.h"
 
 class UBO;
 
@@ -73,6 +75,8 @@ public:
     Texture* guiTexture{};
     Texture* inventoryTexture{};
     CursorBlock* cursorBlock{};
+    PlayerBoxRenderer* playerBoxRenderer = nullptr;
+    std::unordered_map<uint32_t, RemotePlayer>* remotePlayersPtr = nullptr;
 
     Player& player;
 

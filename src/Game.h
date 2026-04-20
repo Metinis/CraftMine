@@ -19,6 +19,9 @@
 #include "Graphics/ScreenQuad.h"
 #include "SceneRenderer.h"
 #include "Network/NetworkClient.h"
+#include "Player/RemotePlayer.h"
+#include <string>
+#include <unordered_map>
 
 class SceneRenderer;
 
@@ -26,7 +29,7 @@ class Input;
 
 class Game {
 public:
-    Game();
+    Game(const std::string& username);
 
     void run();
 
@@ -38,6 +41,10 @@ public:
     SceneRenderer* scene;
     NetworkClient* network;
     bool multiplayerMode;
+    bool spawnChunkReady = false;
+    std::unordered_map<uint32_t, RemotePlayer> remotePlayers;
+    uint32_t localPlayerId = 0;
+    float positionSendTimer = 0.0f;
     static int currentWidth;
     static int currentHeight;
 
